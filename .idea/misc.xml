@@ -10,6 +10,37 @@
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.6.4 (/Library/Frameworks/Python.framework/Versions/2.6/bin/python2.6)" project-jdk-type="Python SDK" />
   <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://src.ifi.uzh.ch/ddis/sw/rdfstore/cysparql/branches">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://src.ifi.uzh.ch/ddis/sw/rdfstore/cysparql/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://src.ifi.uzh.ch/ddis/sw/rdfstore/cysparql/branches" />
+                  <option value="https://src.ifi.uzh.ch/ddis/sw/rdfstore/cysparql/tags" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://src.ifi.uzh.ch/ddis/sw/rdfstore/cysparql/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
 </project>
