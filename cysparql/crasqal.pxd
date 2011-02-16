@@ -83,7 +83,25 @@ cdef extern from "rasqal/rasqal.h":
         pass
 
     ctypedef enum rasqal_literal_type:
-        pass
+        RASQAL_LITERAL_UNKNOWN
+        RASQAL_LITERAL_BLANK
+        RASQAL_LITERAL_URI
+        RASQAL_LITERAL_STRING
+        RASQAL_LITERAL_XSD_STRING
+        RASQAL_LITERAL_BOOLEAN
+        RASQAL_LITERAL_INTEGER
+        RASQAL_LITERAL_FLOAT
+        RASQAL_LITERAL_DOUBLE
+        RASQAL_LITERAL_DECIMAL
+        RASQAL_LITERAL_DATETIME
+        RASQAL_LITERAL_FIRST_XSD
+        RASQAL_LITERAL_LAST_XSD
+        RASQAL_LITERAL_UDT
+        RASQAL_LITERAL_PATTERN
+        RASQAL_LITERAL_QNAME
+        RASQAL_LITERAL_VARIABLE
+        RASQAL_LITERAL_INTEGER_SUBTYPE
+        RASQAL_LITERAL_LAST
 
     ctypedef enum rasqal_variable_type:
         RASQAL_VARIABLE_TYPE_UNKNOWN
@@ -107,6 +125,20 @@ cdef extern from "rasqal/rasqal.h":
 
     
     #// structs
+    #// forward declarations
+    ctypedef struct rasqal_variable
+    ctypedef struct rasqal_xsd_decimal
+    ctypedef struct rasqal_xsd_datetime
+    ctypedef struct rasqal_world
+    ctypedef struct rasqal_query
+    ctypedef union literal_value
+    ctypedef struct rasqal_literal
+    ctypedef struct rasqal_variable
+    ctypedef struct rasqal_triple
+    ctypedef struct rasqal_data_graph
+    ctypedef struct rasqal_prefix
+    ctypedef struct rasqal_update_operation
+
     ctypedef struct rasqal_world:
         pass
 
@@ -116,15 +148,26 @@ cdef extern from "rasqal/rasqal.h":
     ctypedef struct rasqal_graph_pattern:
         pass
 
+    ctypedef union _value:
+        int integer
+        double floating
+        raptor_uri* uri
+        rasqal_variable* variable
+        rasqal_xsd_decimal* decimal
+        rasqal_xsd_datetime* datetime
+
     ctypedef struct rasqal_literal:
-        pass
-
-    ctypedef struct rasqal_xsd_datetime:
-        pass
-
-    ctypedef struct rasqal_xsd_decimal:
-        pass
-
+        int usage
+        rasqal_literal_type type
+        unsigned char *string
+        unsigned int string_len
+        _value value
+        char *language
+        raptor_uri *datatype
+        unsigned char *flags
+        rasqal_literal_type parent_type
+        int valid
+    
     ctypedef struct rasqal_variable:
         char * name
         rasqal_literal* value
