@@ -9,7 +9,7 @@ import sys
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
-def test_sparql():
+def test_sparql(debug=False):
     q = Query('''
 SELECT ?title_other ?title ?author
 WHERE {
@@ -21,11 +21,11 @@ WHERE {
         ?paper_other <http://www.aktors.org/ontology/portal#has-title> ?title_other .
 } LIMIT 100
     ''')
-    #q.debug()
+    if debug: q.debug()
 
 def measure_time(nr=1000):
     from timeit import Timer
-    t = Timer('test_sparql()','from crasqal import test_sparql')
+    t = Timer('test_sparql(debug=False)','from crasqal import test_sparql')
     total_secs = t.timeit(number=nr)
     print 'Query parsing took %s ms, with a total %s seconds for %s runs.'%(str(1000 * total_secs/nr), str(total_secs), str(nr))
 
