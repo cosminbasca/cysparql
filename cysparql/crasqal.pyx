@@ -139,4 +139,28 @@ cdef class Query:
     cpdef get_bound_vars(self):
         return Sequence(<object>rasqal_query_get_bound_variable_sequence(self.rq))
 
+    cpdef get_bindings_vars(self):
+        return Sequence(<object>rasqal_query_get_bindings_variables_sequence(self.rq))
+
+    cpdef get_bindings_var(self, i):
+        return <object>rasqal_query_get_bindings_variable(self.rq, i)
+
+    cpdef has_var(self, name):
+        return True if rasqal_query_has_variable(self.rq, name) > 0 else False
+
+    property label:
+        def __get__(self):
+            return rasqal_query_get_label(self.rq)
+    
+    property limit:
+        def __get__(self):
+            return rasqal_query_get_limit(self.rq)
+    
+    property name:
+        def __get__(self):
+            return rasqal_query_get_name(self.rq)
+
+    property offset:
+        def __get__(self):
+            return rasqal_query_get_offset(self.rq)
     
