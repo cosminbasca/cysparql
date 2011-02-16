@@ -49,54 +49,7 @@ cdef extern from "raptor2/raptor.h":
 #// the rasqal sparql parsing library
 #//-----------------------------------------------------------------------------------------------------------------------
 cdef extern from "rasqal/rasqal.h":
-    ctypedef struct rasqal_world:
-        pass
-
-    ctypedef enum rasqal_query_verb:
-        pass
-
-    ctypedef struct rasqal_query:
-        pass
-
-    ctypedef struct rasqal_graph_pattern:
-        pass
-
-    ctypedef enum rasqal_graph_pattern_operator:
-        pass
-
-    ctypedef struct rasqal_literal:
-        pass
-
-    ctypedef enum rasqal_literal_type:
-        pass
-
-    ctypedef struct rasqal_xsd_datetime:
-        pass
-
-    ctypedef struct rasqal_xsd_decimal:
-        pass
-
-    ctypedef struct rasqal_variable:
-        pass
-
-    ctypedef enum rasqal_variable_type:
-        pass
-
-    ctypedef struct rasqal_triple:
-        pass
-
-    ctypedef enum rasqal_triple_parts:
-        pass
-
-    ctypedef struct rasqal_data_graph:
-        pass
-
-    ctypedef enum rasqal_data_graph_flags:
-        pass
-
-    ctypedef struct rasqal_prefix:
-        pass
-
+    #//enums
     ctypedef enum rasqal_feature:
         RASQAL_FEATURE_NO_NET
         RASQAL_FEATURE_LAST
@@ -122,6 +75,85 @@ cdef extern from "rasqal/rasqal.h":
         RASQAL_UPDATE_GRAPH_DEFAULT
         RASQAL_UPDATE_GRAPH_NAMED
         RASQAL_UPDATE_GRAPH_ALL
+
+    ctypedef enum rasqal_query_verb:
+        pass
+
+    ctypedef enum rasqal_graph_pattern_operator:
+        pass
+
+    ctypedef enum rasqal_literal_type:
+        pass
+
+    ctypedef enum rasqal_variable_type:
+        RASQAL_VARIABLE_TYPE_UNKNOWN
+        RASQAL_VARIABLE_TYPE_NORMAL
+        RASQAL_VARIABLE_TYPE_ANONYMOUS
+    
+    ctypedef enum rasqal_triple_parts:
+        RASQAL_TRIPLE_NONE
+        RASQAL_TRIPLE_SUBJECT
+        RASQAL_TRIPLE_PREDICATE
+        RASQAL_TRIPLE_OBJECT
+        RASQAL_TRIPLE_ORIGIN
+        RASQAL_TRIPLE_GRAPH
+        RASQAL_TRIPLE_SPO
+        RASQAL_TRIPLE_SPOG
+
+    ctypedef enum rasqal_data_graph_flags:
+        RASQAL_DATA_GRAPH_NONE
+        RASQAL_DATA_GRAPH_NAMED
+        RASQAL_DATA_GRAPH_BACKGROUND
+
+    
+    #// structs
+    ctypedef struct rasqal_world:
+        pass
+
+    ctypedef struct rasqal_query:
+        pass
+
+    ctypedef struct rasqal_graph_pattern:
+        pass
+
+    ctypedef struct rasqal_literal:
+        pass
+
+    ctypedef struct rasqal_xsd_datetime:
+        pass
+
+    ctypedef struct rasqal_xsd_decimal:
+        pass
+
+    ctypedef struct rasqal_variable:
+        char * name
+        rasqal_literal* value
+        int offset
+        rasqal_variable_type type
+        int usage
+
+    ctypedef struct rasqal_triple:
+        rasqal_literal* subject
+        rasqal_literal* predicate
+        rasqal_literal* object
+        rasqal_literal* origin
+
+    ctypedef struct rasqal_data_graph:
+        raptor_uri* uri
+        raptor_uri* name_uri
+        int flags
+        char* format_type
+        char* format_name
+        raptor_uri* format_uri
+        raptor_uri* base_uri
+        int usage
+
+    ctypedef struct rasqal_prefix:
+        rasqal_world* world
+        char * prefix
+        raptor_uri* uri
+        int declared
+        int depth
 
     ctypedef struct rasqal_update_operation:
         rasqal_update_type type

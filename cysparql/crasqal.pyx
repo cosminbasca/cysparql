@@ -23,11 +23,31 @@ WHERE {
     ''')
     if debug: q.debug()
 
+cpdef test_struct():
+    q = Query('''
+    SELECT ?title_other ?title ?author
+    WHERE {
+            ?paper <http://www.aktors.org/ontology/portal#has-title> ?title .
+            ?paper <http://www.aktors.org/ontology/portal#has-author> ?author .
+            ?paper <http://www.aktors.org/ontology/portal#article-of-journal> ?journal .
+            ?paper <http://www.aktors.org/ontology/portal#has-date> <http://www.aktors.org/ontology/date#2009> .
+            ?paper_other <http://www.aktors.org/ontology/portal#article-of-journal> ?journal .
+            ?paper_other <http://www.aktors.org/ontology/portal#has-title> ?title_other .
+    } LIMIT 100
+        ''')
+    q.debug()
+    cdef rasqal_query* rq   = q.rq
+    cdef rasqal_variable* v = rasqal_query_get_variable(rq, 0)
+    print 'VAR ->',v.name, v.offset, v.usage
+
 def measure_time(nr=1000):
     from timeit import Timer
     t = Timer('test_sparql(debug=False)','from crasqal import test_sparql')
     total_secs = t.timeit(number=nr)
     print 'Query parsing took %s ms, with a total %s seconds for %s runs.'%(str(1000 * total_secs/nr), str(total_secs), str(nr))
+
+# other types
+
 
 cdef class Query:
     cdef rasqal_world* w
@@ -38,7 +58,7 @@ cdef class Query:
 
     def __init__(self, query):
         self.rq = rasqal_new_query(self.w, "sparql", NULL)
-        rasqal_query_prepare(self.rq, <char*>query, NULL)
+        rasqal_query_prepare(self.rq, query, NULL)
 
     def __dealloc__(self):
         rasqal_free_world(self.w)
@@ -46,3 +66,9 @@ cdef class Query:
 
     def debug(self):
         rasqal_query_print(self.rq, stdout)
+
+    #-----------------------------------------------------------------------------------------------------------
+    # query rasqal API
+    #-----------------------------------------------------------------------------------------------------------
+    #cdef get_all_vars(self):
+    #    return rasqal_query_get_all_variable_sequence(self.rq)
