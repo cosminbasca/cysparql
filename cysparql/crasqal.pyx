@@ -22,37 +22,15 @@ WHERE {
 } LIMIT 100
     ''')
 
-def test_sparql(debug=False):
+def benchmark_query(debug=False):
     q = get_q()
     if debug: q.debug()
 
-cpdef test_struct():
-    q = get_q()
-    q.debug()
-    cdef rasqal_query* rq   = <rasqal_query*>q.rq
-    cdef rasqal_variable* v = rasqal_query_get_variable(rq, 0)
-    print 'VAR ->',v.name, v.offset, v.usage
-
-def measure_time(nr=1000):
+def benchmark(nr=1000):
     from timeit import Timer
-    t = Timer('test_sparql(debug=False)','from crasqal import test_sparql')
+    t = Timer('benchmark_query(debug=False)','from crasqal import benchmark_query')
     total_secs = t.timeit(number=nr)
     print 'Query parsing took %s ms, with a total %s seconds for %s runs.'%(str(1000 * total_secs/nr), str(total_secs), str(nr))
-
-
-def test_sequence():
-    q = get_q()
-    vars = q.get_all_vars() #get_bound_vars()
-    print 'HAVE VARS !'
-    print len(vars)
-    cdef rasqal_variable* v = <rasqal_variable*>vars[1]
-    print 'var -> ',<long>v, v.name
-    v = <rasqal_variable*>vars[2]
-    print 'var -> ',<long>v, v.name
-
-    print 'test iter'
-    for var in vars:
-        print 'V ------> ',(<rasqal_variable*>var).name
 
 #-----------------------------------------------------------------------------------------------------------------------
 # other types
