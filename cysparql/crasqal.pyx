@@ -192,7 +192,8 @@ cdef class Triple:
         return '[%s,%s,%s]'%(str(self.s.value),str(self.p.value),str(self.o.value))
 
 
-    
+
+
 cdef class Prefix:
     cdef rasqal_prefix* p
 
@@ -210,7 +211,39 @@ cdef class Prefix:
     cpdef debug(self):
         rasqal_prefix_print(<rasqal_prefix*>self.p, stdout)
 
+    def __str__(self):
+        return '(%s : %s)'%(self.prefix, self.uri)
+    
 
+cdef class GraphPattern:
+    cdef rasqal_graph_pattern* gp
+    cdef rasqal_query* rq
+    cdef int __idx__
+
+    def __cinit__(self, gp, rq):
+        self.gp = <rasqal_graph_pattern*>gp
+        self.rq = <rasqal_query*>rq
+        self.__idx__ = 0
+
+    def __iter__(self):
+        self.__idx__ = 0
+        return self
+
+    def __next__(self):
+        cdef raptor_sequence* ts =  rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
+        cdef int sz = raptor_sequence_size(ts)
+        if self.__idx__ == sz:
+            raise StopIteration
+        else:
+            item = Triple(<object>rasqal_graph_pattern_get_triple(self.gp, self.__idx__))
+            self.__idx__ += 1
+            return item
+
+    property triples:
+        def __get__(self):
+            cdef raptor_sequence* ts = rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
+            cdef int sz = raptor_sequence_size(ts)
+            return [Triple(<object>raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
 
 
 cdef class Sequence:
@@ -273,9 +306,11 @@ cdef class Sequence:
 cdef class Query:
     cdef rasqal_world* w
     cdef rasqal_query* rq
+    cdef int __idx__
 
     def __cinit__(self):
         self.w  = rasqal_new_world()
+        self.__idx__ = 0
 
     def __init__(self, query):
         self.rq = rasqal_new_query(self.w, "sparql", NULL)
@@ -318,6 +353,12 @@ cdef class Query:
     cpdef get_prefix(self, i):
         return Prefix(<object>rasqal_query_get_prefix(self.rq, i))
 
+    cpdef get_graph_patterns(self):
+        return Sequence(<object>rasqal_query_get_graph_pattern_sequence(self.rq))
+
+    cpdef get_graph_pattern(self):
+        return GraphPattern(<object>self.rq, <object>rasqal_query_get_query_graph_pattern(self.rq))
+
     property label:
         def __get__(self):
             return rasqal_query_get_label(self.rq)
@@ -353,3 +394,28 @@ cdef class Query:
                 return 'insert'
             elif v == RASQAL_QUERY_VERB_UPDATE:
                 return 'update'
+
+    '''
+    def __iter__(self):
+        self.__idx__ = 0
+        return self
+
+    def __next__(self):
+        cdef raptor_sequence* gps =  rasqal_query_get_graph_pattern_sequence(self.rq)
+        cdef int sz = raptor_sequence_size(gps)
+        if self.__idx__ == sz:
+            raise StopIteration
+        else:
+            item = GraphPattern(<object>self.rq, <object>rasqal_query_get_graph_pattern(self.rq, self.__idx__))
+            self.__idx__ += 1
+            return item
+
+    property graph_patterns:
+        def __get__(self):
+            cdef raptor_sequence* gps =  rasqal_query_get_graph_pattern_sequence(self.rq)
+            cdef int sz = 0
+            if gps != NULL:
+                sz = raptor_sequence_size(gps)
+                return [GraphPattern(<object>self.rq, <object>rasqal_query_get_graph_pattern(self.rq, i)) for i in xrange(sz)]
+            return []
+    '''
