@@ -57,6 +57,161 @@ def test_sequence():
 #-----------------------------------------------------------------------------------------------------------------------
 # other types
 #-----------------------------------------------------------------------------------------------------------------------
+cdef inline uri_to_str(raptor_uri* u):
+    return raptor_uri_as_string(u) if u != NULL else None
+
+
+    
+cdef class Literal:
+    cdef rasqal_literal* l
+
+    def __cinit__(self, l):
+        self.l = <rasqal_literal*>l
+    
+    property language:
+        def __get__(self):
+            return self.l.language if self.l.language != NULL else None
+
+    property datatype:
+        def __get__(self):
+            return uri_to_str(self.l.datatype) if self.l.datatype != NULL else None
+
+    property type:
+        def __get__(self):
+            return self.l.type
+
+    property type_label:
+        def __get__(self):
+            return rasqal_literal_type_label(self.l.type)
+
+    cpdef is_rdf_literal(self):
+        return True if rasqal_literal_is_rdf_literal(self.l) > 0 else False
+
+    cpdef as_var(self):
+        cdef rasqal_variable* var = rasqal_literal_as_variable(self.l)
+        return Variable(<object>var) if var != NULL else None
+
+    cpdef as_str(self):
+        if self.l.type == RASQAL_LITERAL_URI or self.l.type == RASQAL_LITERAL_BLANK:
+            return rasqal_literal_as_string(self.l)
+        elif self.l.type == RASQAL_LITERAL_VARIABLE:
+            return self.l.value.variable.name if self.l.value.variable.name != NULL else ''
+        return ''
+
+    cpdef as_node(self):
+        cdef rasqal_literal* node = rasqal_literal_as_node(self.l)
+        return Literal(<object>node) if node != NULL else None
+
+    def __str__(self):
+        return self.as_str()
+
+    property value:
+        def __get__(self):
+            if self.l.type == RASQAL_LITERAL_URI or self.l.type == RASQAL_LITERAL_BLANK:
+                return rasqal_literal_as_string(self.l)
+            elif self.l.type == RASQAL_LITERAL_INTEGER:
+                return self.l.value.integer
+            elif self.l.type == RASQAL_LITERAL_FLOAT or self.l.type == RASQAL_LITERAL_DOUBLE:
+                return self.l.value.floating
+            elif self.l.type == RASQAL_LITERAL_VARIABLE:
+                return Variable(<object>self.l.value.variable)
+            return None
+            
+    cpdef debug(self):
+        rasqal_literal_print(<rasqal_literal*>self.l, stdout)
+
+
+
+
+cdef class Variable:
+    cdef rasqal_variable* var
+
+    def __cinit__(self, var):
+        self.var = <rasqal_variable*>var
+
+    property name:
+        def __get__(self):
+            return self.var.name if self.var.name != NULL else None
+
+    property offset:
+        def __get__(self):
+            return self.var.offset
+
+    property value:
+        def __get__(self):
+            return Literal(<object>self.var.value) if self.var.value != NULL else None
+
+    cpdef debug(self):
+        rasqal_variable_print(<rasqal_variable*>self.var, stdout)
+
+    def __str__(self):
+        return self.name
+
+
+
+    
+cdef class Triple:
+    cdef rasqal_triple* t
+
+    def __cinit__(self, t):
+        self.t = <rasqal_triple*>t
+
+    property s:
+        def __get__(self):
+            return Literal(<object>self.t.subject) if self.t.subject != NULL else None
+
+    property p:
+        def __get__(self):
+            return Literal(<object>self.t.predicate) if self.t.predicate != NULL else None
+
+    property o:
+        def __get__(self):
+            return Literal(<object>self.t.object) if self.t.object != NULL else None
+
+    property origin:
+        def __get__(self):
+            return Literal(<object>self.t.origin) if self.t.origin != NULL else None
+
+    cpdef debug(self):
+        rasqal_triple_print(<rasqal_triple*>self.t, stdout)
+
+    def as_tuple(self):
+        return (self.s.value, self.p.value, self.o.value)
+
+    def __getitem__(self, i):
+        if i == 0:
+            return self.s.value
+        elif i == 1:
+            return self.p.value
+        elif i == 2:
+            return self.o.value
+        else:
+            raise IndexError('index must be, 0,1,2 corresponding to S, P, O')
+
+    def __str__(self):
+        return '[%s,%s,%s]'%(str(self.s.value),str(self.p.value),str(self.o.value))
+
+
+    
+cdef class Prefix:
+    cdef rasqal_prefix* p
+
+    def __cinit__(self, p):
+        self.p = <rasqal_prefix*>p
+
+    property prefix:
+        def __get__(self):
+            return self.p.prefix if self.p.prefix != NULL else ''
+
+    property uri:
+        def __get__(self):
+            return uri_to_str(self.p.uri) if self.p.uri != NULL else None
+
+    cpdef debug(self):
+        rasqal_prefix_print(<rasqal_prefix*>self.p, stdout)
+
+
+
 
 cdef class Sequence:
     cdef raptor_sequence* sq
@@ -66,9 +221,9 @@ cdef class Sequence:
         self.sq = <raptor_sequence*>sq
         self.__idx__ = 0
 
-    def __del__(self):
-        if self.sq != NULL:
-            raptor_free_sequence(<raptor_sequence*>self.sq)
+    #def __del__(self):
+    #    if self.sq != NULL:
+    #        raptor_free_sequence(<raptor_sequence*>self.sq)
         
     def __len__(self):
         return raptor_sequence_size(<raptor_sequence*>self.sq)
@@ -82,7 +237,7 @@ cdef class Sequence:
     def __getitem__(self, i):
         return <object>raptor_sequence_get_at(<raptor_sequence*>self.sq, i)
         
-    def debug(self):
+    cpdef debug(self):
         raptor_sequence_print(<raptor_sequence*>self.sq, stdout)
 
     def __and__(self, other):
@@ -101,6 +256,7 @@ cdef class Sequence:
         raptor_sequence_push(<raptor_sequence*>self.sq, <void*>data)
 
     def __iter__(self):
+        self.__idx__ = 0
         return self
 
     def __next__(self):
@@ -111,7 +267,9 @@ cdef class Sequence:
             self.__idx__ += 1
             return item
 
-    
+
+
+            
 cdef class Query:
     cdef rasqal_world* w
     cdef rasqal_query* rq
@@ -121,13 +279,13 @@ cdef class Query:
 
     def __init__(self, query):
         self.rq = rasqal_new_query(self.w, "sparql", NULL)
-        rasqal_query_prepare(self.rq, query, NULL)
+        rasqal_query_prepare(self.rq, <unsigned char*>query, NULL)
 
     def __dealloc__(self):
         rasqal_free_world(self.w)
         rasqal_free_query(self.rq)
 
-    def debug(self):
+    cpdef debug(self):
         rasqal_query_print(self.rq, stdout)
 
     #-----------------------------------------------------------------------------------------------------------
@@ -143,10 +301,22 @@ cdef class Query:
         return Sequence(<object>rasqal_query_get_bindings_variables_sequence(self.rq))
 
     cpdef get_bindings_var(self, i):
-        return <object>rasqal_query_get_bindings_variable(self.rq, i)
+        return Variable(<object>rasqal_query_get_bindings_variable(self.rq, i))
 
-    cpdef has_var(self, name):
-        return True if rasqal_query_has_variable(self.rq, name) > 0 else False
+    cpdef has_var(self, char* name):
+        return True if rasqal_query_has_variable(self.rq, <unsigned char*>name) > 0 else False
+
+    cpdef get_triples(self):
+        return Sequence(<object>rasqal_query_get_triple_sequence(self.rq))
+
+    cpdef get_triple(self, i):
+        return Triple(<object>rasqal_query_get_triple(self.rq, i))
+
+    cpdef get_prefixes(self):
+        return Sequence(<object>rasqal_query_get_prefix_sequence(self.rq))
+
+    cpdef get_prefix(self, i):
+        return Prefix(<object>rasqal_query_get_prefix(self.rq, i))
 
     property label:
         def __get__(self):
@@ -163,4 +333,23 @@ cdef class Query:
     property offset:
         def __get__(self):
             return rasqal_query_get_offset(self.rq)
-    
+
+    property verb:
+        def __get__(self):
+            v = rasqal_query_get_verb(self.rq)
+            if v == RASQAL_QUERY_VERB_UNKNOWN:
+                return 'unknown'
+            elif v == RASQAL_QUERY_VERB_SELECT:
+                return 'select'
+            elif v == RASQAL_QUERY_VERB_CONSTRUCT:
+                return 'construct'
+            elif v == RASQAL_QUERY_VERB_DESCRIBE:
+                return 'describe'
+            elif v == RASQAL_QUERY_VERB_ASK:
+                return 'ask'
+            elif v == RASQAL_QUERY_VERB_DELETE:
+                return 'delete'
+            elif v == RASQAL_QUERY_VERB_INSERT:
+                return 'insert'
+            elif v == RASQAL_QUERY_VERB_UPDATE:
+                return 'update'

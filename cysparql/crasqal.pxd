@@ -23,6 +23,10 @@ cdef extern from "raptor2/raptor.h":
     void raptor_free_uri(raptor_uri *uri)
     raptor_uri* raptor_uri_copy(raptor_uri *uri)
     unsigned char* raptor_uri_filename_to_uri_string(char *filename)
+    unsigned char* raptor_uri_as_string(raptor_uri *uri)
+    unsigned char* raptor_uri_to_string(raptor_uri *uri)
+    unsigned char* raptor_uri_as_counted_string(raptor_uri *uri, size_t *len_p)
+
 
     #//--------------------------------------------------------------------------------------------------------
     #// sequence
@@ -48,6 +52,24 @@ cdef extern from "raptor2/raptor.h":
 #//-----------------------------------------------------------------------------------------------------------------------
 #// the rasqal sparql parsing library
 #//-----------------------------------------------------------------------------------------------------------------------
+cdef extern from "rasqal/rasqal.h":
+    #// forward declarations
+    ctypedef struct rasqal_variable
+    ctypedef struct rasqal_xsd_decimal
+    ctypedef struct rasqal_xsd_datetime
+    ctypedef struct rasqal_world
+    ctypedef struct rasqal_query
+    ctypedef union literal_value
+    ctypedef struct rasqal_literal
+    ctypedef struct rasqal_variable
+    ctypedef struct rasqal_triple
+    ctypedef struct rasqal_data_graph
+    ctypedef struct rasqal_prefix
+    ctypedef struct rasqal_update_operation
+    ctypedef struct rasqal_variables_table
+    ctypedef struct rasqal_expression
+    ctypedef struct raptor_iostream
+
 cdef extern from "rasqal/rasqal.h":
     #//enums
     ctypedef enum rasqal_feature:
@@ -126,7 +148,7 @@ cdef extern from "rasqal/rasqal.h":
         RASQAL_VARIABLE_TYPE_UNKNOWN
         RASQAL_VARIABLE_TYPE_NORMAL
         RASQAL_VARIABLE_TYPE_ANONYMOUS
-    
+
     ctypedef enum rasqal_triple_parts:
         RASQAL_TRIPLE_NONE
         RASQAL_TRIPLE_SUBJECT
@@ -142,22 +164,8 @@ cdef extern from "rasqal/rasqal.h":
         RASQAL_DATA_GRAPH_NAMED
         RASQAL_DATA_GRAPH_BACKGROUND
 
-    
-    #// structs
-    #// forward declarations
-    ctypedef struct rasqal_variable
-    ctypedef struct rasqal_xsd_decimal
-    ctypedef struct rasqal_xsd_datetime
-    ctypedef struct rasqal_world
-    ctypedef struct rasqal_query
-    ctypedef union literal_value
-    ctypedef struct rasqal_literal
-    ctypedef struct rasqal_variable
-    ctypedef struct rasqal_triple
-    ctypedef struct rasqal_data_graph
-    ctypedef struct rasqal_prefix
-    ctypedef struct rasqal_update_operation
 
+    #// structs
     ctypedef struct rasqal_world:
         pass
 
@@ -167,31 +175,35 @@ cdef extern from "rasqal/rasqal.h":
     ctypedef struct rasqal_graph_pattern:
         pass
 
-    ctypedef union _value:
+    cdef union l_value:
         int integer
         double floating
         raptor_uri* uri
         rasqal_variable* variable
         rasqal_xsd_decimal* decimal
         rasqal_xsd_datetime* datetime
-
+        
     ctypedef struct rasqal_literal:
+        rasqal_world *world
         int usage
         rasqal_literal_type type
         unsigned char *string
         unsigned int string_len
-        _value value
+        l_value value
         char *language
         raptor_uri *datatype
         unsigned char *flags
         rasqal_literal_type parent_type
         int valid
-    
+
     ctypedef struct rasqal_variable:
-        char * name
+        rasqal_variables_table* vars_table
+        unsigned char *name
         rasqal_literal* value
         int offset
         rasqal_variable_type type
+        rasqal_expression* expression
+        void *user_data
         int usage
 
     ctypedef struct rasqal_triple:
@@ -199,20 +211,23 @@ cdef extern from "rasqal/rasqal.h":
         rasqal_literal* predicate
         rasqal_literal* object
         rasqal_literal* origin
+        unsigned int flags
 
     ctypedef struct rasqal_data_graph:
+        rasqal_world* world
         raptor_uri* uri
         raptor_uri* name_uri
         int flags
         char* format_type
         char* format_name
         raptor_uri* format_uri
+        raptor_iostream* iostr
         raptor_uri* base_uri
         int usage
 
     ctypedef struct rasqal_prefix:
         rasqal_world* world
-        char * prefix
+        unsigned char *prefix
         raptor_uri* uri
         int declared
         int depth
@@ -287,8 +302,8 @@ cdef extern from "rasqal/rasqal.h":
     rasqal_variable* rasqal_query_get_variable(rasqal_query *query, int idx)
     rasqal_query_verb rasqal_query_get_verb(rasqal_query *query)
     int rasqal_query_get_wildcard(rasqal_query *query)
-    int rasqal_query_has_variable(rasqal_query *query, char *name)
-    int rasqal_query_prepare(rasqal_query *query,char *query_string, raptor_uri *base_uri)
+    int rasqal_query_has_variable(rasqal_query *query, unsigned char *name)
+    int rasqal_query_prepare(rasqal_query *query,unsigned char *query_string, raptor_uri *base_uri)
     int rasqal_query_print(rasqal_query *query, FILE *fh)
     void rasqal_query_graph_pattern_visit(rasqal_query *query, rasqal_graph_pattern_visit_fn visit_fn, void *data)
     void rasqal_query_set_distinct(rasqal_query *query, int distinct_mode)
