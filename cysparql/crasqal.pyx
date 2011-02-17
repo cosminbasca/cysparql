@@ -171,16 +171,16 @@ cdef class Triple:
 
     def __getitem__(self, i):
         if i == 0:
-            return self.s.value
+            return self.s
         elif i == 1:
-            return self.p.value
+            return self.p
         elif i == 2:
-            return self.o.value
+            return self.o
         else:
             raise IndexError('index must be, 0,1 or 2 corresponding to S, P or O')
 
     def __str__(self):
-        return '[%s, %s, %s]'%(str(self.s.value),str(self.p.value),str(self.o.value))
+        return '< %s, %s, %s >'%(str(self.s.value),str(self.p.value),str(self.o.value))
 
 
 
