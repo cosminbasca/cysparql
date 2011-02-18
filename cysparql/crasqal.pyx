@@ -22,6 +22,20 @@ WHERE {
 } LIMIT 100
     ''')
 
+cpdef get_q2():
+    return Query('''
+SELECT ?seed ?modified ?common_taxon
+WHERE {
+        ?cluster <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+        ?cluster <http://purl.uniprot.org/core/member> ?member .
+        ?member <http://purl.uniprot.org/core/seedFor> ?seed .
+        ?seed <http://purl.uniprot.org/core/modified> ?modified .
+        ?cluster <http://purl.uniprot.org/core/commonTaxon> ?common_taxon .
+        ?cluster <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://purl.uniprot.org/core/Cluster> .
+} LIMIT 100
+    ''')
+
+
 def benchmark_query(debug=False):
     q = get_q()
     if debug: q.debug()
@@ -93,16 +107,20 @@ cdef class Term:
 
     
 cdef class Uri(Term):
-    cdef public char* uri
+    cdef bytes __uri__
 
     def __cinit__(self, u):
-        self.uri = <char*>u
+        self.__uri__ = u
 
     def __val__(self):
-        return <str>self.uri
+        return self.__uri__
 
     def n3(self):
-        return '<%s>'%<str>self.uri
+        return '<%s>'%self.__uri__
+
+    property uri:
+        def __get__(self):
+            return self.__uri__
 
 
 cdef class BNode(Uri):
@@ -115,34 +133,34 @@ cdef class BNode(Uri):
 
 
 cdef class Literal(Term):
-    cdef char* val
-    cdef char* lang
+    cdef bytes val
+    cdef bytes lang
     cdef Uri dtype
     
     def __cinit__(self, val, lang, dtype):
-        self.val = <char*>val
+        self.val = val
         if dtype:
-            self.lang = NULL
+            self.lang = None
             self.dtype = dtype if type(dtype) is Uri else Uri(dtype)
         else:
             self.dtype = None
-            self.lang = <char*>lang if lang else NULL
+            self.lang = lang if lang else None
 
     property lang:
         def __get__(self):
-            return <str>self.lang if self.lang != NULL else None
+            return self.lang if self.lang is not None else None
 
     property datatype:
         def __get__(self):
             return self.dtype
 
     def __val__(self):
-        return <str>self.val
+        return self.val
 
     def n3(self):
-        repr = '%s'%<str>self.val
-        if self.lang != NULL:
-            repr += '@%s'%<str>self.lang
+        repr = '%s'%self.val
+        if self.lang is not None:
+            repr += '@%s'%self.lang
         elif self.dtype:
             repr += '^^%s'%self.dtype.n3()
         return repr
@@ -464,22 +482,32 @@ cdef class QueryTripleIterator(SequenceIterator):
     def __item__(self, seq_item):
         return Triple(seq_item)
 
-
-cdef class Query:
-    cdef rasqal_world* w
-    cdef rasqal_query* rq
-    cdef int __idx__
+cdef class RasqalWorld:
+    cdef rasqal_world* rw
 
     def __cinit__(self):
-        self.w  = rasqal_new_world()
+        self.rw  = rasqal_new_world()
+
+    def __dealloc__(self):
+        rasqal_free_world(self.rw)
+
+    def __str__(self):
+        return '"RasqalWorld wrapper"'
+
+cdef class Query:
+    cdef RasqalWorld w
+    cdef rasqal_query* rq
+    cdef int __idx__
+    
+    def __cinit__(self, query, world=None):
+        self.w  = RasqalWorld() if not world else world
         self.__idx__ = 0
 
-    def __init__(self, query):
-        self.rq = rasqal_new_query(self.w, "sparql", NULL)
+    def __init__(self, query, world=None):
+        self.rq = rasqal_new_query(self.w.rw, "sparql", NULL)
         rasqal_query_prepare(self.rq, <unsigned char*>query, NULL)
 
     def __dealloc__(self):
-        rasqal_free_world(self.w)
         rasqal_free_query(self.rq)
 
     cpdef debug(self):
