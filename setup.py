@@ -6,7 +6,7 @@ from setuptools.extension import Extension
 from Cython.Distutils import build_ext
 from libutil import get_lib_dir, get_include_dir
 
-__version__ = (0,3,3)
+__version__ = (0,1,3)
 str_ver = lambda : '%d.%d.%d'%(__version__[0],__version__[1],__version__[2])
 
 setup(
