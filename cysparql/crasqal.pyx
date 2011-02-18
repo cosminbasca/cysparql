@@ -380,6 +380,14 @@ cdef class BindingsVarsIterator(SequenceIterator):
         return Variable(seq_item)
 
 
+cdef class QueryTripleIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_query_get_triple_sequence(self.rq)
+
+    def __item__(self, seq_item):
+        return Triple(seq_item)
+
+
 cdef class Query:
     cdef rasqal_world* w
     cdef rasqal_query* rq
@@ -484,23 +492,8 @@ cdef class Query:
         return Triple(<object>rasqal_query_get_triple(self.rq, i))
 
     def __iter__(self):
-        self.__idx__ = 0
-        return self
-
-    def __next__(self):
-        cdef raptor_sequence* ts =  rasqal_query_get_triple_sequence(self.rq)
-        cdef int sz = 0
-        if ts != NULL:
-            sz = raptor_sequence_size(ts)
-            if self.__idx__ == sz:
-                raise StopIteration
-            else:
-                item = Triple(<object>rasqal_query_get_triple(self.rq, self.__idx__))
-                self.__idx__ += 1
-                return item
-        else:
-            raise StopIteration
-
+        return QueryTripleIterator(<object>self.rq, None)
+    
     property triples:
         def __get__(self):
             cdef raptor_sequence* ts =  rasqal_query_get_triple_sequence(self.rq)
