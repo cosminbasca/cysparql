@@ -38,6 +38,42 @@ def benchmark(nr=1000):
 cdef inline uri_to_str(raptor_uri* u):
     return raptor_uri_as_string(u) if u != NULL else None
 
+cdef class SequenceItemType:
+    pass
+
+cdef class SequenceIterator:
+    cdef rasqal_query* rq
+    cdef void* data
+    cdef int __idx__
+
+    def __cinit__(self, rq, data):
+        self.rq = <rasqal_query*>rq
+        self.__idx__ = 0
+        self.data = NULL if data is None else <void*>data
+        
+    def __iter__(self):
+        self.__idx__ = 0
+        return self
+
+    cdef inline raptor_sequence* __seq__(self):
+        return NULL
+
+    def __item__(self, seq_item):
+        return SequenceItemType()
+
+    def __next__(self):
+        cdef raptor_sequence* seq =  self.__seq__()
+        cdef int sz = 0
+        if seq != NULL:
+            sz = raptor_sequence_size(seq)
+            if self.__idx__ == sz:
+                raise StopIteration
+            else:
+                item = self.__item__(<object>raptor_sequence_get_at(seq, self.__idx__))
+                self.__idx__ += 1
+                return item
+        else:
+            raise StopIteration
 
 #-----------------------------------------------------------------------------------------------------------------------
 # QUERY LITERAL
@@ -211,6 +247,13 @@ cdef class Prefix:
 #-----------------------------------------------------------------------------------------------------------------------
 # GRAPH PATERN
 #-----------------------------------------------------------------------------------------------------------------------
+cdef class GraphPatternIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_graph_pattern_get_sub_graph_pattern_sequence(<rasqal_graph_pattern*>self.data)
+
+    def __item__(self, seq_item):
+        return GraphPattern(<object>self.rq, seq_item)
+
 cdef class GraphPattern:
     cdef rasqal_graph_pattern* gp
     cdef rasqal_query* rq
@@ -247,6 +290,10 @@ cdef class GraphPattern:
                 sz = raptor_sequence_size(ts)
                 return [Triple(<object>raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
             return []
+
+    property sub_graph_patterns:
+        def __get__(self):
+            return GraphPatternIterator(<object>self.rq, <object>self.gp)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # SEQUENCE
@@ -305,44 +352,29 @@ cdef class Sequence:
 #-----------------------------------------------------------------------------------------------------------------------
 # QUERY
 #-----------------------------------------------------------------------------------------------------------------------
-cdef class AllVarsIterator:
-    cdef rasqal_query* rq
-    cdef int __idx__
-
-    def __cinit__(self, rq):
-        self.rq = <rasqal_query*>rq
-        self.__idx__ = 0
-
-    def __iter__(self):
-        self.__idx__ = 0
-        return self
-
-    cdef inline raptor_sequence* __vars_seq__(self):
+cdef class AllVarsIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
         return rasqal_query_get_all_variable_sequence(self.rq)
 
-    def __next__(self):
-        cdef raptor_sequence* vs =  self.__vars_seq__()
-        cdef int sz = 0
-        if vs != NULL:
-            sz = raptor_sequence_size(vs)
-            if self.__idx__ == sz:
-                raise StopIteration
-            else:
-                item = Variable(<object>raptor_sequence_get_at(vs, self.__idx__))
-                self.__idx__ += 1
-                return item
-        else:
-            raise StopIteration
+    def __item__(self, seq_item):
+        return Variable(seq_item)
 
-cdef class BoundVarsIterator(AllVarsIterator):
-    cdef inline raptor_sequence* __vars_seq__(self):
+
+cdef class BoundVarsIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
         return rasqal_query_get_bound_variable_sequence(self.rq)
 
+    def __item__(self, seq_item):
+        return Variable(seq_item)
 
-cdef class BindingsVarsIterator(AllVarsIterator):
-    cdef inline raptor_sequence* __vars_seq__(self):
+
+cdef class BindingsVarsIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
         return rasqal_query_get_bindings_variables_sequence(self.rq)
-        
+
+    def __item__(self, seq_item):
+        return Variable(seq_item)
+
 
 cdef class Query:
     cdef rasqal_world* w
@@ -366,19 +398,19 @@ cdef class Query:
 
     property vars:
         def __get__(self):
-            return AllVarsIterator(<object>self.rq)
-
+            return AllVarsIterator(<object>self.rq, None)
+            
     property bound_vars:
         def __get__(self):
-            return BoundVarsIterator(<object>self.rq)
+            return BoundVarsIterator(<object>self.rq, None)
 
     property projections:
         def __get__(self):
-            return BoundVarsIterator(<object>self.rq)
+            return BoundVarsIterator(<object>self.rq, None)
 
     property binding_vars:
         def __get__(self):
-            return BindingsVarsIterator(<object>self.rq)
+            return BindingsVarsIterator(<object>self.rq, None)
 
     cpdef get_bindings_var(self, i):
         return Variable(<object>rasqal_query_get_bindings_variable(self.rq, i))
