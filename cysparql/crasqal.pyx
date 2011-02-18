@@ -37,6 +37,10 @@ def benchmark(nr=1000):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef inline uri_to_str(raptor_uri* u):
     return raptor_uri_as_string(u) if u != NULL else None
+#
+#cdef class Uri:
+#    cdef char* uri
+#
 
 cdef class SequenceItemType:
     pass
@@ -476,6 +480,9 @@ cdef class Query:
             elif v == RASQAL_QUERY_VERB_UPDATE:
                 return 'update'
 
+    def __getitem__(self, i):
+        return Triple(<object>rasqal_query_get_triple(self.rq, i))
+
     def __iter__(self):
         self.__idx__ = 0
         return self
@@ -488,7 +495,7 @@ cdef class Query:
             if self.__idx__ == sz:
                 raise StopIteration
             else:
-                item = GraphPattern(<object>self.rq, <object>rasqal_query_get_graph_pattern(self.rq, self.__idx__))
+                item = Triple(<object>rasqal_query_get_triple(self.rq, self.__idx__))
                 self.__idx__ += 1
                 return item
         else:
