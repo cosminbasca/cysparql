@@ -37,10 +37,6 @@ def benchmark(nr=1000):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef inline uri_to_str(raptor_uri* u):
     return raptor_uri_as_string(u) if u != NULL else None
-#
-#cdef class Uri:
-#    cdef char* uri
-#
 
 cdef class SequenceItemType:
     pass
@@ -79,10 +75,82 @@ cdef class SequenceIterator:
         else:
             raise StopIteration
 
+
+#-----------------------------------------------------------------------------------------------------------------------
+# RDF TYPES
+#-----------------------------------------------------------------------------------------------------------------------
+
+cdef class Term:
+    def __val__(self):
+        return None
+
+    property value:
+        def __get__(self):
+            return self.__val__()
+
+    def n3(self):
+        return ''
+
+    
+cdef class Uri(Term):
+    cdef public char* uri
+
+    def __cinit__(self, u):
+        self.uri = <char*>u
+
+    def __val__(self):
+        return <str>self.uri
+
+    def n3(self):
+        return '<%s>'%<str>self.uri
+
+
+cdef class BNode(Uri):
+    def n3(self):
+        return '_:%s'%<str>self.uri
+
+    property id:
+        def __get__(self):
+            return <str>self.uri
+
+
+cdef class Literal(Term):
+    cdef char* val
+    cdef char* lang
+    cdef Uri dtype
+    
+    def __cinit__(self, val, lang, dtype):
+        self.val = <char*>val
+        if dtype:
+            self.lang = NULL
+            self.dtype = dtype if type(dtype) is Uri else Uri(dtype)
+        else:
+            self.dtype = None
+            self.lang = <char*>lang if lang else NULL
+
+    property lang:
+        def __get__(self):
+            return <str>self.lang if self.lang != NULL else None
+
+    property datatype:
+        def __get__(self):
+            return self.dtype
+
+    def __val__(self):
+        return <str>self.val
+
+    def n3(self):
+        repr = '%s'%<str>self.val
+        if self.lang != NULL:
+            repr += '@%s'%<str>self.lang
+        elif self.dtype:
+            repr += '^^%s'%self.dtype.n3()
+        return repr
+
 #-----------------------------------------------------------------------------------------------------------------------
 # QUERY LITERAL
 #-----------------------------------------------------------------------------------------------------------------------
-cdef class Literal:
+cdef class QueryLiteral:
     cdef rasqal_literal* l
 
     def __cinit__(self, l):
@@ -120,19 +188,24 @@ cdef class Literal:
 
     cpdef as_node(self):
         cdef rasqal_literal* node = rasqal_literal_as_node(self.l)
-        return Literal(<object>node) if node != NULL else None
+        return QueryLiteral(<object>node) if node != NULL else None
 
     def __str__(self):
         return self.as_str()
 
     property value:
         def __get__(self):
-            if self.l.type == RASQAL_LITERAL_URI or self.l.type == RASQAL_LITERAL_BLANK:
-                return rasqal_literal_as_string(self.l)
-            elif self.l.type == RASQAL_LITERAL_INTEGER:
-                return self.l.value.integer
-            elif self.l.type == RASQAL_LITERAL_FLOAT or self.l.type == RASQAL_LITERAL_DOUBLE:
-                return self.l.value.floating
+            if self.l.type == RASQAL_LITERAL_URI:
+                #return rasqal_literal_as_string(self.l)
+                return Uri(rasqal_literal_as_string(self.l))
+            elif self.l.type == RASQAL_LITERAL_BLANK:
+                return BNode(rasqal_literal_as_string(self.l))
+            elif self.l.type == RASQAL_LITERAL_STRING:
+                return Literal(<object>self.l.string, None, None)
+            #elif self.l.type == RASQAL_LITERAL_INTEGER:
+            #    return self.l.value.integer
+            #elif self.l.type == RASQAL_LITERAL_FLOAT or self.l.type == RASQAL_LITERAL_DOUBLE:
+            #    return self.l.value.floating
             elif self.l.type == RASQAL_LITERAL_VARIABLE:
                 return Variable(<object>self.l.value.variable)
             return None
@@ -162,7 +235,7 @@ cdef class Variable:
 
     property value:
         def __get__(self):
-            return Literal(<object>self.var.value) if self.var.value != NULL else None
+            return QueryLiteral(<object>self.var.value) if self.var.value != NULL else None
 
     cpdef debug(self):
         rasqal_variable_print(<rasqal_variable*>self.var, stdout)
@@ -177,6 +250,10 @@ cdef class Variable:
         def __set__(self, v):
             self.__resolved__ = v
 
+    def n3(self):
+        # not really valid N3
+        return '?%s'%<str>self.var.name
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 # TRIPLE
@@ -189,19 +266,19 @@ cdef class Triple:
 
     property s:
         def __get__(self):
-            return Literal(<object>self.t.subject) if self.t.subject != NULL else None
+            return QueryLiteral(<object>self.t.subject) if self.t.subject != NULL else None
 
     property p:
         def __get__(self):
-            return Literal(<object>self.t.predicate) if self.t.predicate != NULL else None
+            return QueryLiteral(<object>self.t.predicate) if self.t.predicate != NULL else None
 
     property o:
         def __get__(self):
-            return Literal(<object>self.t.object) if self.t.object != NULL else None
+            return QueryLiteral(<object>self.t.object) if self.t.object != NULL else None
 
     property origin:
         def __get__(self):
-            return Literal(<object>self.t.origin) if self.t.origin != NULL else None
+            return QueryLiteral(<object>self.t.origin) if self.t.origin != NULL else None
 
     cpdef debug(self):
         rasqal_triple_print(<rasqal_triple*>self.t, stdout)
@@ -502,3 +579,6 @@ cdef class Query:
                 sz = raptor_sequence_size(ts)
                 return [Triple(<object>rasqal_query_get_triple(self.rq, i)) for i in xrange(sz)]
             return []
+
+    def __str__(self):
+        return '\n'.join([ 'TRIPLE: %s, %s, %s'%(t[0].value.n3(), t[1].value.n3(), t[2].value.n3()) for t in self ])
