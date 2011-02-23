@@ -737,4 +737,4 @@ cdef class Query:
             return []
 
     def __str__(self):
-        return '\n'.join([ 'TRIPLE: %s, %s, %s'%(t[0].value.n3(), t[1].value.n3(), t[2].value.n3()) for t in self ])
+        return '\n'.join([ 'TRIPLE: %s, %s, %s'%(t[0].n3(), t[1].n3(), t[2].n3()) for t in self ])
