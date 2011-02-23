@@ -353,6 +353,20 @@ cdef class GraphPatternIterator(SequenceIterator):
     def __item__(self, seq_item):
         return GraphPattern(<object>self.rq, seq_item)
 
+ctypedef public enum GraphPatternOperator:
+    OPERATOR_UNKNOWN = RASQAL_GRAPH_PATTERN_OPERATOR_UNKNOWN
+    OPERATOR_BASIC = RASQAL_GRAPH_PATTERN_OPERATOR_BASIC
+    OPERATOR_OPTIONAL = RASQAL_GRAPH_PATTERN_OPERATOR_OPTIONAL
+    OPERATOR_UNION = RASQAL_GRAPH_PATTERN_OPERATOR_UNION
+    OPERATOR_GROUP = RASQAL_GRAPH_PATTERN_OPERATOR_GROUP
+    OPERATOR_GRAPH = RASQAL_GRAPH_PATTERN_OPERATOR_GRAPH
+    OPERATOR_FILTER = RASQAL_GRAPH_PATTERN_OPERATOR_FILTER
+    OPERATOR_LET = RASQAL_GRAPH_PATTERN_OPERATOR_LET
+    OPERATOR_SELECT = RASQAL_GRAPH_PATTERN_OPERATOR_SELECT
+    OPERATOR_SERVICE = RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE
+    OPERATOR_MINUS = RASQAL_GRAPH_PATTERN_OPERATOR_MINUS
+    OPERATOR_LAST = RASQAL_GRAPH_PATTERN_OPERATOR_LAST
+
 cdef class GraphPattern:
     cdef rasqal_graph_pattern* gp
     cdef rasqal_query* rq
@@ -393,6 +407,31 @@ cdef class GraphPattern:
     property sub_graph_patterns:
         def __get__(self):
             return GraphPatternIterator(<object>self.rq, <object>self.gp)
+
+    property operator:
+        def __get__(self):
+            return rasqal_graph_pattern_get_operator(self.gp)
+
+    cpdef is_optional(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_OPTIONAL else False
+
+    cpdef is_basic(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_BASIC else False
+
+    cpdef is_union(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_UNION else False
+
+    cpdef is_group(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_GROUP else False
+
+    cpdef is_graph(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_GRAPH else False
+
+    cpdef is_filter(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_FILTER else False
+
+    cpdef is_service(self):
+        return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE else False
 
 #-----------------------------------------------------------------------------------------------------------------------
 # SEQUENCE
