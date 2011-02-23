@@ -93,8 +93,29 @@ cdef class SequenceIterator:
 #-----------------------------------------------------------------------------------------------------------------------
 # RDF TYPES
 #-----------------------------------------------------------------------------------------------------------------------
+cdef class IdContainer:
+    cdef long __numid__
+    cdef bytes __hashid__
 
-cdef class Term:
+    def __cinit__(self):
+        self.__numid__ = 0
+        self.__hashid__ = None
+
+    property numeric_id:
+        def __get__(self):
+            return self.__numid__
+
+        def __set__(self, v):
+            self.__numid__ = <long>v
+
+    property hash_id:
+        def __get__(self):
+            return self.__hashid__
+
+        def __set__(self, v):
+            self.__hashid__ = v
+
+cdef class Term(IdContainer):
     def __val__(self):
         return None
 
@@ -231,17 +252,24 @@ cdef class QueryLiteral:
     cpdef debug(self):
         rasqal_literal_print(<rasqal_literal*>self.l, stdout)
 
-
 #-----------------------------------------------------------------------------------------------------------------------
 # VARIABLE
 #-----------------------------------------------------------------------------------------------------------------------
-cdef class Variable:
+ctypedef public enum Selectivity:
+    SELECTIVITY_UNDEFINED = -2
+    SELECTIVITY_ALL_TRIPLES = -1
+    SELECTIVITY_NO_TRIPLES = 0
+
+cdef class Variable(IdContainer):
     cdef rasqal_variable* var
     cdef bint __resolved__
+    cdef long __sel__
 
     def __cinit__(self, var):
         self.var = <rasqal_variable*>var
         self.__resolved__ = False
+        self.__sel__ = -2
+        self.__id__.numid = 0 # ids should be != 0 for vars
 
     property name:
         def __get__(self):
@@ -259,7 +287,7 @@ cdef class Variable:
         rasqal_variable_print(<rasqal_variable*>self.var, stdout)
 
     def __str__(self):
-        return '(VAR %s, %s)'%(self.name, bool(self.__resolved__))
+        return '(VAR %s, resolved=%s, selectivity=%s, id=%s)'%(self.name, bool(self.__resolved__), str(self.__sel__), str(self.__id__.numid))
 
     property resolved:
         def __get__(self):
@@ -268,9 +296,33 @@ cdef class Variable:
         def __set__(self, v):
             self.__resolved__ = v
 
+    property selectivity:
+        def __get__(self):
+            return self.__sel__
+
+        def __set__(self, v):
+            self.__sel__ = <long>v
+
     def n3(self):
         # not really valid N3
         return '?%s'%<str>self.var.name
+
+    cpdef is_not_selective(self):
+        return True if self.__sel__ == SELECTIVITY_NO_TRIPLES else False
+
+    cpdef is_all_selective(self):
+        return True if self.__sel__ == SELECTIVITY_ALL_TRIPLES else False
+
+    cpdef is_undefined_selective(self):
+        return True if self.__sel__ == SELECTIVITY_UNDEFINED else False
+
+    property id:
+        def __get__(self):
+            return self.numeric_id
+
+        def __set__(self,v):
+            self.numeric_id = <long>v
+
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -278,9 +330,11 @@ cdef class Variable:
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Triple:
     cdef rasqal_triple* t
+    cdef int __idx__
 
     def __cinit__(self, t):
         self.t = <rasqal_triple*>t
+        self.__idx__ = 0
 
     property s:
         def __get__(self):
@@ -306,16 +360,51 @@ cdef class Triple:
 
     def __getitem__(self, i):
         if i == 0:
-            return self.s
+            return self.s.value
         elif i == 1:
-            return self.p
+            return self.p.value
         elif i == 2:
-            return self.o
+            return self.o.value
+        elif i == 3:
+            return self.origin.value if self.origin else None
         else:
-            raise IndexError('index must be, 0,1 or 2 corresponding to S, P or O')
+            raise IndexError('index must be, 0,1,2 or 3 corresponding to S, P, O or ORIGIN')
 
     def __str__(self):
         return '< %s, %s, %s >'%(str(self.s.value),str(self.p.value),str(self.o.value))
+
+    def __iter__(self):
+        self.__idx__ = 0
+        return self
+
+    def __next__(self):
+        if self.__idx__ == 4:
+            raise StopIteration
+        else:
+            item = None
+            if self.__idx__ == 0:
+                item = <object>self.s.value
+            elif self.__idx__ == 1:
+                item = <object>self.p.value
+            elif self.__idx__ == 2:
+                item = <object>self.o.value
+            elif self.__idx__ == 3:
+                item = <object>self.origin.value if self.origin else None
+            self.__idx__ += 1
+            return item
+
+    cdef inline __simple_selectivity_estimation__(self):
+        return min([v.selectivity for v in self if type(v) is Variable])
+
+    property selectivity:
+        def __get__(self):
+            return self.__simple_selectivity_estimation__()
+
+    cpdef encode(self, sid, pid, oid, numeric=False):
+        accesor = 'numeric_id' if numeric else 'hash_id'
+        setattr(self.s.value, accesor, sid)
+        setattr(self.p.value, accesor, pid)
+        setattr(self.o.value, accesor, oid)
 
 
 
