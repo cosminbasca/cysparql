@@ -269,7 +269,6 @@ cdef class Variable(IdContainer):
         self.var = <rasqal_variable*>var
         self.__resolved__ = False
         self.__sel__ = -2
-        self.__id__.numid = 0 # ids should be != 0 for vars
 
     property name:
         def __get__(self):
@@ -304,8 +303,7 @@ cdef class Variable(IdContainer):
             self.__sel__ = <long>v
 
     def n3(self):
-        # not really valid N3
-        return '?%s'%<str>self.var.name
+        return '?%s'%<str>self.var.name # not really valid N3
 
     cpdef is_not_selective(self):
         return True if self.__sel__ == SELECTIVITY_NO_TRIPLES else False
@@ -406,6 +404,17 @@ cdef class Triple:
         setattr(self.p.value, accesor, pid)
         setattr(self.o.value, accesor, oid)
 
+    def n3(self, withvars=True):
+        def __n3__(itm):
+            if itm:
+                return itm.value.n3() if type(itm.value) is not Variable or (type(itm.value) is Variable and withvars) else None
+        return (__n3__(self.s), __n3__(self.p), __n3__(self.o))
+
+    def as_id_tuple(self, numeric=False):
+        def __id__(itm):
+            if itm:
+                return itm.value.numeric_id if numeric else itm.value.hash_id
+        return (__id__(self.s), __id__(self.p), __id__(self.o))
 
 
 #-----------------------------------------------------------------------------------------------------------------------

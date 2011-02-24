@@ -20,7 +20,7 @@ typedef enum {
   SELECTIVITY_NO_TRIPLES = 0
 } Selectivity;
 
-/* "cysparql/crasqal.pyx":445
+/* "cysparql/crasqal.pyx":455
  *         return GraphPattern(<object>self.rq, seq_item)
  * 
  * ctypedef public enum GraphPatternOperator:             # <<<<<<<<<<<<<<
@@ -30,7 +30,7 @@ typedef enum {
 
 typedef enum {
 
-  /* "cysparql/crasqal.pyx":457
+  /* "cysparql/crasqal.pyx":467
  *     OPERATOR_SERVICE = RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE
  *     OPERATOR_MINUS = RASQAL_GRAPH_PATTERN_OPERATOR_MINUS
  *     OPERATOR_LAST = RASQAL_GRAPH_PATTERN_OPERATOR_LAST             # <<<<<<<<<<<<<<
