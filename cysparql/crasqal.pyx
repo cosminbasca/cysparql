@@ -3,6 +3,7 @@ from cython cimport *
 from cpython cimport *
 from libc.stdio cimport *
 from libc.stdlib cimport *
+from itertools import *
 import os
 import sys
 
@@ -523,6 +524,7 @@ cdef class GraphPattern:
     cdef int                    __idx__
     cdef public object          triples
     cdef public object          sub_graph_patterns
+    cdef public object          flattened_triples
     
     def __iter__(self):
         return iter(self.triples)
@@ -536,6 +538,15 @@ cdef class GraphPattern:
             return item
 
     def __get_triples__(self):
+        triples = []
+        cdef rasqal_triple* t = NULL                                
+        for i in count():
+            t = rasqal_graph_pattern_get_triple(self.gp,i)
+            if t == NULL: break
+            triples.append(new_triple(t))
+        return triples
+        
+    def __get_flattened_triples__(self):            
         cdef raptor_sequence* ts = rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
         cdef int sz = 0
         if ts != NULL:
@@ -575,7 +586,7 @@ cdef class GraphPattern:
 
     cpdef is_service(self):
         return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE else False
-
+    
 cdef GraphPattern new_graphpattern(rasqal_query* rq, rasqal_graph_pattern* gp):
     cdef GraphPattern grp = GraphPattern.__new__(GraphPattern)
     grp.gp                      = gp
@@ -583,6 +594,7 @@ cdef GraphPattern new_graphpattern(rasqal_query* rq, rasqal_graph_pattern* gp):
     grp.__idx__                 = 0
     grp.triples                 = grp.__get_triples__()
     grp.sub_graph_patterns      = grp.__get_subgraph_patterns__()
+    grp.flattened_triples       = grp.__get_flattened_triples__()
     return grp
 #-----------------------------------------------------------------------------------------------------------------------
 # SEQUENCE
