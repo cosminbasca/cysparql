@@ -523,16 +523,7 @@ cdef class GraphPattern:
     cdef int                    __idx__
     cdef public object          triples
     cdef public object          sub_graph_patterns
-
-    def __cinit__(self, rq, gp):
-        self.gp = <rasqal_graph_pattern*>gp
-        self.rq = <rasqal_query*>rq
-        self.__idx__ = 0
-
-    def __init__(self, rq, gp):
-        self.triples            = self.__get_triples__()
-        self.sub_graph_patterns = list(GraphPatternIterator(<object>self.rq, <object>self.gp))
-
+    
     def __iter__(self):
         return iter(self.triples)
 
@@ -550,6 +541,14 @@ cdef class GraphPattern:
         if ts != NULL:
             sz = raptor_sequence_size(ts)
             return [new_triple(<rasqal_triple*>raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
+        return []
+
+    def __get_subgraph_patterns__(self):
+        cdef raptor_sequence* seq   = rasqal_graph_pattern_get_sub_graph_pattern_sequence(self.gp)
+        cdef int sz = 0
+        if seq != NULL:
+            sz = raptor_sequence_size(seq)
+            return [new_graphpattern(self.rq, <rasqal_graph_pattern*>raptor_sequence_get_at(seq, i)) for i in xrange(sz)]
         return []
         
     property operator:
@@ -577,6 +576,14 @@ cdef class GraphPattern:
     cpdef is_service(self):
         return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE else False
 
+cdef GraphPattern new_graphpattern(rasqal_query* rq, rasqal_graph_pattern* gp):
+    cdef GraphPattern grp = GraphPattern.__new__(GraphPattern)
+    grp.gp                      = gp
+    grp.rq                      = rq
+    grp.__idx__                 = 0
+    grp.triples                 = grp.__get_triples__()
+    grp.sub_graph_patterns      = grp.__get_subgraph_patterns__()
+    return grp
 #-----------------------------------------------------------------------------------------------------------------------
 # SEQUENCE
 #-----------------------------------------------------------------------------------------------------------------------
@@ -698,7 +705,7 @@ cdef class Query:
         return []
 
     def __get_graph_pattern__(self):
-        return GraphPattern(<object>self.rq, <object>rasqal_query_get_query_graph_pattern(self.rq))
+        return new_graphpattern(self.rq, rasqal_query_get_query_graph_pattern(self.rq))
 
     property label:
         def __get__(self):
@@ -810,7 +817,7 @@ cdef class QueryWrapper:
 
     property graph_pattern:
         def __get__(self):
-            return GraphPattern(<object>self.rq, <object>rasqal_query_get_query_graph_pattern(self.rq))
+            return new_graphpattern(self.rq, rasqal_query_get_query_graph_pattern(self.rq))
 
     property label:
         def __get__(self):
