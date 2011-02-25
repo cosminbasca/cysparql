@@ -6,8 +6,8 @@
 #define __PYX_EXTERN_C extern
 #endif
 
-/* "cysparql/crasqal.pyx":258
- * # VARIABLE
+/* "cysparql/crasqal.pyx":53
+ * # Enums - CONSTANTS
  * #-----------------------------------------------------------------------------------------------------------------------
  * ctypedef public enum Selectivity:             # <<<<<<<<<<<<<<
  *     SELECTIVITY_UNDEFINED = -2
@@ -20,8 +20,8 @@ typedef enum {
   SELECTIVITY_NO_TRIPLES = 0
 } Selectivity;
 
-/* "cysparql/crasqal.pyx":455
- *         return GraphPattern(<object>self.rq, seq_item)
+/* "cysparql/crasqal.pyx":58
+ *     SELECTIVITY_NO_TRIPLES = 0
  * 
  * ctypedef public enum GraphPatternOperator:             # <<<<<<<<<<<<<<
  *     OPERATOR_UNKNOWN = RASQAL_GRAPH_PATTERN_OPERATOR_UNKNOWN
@@ -30,12 +30,12 @@ typedef enum {
 
 typedef enum {
 
-  /* "cysparql/crasqal.pyx":467
+  /* "cysparql/crasqal.pyx":70
  *     OPERATOR_SERVICE = RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE
  *     OPERATOR_MINUS = RASQAL_GRAPH_PATTERN_OPERATOR_MINUS
  *     OPERATOR_LAST = RASQAL_GRAPH_PATTERN_OPERATOR_LAST             # <<<<<<<<<<<<<<
  * 
- * cdef class GraphPattern:
+ * #-----------------------------------------------------------------------------------------------------------------------
  */
   OPERATOR_UNKNOWN = RASQAL_GRAPH_PATTERN_OPERATOR_UNKNOWN,
   OPERATOR_BASIC = RASQAL_GRAPH_PATTERN_OPERATOR_BASIC,

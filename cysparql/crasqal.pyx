@@ -46,8 +46,31 @@ def benchmark(nr=1000):
     total_secs = t.timeit(number=nr)
     print 'Query parsing took %s ms, with a total %s seconds for %s runs.'%(str(1000 * total_secs/nr), str(total_secs), str(nr))
 
+
 #-----------------------------------------------------------------------------------------------------------------------
-# other types
+# Enums - CONSTANTS
+#-----------------------------------------------------------------------------------------------------------------------
+ctypedef public enum Selectivity:
+    SELECTIVITY_UNDEFINED = -2
+    SELECTIVITY_ALL_TRIPLES = -1
+    SELECTIVITY_NO_TRIPLES = 0
+
+ctypedef public enum GraphPatternOperator:
+    OPERATOR_UNKNOWN = RASQAL_GRAPH_PATTERN_OPERATOR_UNKNOWN
+    OPERATOR_BASIC = RASQAL_GRAPH_PATTERN_OPERATOR_BASIC
+    OPERATOR_OPTIONAL = RASQAL_GRAPH_PATTERN_OPERATOR_OPTIONAL
+    OPERATOR_UNION = RASQAL_GRAPH_PATTERN_OPERATOR_UNION
+    OPERATOR_GROUP = RASQAL_GRAPH_PATTERN_OPERATOR_GROUP
+    OPERATOR_GRAPH = RASQAL_GRAPH_PATTERN_OPERATOR_GRAPH
+    OPERATOR_FILTER = RASQAL_GRAPH_PATTERN_OPERATOR_FILTER
+    OPERATOR_LET = RASQAL_GRAPH_PATTERN_OPERATOR_LET
+    OPERATOR_SELECT = RASQAL_GRAPH_PATTERN_OPERATOR_SELECT
+    OPERATOR_SERVICE = RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE
+    OPERATOR_MINUS = RASQAL_GRAPH_PATTERN_OPERATOR_MINUS
+    OPERATOR_LAST = RASQAL_GRAPH_PATTERN_OPERATOR_LAST
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Iterators (directly on rasqal sequences)
 #-----------------------------------------------------------------------------------------------------------------------
 cdef inline uri_to_str(raptor_uri* u):
     return raptor_uri_as_string(u) if u != NULL else None
@@ -64,7 +87,7 @@ cdef class SequenceIterator:
         self.rq = <rasqal_query*>rq
         self.__idx__ = 0
         self.data = NULL if data is None else <void*>data
-        
+
     def __iter__(self):
         self.__idx__ = 0
         return self
@@ -89,6 +112,59 @@ cdef class SequenceIterator:
         else:
             raise StopIteration
 
+cdef class AllVarsIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_query_get_all_variable_sequence(self.rq)
+
+    def __item__(self, seq_item):
+        return Variable(seq_item)
+
+
+cdef class BoundVarsIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_query_get_bound_variable_sequence(self.rq)
+
+    def __item__(self, seq_item):
+        return Variable(seq_item)
+
+
+cdef class BindingsVarsIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_query_get_bindings_variables_sequence(self.rq)
+
+    def __item__(self, seq_item):
+        return Variable(seq_item)
+
+
+cdef class QueryTripleIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_query_get_triple_sequence(self.rq)
+
+    def __item__(self, seq_item):
+        return Triple(seq_item)
+
+
+cdef class GraphPatternIterator(SequenceIterator):
+    cdef inline raptor_sequence* __seq__(self):
+        return rasqal_graph_pattern_get_sub_graph_pattern_sequence(<rasqal_graph_pattern*>self.data)
+
+    def __item__(self, seq_item):
+        return GraphPattern(<object>self.rq, seq_item)
+
+#-----------------------------------------------------------------------------------------------------------------------
+# RASQAL WORLD
+#-----------------------------------------------------------------------------------------------------------------------
+cdef class RasqalWorld:
+    cdef rasqal_world* rw
+
+    def __cinit__(self):
+        self.rw  = rasqal_new_world()
+
+    def __dealloc__(self):
+        rasqal_free_world(self.rw)
+
+    def __str__(self):
+        return '"RasqalWorld wrapper"'
 
 #-----------------------------------------------------------------------------------------------------------------------
 # RDF TYPES
@@ -115,6 +191,7 @@ cdef class IdContainer:
         def __set__(self, v):
             self.__hashid__ = v
 
+
 cdef class Term(IdContainer):
     def __val__(self):
         return None
@@ -126,7 +203,6 @@ cdef class Term(IdContainer):
     def n3(self):
         return ''
 
-    
 cdef class Uri(Term):
     cdef bytes __uri__
 
@@ -191,9 +267,6 @@ cdef class Literal(Term):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class QueryLiteral:
     cdef rasqal_literal* l
-
-    def __cinit__(self, l):
-        self.l = <rasqal_literal*>l
     
     property language:
         def __get__(self):
@@ -227,7 +300,7 @@ cdef class QueryLiteral:
 
     cpdef as_node(self):
         cdef rasqal_literal* node = rasqal_literal_as_node(self.l)
-        return QueryLiteral(<object>node) if node != NULL else None
+        return new_queryliteral(node) if node != NULL else None
 
     def __str__(self):
         return self.as_str()
@@ -252,14 +325,14 @@ cdef class QueryLiteral:
     cpdef debug(self):
         rasqal_literal_print(<rasqal_literal*>self.l, stdout)
 
+
+cdef QueryLiteral new_queryliteral(rasqal_literal* l):
+    cdef QueryLiteral ql = QueryLiteral.__new__(QueryLiteral)
+    ql.l = l
+    return ql
 #-----------------------------------------------------------------------------------------------------------------------
 # VARIABLE
 #-----------------------------------------------------------------------------------------------------------------------
-ctypedef public enum Selectivity:
-    SELECTIVITY_UNDEFINED = -2
-    SELECTIVITY_ALL_TRIPLES = -1
-    SELECTIVITY_NO_TRIPLES = 0
-
 cdef class Variable(IdContainer):
     cdef rasqal_variable* var
     cdef bint __resolved__
@@ -280,13 +353,13 @@ cdef class Variable(IdContainer):
 
     property value:
         def __get__(self):
-            return QueryLiteral(<object>self.var.value) if self.var.value != NULL else None
+            return new_queryliteral(self.var.value) if self.var.value != NULL else None
 
     cpdef debug(self):
         rasqal_variable_print(<rasqal_variable*>self.var, stdout)
 
     def __str__(self):
-        return '(VAR %s, resolved=%s, selectivity=%s, id=%s)'%(self.name, bool(self.__resolved__), str(self.__sel__), str(self.__id__.numid))
+        return '(VAR %s, resolved=%s, selectivity=%s, id=%s)'%(self.name, bool(self.__resolved__), str(self.__sel__), str(self.numeric_id))
 
     property resolved:
         def __get__(self):
@@ -322,54 +395,41 @@ cdef class Variable(IdContainer):
             self.numeric_id = <long>v
 
 
-
 #-----------------------------------------------------------------------------------------------------------------------
 # TRIPLE
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Triple:
-    cdef rasqal_triple* t
-    cdef int __idx__
-
-    def __cinit__(self, t):
-        self.t = <rasqal_triple*>t
-        self.__idx__ = 0
-
-    property s:
-        def __get__(self):
-            return QueryLiteral(<object>self.t.subject) if self.t.subject != NULL else None
-
-    property p:
-        def __get__(self):
-            return QueryLiteral(<object>self.t.predicate) if self.t.predicate != NULL else None
-
-    property o:
-        def __get__(self):
-            return QueryLiteral(<object>self.t.object) if self.t.object != NULL else None
-
-    property origin:
-        def __get__(self):
-            return QueryLiteral(<object>self.t.origin) if self.t.origin != NULL else None
+    cdef rasqal_triple*         t
+    cdef int                    __idx__
+    cdef public QueryLiteral    s_qliteral
+    cdef public IdContainer     s
+    cdef public QueryLiteral    p_qliteral
+    cdef public IdContainer     p
+    cdef public QueryLiteral    o_qliteral
+    cdef public IdContainer     o
+    cdef public QueryLiteral    origin_qliteral
+    cdef public IdContainer     origin
 
     cpdef debug(self):
         rasqal_triple_print(<rasqal_triple*>self.t, stdout)
 
     def as_tuple(self):
-        return (self.s.value, self.p.value, self.o.value)
+        return (self.s, self.p, self.o)
 
     def __getitem__(self, i):
         if i == 0:
-            return self.s.value
+            return self.s
         elif i == 1:
-            return self.p.value
+            return self.p
         elif i == 2:
-            return self.o.value
+            return self.o
         elif i == 3:
-            return self.origin.value if self.origin else None
+            return self.origin
         else:
             raise IndexError('index must be, 0,1,2 or 3 corresponding to S, P, O or ORIGIN')
 
     def __str__(self):
-        return '< %s, %s, %s >'%(str(self.s.value),str(self.p.value),str(self.o.value))
+        return '< %s, %s, %s >'%(str(self.s), str(self.p), str(self.o))
 
     def __iter__(self):
         self.__idx__ = 0
@@ -381,13 +441,13 @@ cdef class Triple:
         else:
             item = None
             if self.__idx__ == 0:
-                item = <object>self.s.value
+                item = <object>self.s
             elif self.__idx__ == 1:
-                item = <object>self.p.value
+                item = <object>self.p
             elif self.__idx__ == 2:
-                item = <object>self.o.value
+                item = <object>self.o
             elif self.__idx__ == 3:
-                item = <object>self.origin.value if self.origin else None
+                item = <object>self.origin
             self.__idx__ += 1
             return item
 
@@ -407,21 +467,34 @@ cdef class Triple:
     def n3(self, withvars=True):
         def __n3__(itm):
             if itm:
-                return itm.value.n3() if type(itm.value) is not Variable or (type(itm.value) is Variable and withvars) else None
+                return itm.n3() if type(itm) is not Variable or (type(itm) is Variable and withvars) else None
         return (__n3__(self.s), __n3__(self.p), __n3__(self.o))
 
     def as_id_tuple(self, numeric=False):
         def __id__(itm):
             if itm:
-                return itm.value.numeric_id if numeric else itm.value.hash_id
+                return itm.numeric_id if numeric else itm.hash_id
         return (__id__(self.s), __id__(self.p), __id__(self.o))
 
-
+# factory method to construct - faster than python code with __init__ and __cinit__
+cdef Triple new_triple(rasqal_triple* t):
+    cdef Triple tp = Triple.__new__(Triple)
+    tp.t        = t
+    tp.__idx__  = 0
+    tp.s_qliteral         = new_queryliteral(t.subject) if t.subject != NULL else None
+    tp.s                  = tp.s_qliteral.value
+    tp.p_qliteral         = new_queryliteral(t.predicate) if t.predicate != NULL else None
+    tp.p                  = tp.p_qliteral.value
+    tp.o_qliteral         = new_queryliteral(t.object) if t.object != NULL else None
+    tp.o                  = tp.o_qliteral.value
+    tp.origin_qliteral    = new_queryliteral(t.origin) if t.origin != NULL else None
+    tp.origin             = tp.origin_qliteral.value if tp.origin_qliteral else None
+    return tp
 #-----------------------------------------------------------------------------------------------------------------------
 # PREFIX
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Prefix:
-    cdef rasqal_prefix* p
+    cdef rasqal_prefix*     p
 
     def __cinit__(self, p):
         self.p = <rasqal_prefix*>p
@@ -444,68 +517,41 @@ cdef class Prefix:
 #-----------------------------------------------------------------------------------------------------------------------
 # GRAPH PATERN
 #-----------------------------------------------------------------------------------------------------------------------
-cdef class GraphPatternIterator(SequenceIterator):
-    cdef inline raptor_sequence* __seq__(self):
-        return rasqal_graph_pattern_get_sub_graph_pattern_sequence(<rasqal_graph_pattern*>self.data)
-
-    def __item__(self, seq_item):
-        return GraphPattern(<object>self.rq, seq_item)
-
-ctypedef public enum GraphPatternOperator:
-    OPERATOR_UNKNOWN = RASQAL_GRAPH_PATTERN_OPERATOR_UNKNOWN
-    OPERATOR_BASIC = RASQAL_GRAPH_PATTERN_OPERATOR_BASIC
-    OPERATOR_OPTIONAL = RASQAL_GRAPH_PATTERN_OPERATOR_OPTIONAL
-    OPERATOR_UNION = RASQAL_GRAPH_PATTERN_OPERATOR_UNION
-    OPERATOR_GROUP = RASQAL_GRAPH_PATTERN_OPERATOR_GROUP
-    OPERATOR_GRAPH = RASQAL_GRAPH_PATTERN_OPERATOR_GRAPH
-    OPERATOR_FILTER = RASQAL_GRAPH_PATTERN_OPERATOR_FILTER
-    OPERATOR_LET = RASQAL_GRAPH_PATTERN_OPERATOR_LET
-    OPERATOR_SELECT = RASQAL_GRAPH_PATTERN_OPERATOR_SELECT
-    OPERATOR_SERVICE = RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE
-    OPERATOR_MINUS = RASQAL_GRAPH_PATTERN_OPERATOR_MINUS
-    OPERATOR_LAST = RASQAL_GRAPH_PATTERN_OPERATOR_LAST
-
 cdef class GraphPattern:
-    cdef rasqal_graph_pattern* gp
-    cdef rasqal_query* rq
-    cdef int __idx__
+    cdef rasqal_graph_pattern*  gp
+    cdef rasqal_query*          rq
+    cdef int                    __idx__
+    cdef public object          triples
+    cdef public object          sub_graph_patterns
 
     def __cinit__(self, rq, gp):
         self.gp = <rasqal_graph_pattern*>gp
         self.rq = <rasqal_query*>rq
         self.__idx__ = 0
 
+    def __init__(self, rq, gp):
+        self.triples            = self.__get_triples__()
+        self.sub_graph_patterns = list(GraphPatternIterator(<object>self.rq, <object>self.gp))
+
     def __iter__(self):
-        self.__idx__ = 0
-        return self
+        return iter(self.triples)
 
     def __next__(self):
-        cdef raptor_sequence* ts =  rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
+        if self.__idx__ == len(self.triples):
+            raise StopIteration
+        else:
+            item = self.triples[self.__idx__]
+            self.__idx__ += 1
+            return item
+
+    def __get_triples__(self):
+        cdef raptor_sequence* ts = rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
         cdef int sz = 0
         if ts != NULL:
             sz = raptor_sequence_size(ts)
-            if self.__idx__ == sz:
-                raise StopIteration
-            else:
-                item = Triple(<object>rasqal_graph_pattern_get_triple(self.gp, self.__idx__))
-                self.__idx__ += 1
-                return item
-        else:
-            raise StopIteration
-
-    property triples:
-        def __get__(self):
-            cdef raptor_sequence* ts = rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
-            cdef int sz = 0
-            if ts != NULL:
-                sz = raptor_sequence_size(ts)
-                return [Triple(<object>raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
-            return []
-
-    property sub_graph_patterns:
-        def __get__(self):
-            return GraphPatternIterator(<object>self.rq, <object>self.gp)
-
+            return [new_triple(<rasqal_triple*>raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
+        return []
+        
     property operator:
         def __get__(self):
             return rasqal_graph_pattern_get_operator(self.gp)
@@ -535,8 +581,8 @@ cdef class GraphPattern:
 # SEQUENCE
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Sequence:
-    cdef raptor_sequence* sq
-    cdef int __idx__
+    cdef raptor_sequence*   sq
+    cdef int                __idx__
 
     def __cinit__(self, sq):
         self.sq = <raptor_sequence*>sq
@@ -584,54 +630,126 @@ cdef class Sequence:
             self.__idx__ += 1
             return item
 
-
 #-----------------------------------------------------------------------------------------------------------------------
-# QUERY
+#--- QUERY - KEEPS STATE (all are copies)
 #-----------------------------------------------------------------------------------------------------------------------
-cdef class AllVarsIterator(SequenceIterator):
-    cdef inline raptor_sequence* __seq__(self):
-        return rasqal_query_get_all_variable_sequence(self.rq)
+cdef class Query:
+    cdef RasqalWorld            w
+    cdef rasqal_query*          rq
+    cdef int                    __idx__
+    cdef public object          vars
+    cdef public object          bound_vars
+    cdef public object          projections
+    cdef public object          binding_vars
+    cdef public object          prefixes
+    cdef public object          triples
+    cdef public GraphPattern    graph_pattern
 
-    def __item__(self, seq_item):
-        return Variable(seq_item)
-
-
-cdef class BoundVarsIterator(SequenceIterator):
-    cdef inline raptor_sequence* __seq__(self):
-        return rasqal_query_get_bound_variable_sequence(self.rq)
-
-    def __item__(self, seq_item):
-        return Variable(seq_item)
-
-
-cdef class BindingsVarsIterator(SequenceIterator):
-    cdef inline raptor_sequence* __seq__(self):
-        return rasqal_query_get_bindings_variables_sequence(self.rq)
-
-    def __item__(self, seq_item):
-        return Variable(seq_item)
-
-
-cdef class QueryTripleIterator(SequenceIterator):
-    cdef inline raptor_sequence* __seq__(self):
-        return rasqal_query_get_triple_sequence(self.rq)
-
-    def __item__(self, seq_item):
-        return Triple(seq_item)
-
-cdef class RasqalWorld:
-    cdef rasqal_world* rw
-
-    def __cinit__(self):
-        self.rw  = rasqal_new_world()
+    def __cinit__(self, query, world=None):
+        self.w  = RasqalWorld() if not world else world
+        self.__idx__ = 0
+        self.rq = rasqal_new_query(self.w.rw, "sparql", NULL)
+        rasqal_query_prepare(self.rq, <unsigned char*>query, NULL)
+        
+    def __init__(self, query, world=None):
+        self.triples        = self.__get_triples__()
+        self.prefixes       = self.__get_prefixes__()
+        self.graph_pattern  = self.__get_graph_pattern__()
+        self.vars           = list(AllVarsIterator(<object>self.rq, None))
+        self.bound_vars     = list(BoundVarsIterator(<object>self.rq, None))
+        self.projections    = self.bound_vars
+        self.binding_vars   = list(BindingsVarsIterator(<object>self.rq, None))
 
     def __dealloc__(self):
-        rasqal_free_world(self.rw)
+        rasqal_free_query(self.rq)
+
+    cpdef debug(self):
+        rasqal_query_print(self.rq, stdout)
+
+    cpdef get_bindings_var(self, i):
+        return Variable(<object>rasqal_query_get_bindings_variable(self.rq, i))
+
+    cpdef get_var(self, i):
+        return Variable(<object>rasqal_query_get_variable(self.rq, i))
+
+    cpdef has_var(self, char* name):
+        return True if rasqal_query_has_variable(self.rq, <unsigned char*>name) > 0 else False
+
+    cpdef get_triple(self, i):
+        return new_triple(rasqal_query_get_triple(self.rq, i))
+
+    cpdef get_prefix(self, i):
+        return Prefix(<object>rasqal_query_get_prefix(self.rq, i))
+
+    def __get_triples__(self):
+        cdef raptor_sequence* ts =  rasqal_query_get_triple_sequence(self.rq)
+        cdef int sz = 0
+        if ts != NULL:
+            sz = raptor_sequence_size(ts)
+            return [new_triple(rasqal_query_get_triple(self.rq, i)) for i in xrange(sz)]
+        return []
+
+    def __get_prefixes__(self):
+        cdef raptor_sequence* ps =  rasqal_query_get_prefix_sequence(self.rq)
+        cdef int sz = 0
+        if ps != NULL:
+            sz = raptor_sequence_size(ps)
+            return [Prefix(<object>rasqal_query_get_prefix(self.rq, i)) for i in xrange(sz)]
+        return []
+
+    def __get_graph_pattern__(self):
+        return GraphPattern(<object>self.rq, <object>rasqal_query_get_query_graph_pattern(self.rq))
+
+    property label:
+        def __get__(self):
+            return rasqal_query_get_label(self.rq)
+
+    property limit:
+        def __get__(self):
+            return rasqal_query_get_limit(self.rq)
+
+    property name:
+        def __get__(self):
+            return rasqal_query_get_name(self.rq)
+
+    property offset:
+        def __get__(self):
+            return rasqal_query_get_offset(self.rq)
+
+    property verb:
+        def __get__(self):
+            v = rasqal_query_get_verb(self.rq)
+            if v == RASQAL_QUERY_VERB_UNKNOWN:
+                return 'unknown'
+            elif v == RASQAL_QUERY_VERB_SELECT:
+                return 'select'
+            elif v == RASQAL_QUERY_VERB_CONSTRUCT:
+                return 'construct'
+            elif v == RASQAL_QUERY_VERB_DESCRIBE:
+                return 'describe'
+            elif v == RASQAL_QUERY_VERB_ASK:
+                return 'ask'
+            elif v == RASQAL_QUERY_VERB_DELETE:
+                return 'delete'
+            elif v == RASQAL_QUERY_VERB_INSERT:
+                return 'insert'
+            elif v == RASQAL_QUERY_VERB_UPDATE:
+                return 'update'
+
+    def __getitem__(self, i):
+        return self.triples[i]
+
+    def __iter__(self):
+        return iter(self.triples)
 
     def __str__(self):
-        return '"RasqalWorld wrapper"'
+        return '\n'.join([ 'TRIPLE: %s, %s, %s'%(t[0].n3(), t[1].n3(), t[2].n3()) for t in self ])
 
-cdef class Query:
+
+#-----------------------------------------------------------------------------------------------------------------------
+#--- QUERY WRAPPER OVER RASQAL --- KEEPS NO STATE !
+#-----------------------------------------------------------------------------------------------------------------------
+cdef class QueryWrapper:
     cdef RasqalWorld w
     cdef rasqal_query* rq
     cdef int __idx__
@@ -676,7 +794,7 @@ cdef class Query:
         return True if rasqal_query_has_variable(self.rq, <unsigned char*>name) > 0 else False
 
     cpdef get_triple(self, i):
-        return Triple(<object>rasqal_query_get_triple(self.rq, i))
+        return new_triple(rasqal_query_get_triple(self.rq, i))
 
     cpdef get_prefix(self, i):
         return Prefix(<object>rasqal_query_get_prefix(self.rq, i))
@@ -731,7 +849,7 @@ cdef class Query:
                 return 'update'
 
     def __getitem__(self, i):
-        return Triple(<object>rasqal_query_get_triple(self.rq, i))
+        return new_triple(rasqal_query_get_triple(self.rq, i))
 
     def __iter__(self):
         return QueryTripleIterator(<object>self.rq, None)
@@ -742,7 +860,7 @@ cdef class Query:
             cdef int sz = 0
             if ts != NULL:
                 sz = raptor_sequence_size(ts)
-                return [Triple(<object>rasqal_query_get_triple(self.rq, i)) for i in xrange(sz)]
+                return [new_triple(rasqal_query_get_triple(self.rq, i)) for i in xrange(sz)]
             return []
 
     def __str__(self):
