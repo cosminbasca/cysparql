@@ -1,31 +1,54 @@
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
+import os
 from setuptools import setup
 from setuptools.extension import Extension
 from Cython.Distutils import build_ext
-from libutil import get_lib_dir, get_include_dir
+from setup_util import get_lib_dir, get_include_dir
 
-__version__ = (0,1,4)
-str_ver = lambda : '%d.%d.%d'%(__version__[0],__version__[1],__version__[2])
+str_version = None
+execfile('cysparql/__version__.py')
+
+def extension(name, libs, language='c', options=[], c_sources=[]):
+    extension_name = 'cysparql.%s'%name
+    extension_path = 'cysparql/%s.pyx'%('/'.join(name.split('.')))
+    return Extension(extension_name,
+                     [extension_path,] + c_sources,
+                     language           = language,
+                     libraries          = list(libs),
+                     library_dirs 	    = get_lib_dir(),
+                     include_dirs       = get_include_dir(),
+                     extra_compile_args = ['-fPIC']+options)
+
+private_deps = []
+
+pip_deps = [
+    'cython>=0.18',
+    'rdflib>=3.2.1'
+]
+
+manual_deps = []
 
 setup(
     name ='cysparql',
-    version = str_ver(),
-    description = 'rasqal cython wrapper',
+    version = str_version,
+    description = 'cython wrapper of rasqal - an efficient and fast C SPARQL parser',
     author = 'Cosmin Basca',
     author_email = 'basca@ifi.uzh.ch',
     cmdclass = {'build_ext': build_ext},
     packages = ["cysparql"],
+    package_dir = {"cysparql":"cysparql"},
+    # package_data = {"cysparql": []},
     ext_modules = [
-                   Extension('cysparql.crasqal',['cysparql/crasqal.pyx',
-                                                 'cysparql/crasqal.pxd',
-                                                ],
-                             libraries 		    = ['raptor', 'rasqal'],
-                             library_dirs 	    = get_lib_dir(),
-                             include_dirs       = get_include_dir(),
-                             extra_compile_args = ['-fPIC']),
-                   ],
-    install_requires = ['cython>=0.14'],
-    #scripts = [], # no scripts
+            extension('query' , ['raptor', 'rasqal'], options=['-w']),
+    ],
+    install_requires = manual_deps + pip_deps + private_deps,
+    include_package_data = True,
+#    exclude_package_data = { 'cysparql': ['*.c', '*.cpp', '*.h', '*.pyx', '*.pxd', '*.y', '*.l', '*.pxi', '*.log'],
+#                             'dist': ['*.*']},
+    zip_safe = False,
+    scripts = [
+        # 'scripts/cytt_importer.py',
+    ],
 )

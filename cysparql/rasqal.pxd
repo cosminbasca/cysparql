@@ -1,58 +1,14 @@
 from libc.stdio cimport *
 from libc.stdlib cimport *
+from raptor cimport *
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
-cdef extern from "raptor2/raptor.h":
-    ctypedef struct raptor_world:
-        pass
-
-    ctypedef struct raptor_uri:
-        pass
-
-    ctypedef struct raptor_sequence:
-        pass
-
-    ctypedef int (*raptor_data_compare_handler) (void *data1, void *data2)
-
-    #//--------------------------------------------------------------------------------------------------------
-    #// uri
-    #//--------------------------------------------------------------------------------------------------------
-    raptor_uri* raptor_new_uri(raptor_world *world, unsigned char *uri_string)
-    void raptor_free_uri(raptor_uri *uri)
-    raptor_uri* raptor_uri_copy(raptor_uri *uri)
-    unsigned char* raptor_uri_filename_to_uri_string(char *filename)
-    unsigned char* raptor_uri_as_string(raptor_uri *uri)
-    unsigned char* raptor_uri_to_string(raptor_uri *uri)
-    unsigned char* raptor_uri_as_counted_string(raptor_uri *uri, size_t *len_p)
-
-
-    #//--------------------------------------------------------------------------------------------------------
-    #// sequence
-    #//--------------------------------------------------------------------------------------------------------
-    void raptor_free_sequence(raptor_sequence *seq)
-    void* raptor_sequence_delete_at(raptor_sequence *seq, int idx)
-    int raptor_sequence_size(raptor_sequence *seq)
-    int raptor_sequence_set_at(raptor_sequence *seq, int idx, void *data)
-    int raptor_sequence_push(raptor_sequence *seq, void *data)
-    int raptor_sequence_shift(raptor_sequence *seq, void *data)
-    void* raptor_sequence_get_at(raptor_sequence *seq, int idx)
-    void* raptor_sequence_pop(raptor_sequence *seq)
-    void* raptor_sequence_unshift(raptor_sequence *seq)
-    void  raptor_sequence_sort(raptor_sequence *seq, raptor_data_compare_handler compare)
-    int raptor_sequence_print(raptor_sequence *seq, FILE *fh)
-    int raptor_sequence_join(raptor_sequence *dest, raptor_sequence *src)
-
-    #//--------------------------------------------------------------------------------------------------------
-    #// memory
-    #//--------------------------------------------------------------------------------------------------------
-    void raptor_free_memory(void *ptr)
-
 #//-----------------------------------------------------------------------------------------------------------------------
 #// the rasqal sparql parsing library
 #//-----------------------------------------------------------------------------------------------------------------------
-cdef extern from "rasqal/rasqal.h":
+cdef extern from "rasqal/rasqal.h" nogil:
     #// forward declarations
     ctypedef struct rasqal_variable
     ctypedef struct rasqal_xsd_decimal
@@ -69,8 +25,9 @@ cdef extern from "rasqal/rasqal.h":
     ctypedef struct rasqal_variables_table
     ctypedef struct rasqal_expression
     ctypedef struct raptor_iostream
+    ctypedef struct rasqal_projection
+    ctypedef struct rasqal_solution_modifier
 
-cdef extern from "rasqal/rasqal.h":
     #//enums
     ctypedef enum rasqal_feature:
         RASQAL_FEATURE_NO_NET
@@ -164,6 +121,89 @@ cdef extern from "rasqal/rasqal.h":
         RASQAL_DATA_GRAPH_NAMED
         RASQAL_DATA_GRAPH_BACKGROUND
 
+    ctypedef enum rasqal_op:
+        RASQAL_EXPR_UNKNOWN
+        RASQAL_EXPR_AND
+        RASQAL_EXPR_OR
+        RASQAL_EXPR_EQ
+        RASQAL_EXPR_NEQ
+        RASQAL_EXPR_LT
+        RASQAL_EXPR_GT
+        RASQAL_EXPR_LE
+        RASQAL_EXPR_GE
+        RASQAL_EXPR_UMINUS
+        RASQAL_EXPR_PLUS
+        RASQAL_EXPR_MINUS
+        RASQAL_EXPR_STAR
+        RASQAL_EXPR_SLASH
+        RASQAL_EXPR_REM
+        RASQAL_EXPR_STR_EQ
+        RASQAL_EXPR_STR_NEQ
+        RASQAL_EXPR_STR_MATCH
+        RASQAL_EXPR_STR_NMATCH
+        RASQAL_EXPR_TILDE
+        RASQAL_EXPR_BANG
+        RASQAL_EXPR_LITERAL
+        RASQAL_EXPR_FUNCTION
+        RASQAL_EXPR_BOUND
+        RASQAL_EXPR_STR
+        RASQAL_EXPR_LANG
+        RASQAL_EXPR_DATATYPE
+        RASQAL_EXPR_ISURI
+        RASQAL_EXPR_ISBLANK
+        RASQAL_EXPR_ISLITERAL
+        RASQAL_EXPR_CAST
+        RASQAL_EXPR_ORDER_COND_ASC
+        RASQAL_EXPR_ORDER_COND_DESC
+        RASQAL_EXPR_LANGMATCHES
+        RASQAL_EXPR_REGEX
+        RASQAL_EXPR_GROUP_COND_ASC
+        RASQAL_EXPR_GROUP_COND_DESC
+        RASQAL_EXPR_COUNT
+        RASQAL_EXPR_VARSTAR
+        RASQAL_EXPR_SAMETERM
+        RASQAL_EXPR_SUM
+        RASQAL_EXPR_AVG
+        RASQAL_EXPR_MIN
+        RASQAL_EXPR_MAX
+        RASQAL_EXPR_COALESCE
+        RASQAL_EXPR_IF
+        RASQAL_EXPR_URI
+        RASQAL_EXPR_IRI
+        RASQAL_EXPR_STRLANG
+        RASQAL_EXPR_STRDT
+        RASQAL_EXPR_BNODE
+        RASQAL_EXPR_GROUP_CONCAT
+        RASQAL_EXPR_SAMPLE
+        RASQAL_EXPR_IN
+        RASQAL_EXPR_NOT_IN
+        RASQAL_EXPR_ISNUMERIC
+        RASQAL_EXPR_YEAR
+        RASQAL_EXPR_MONTH
+        RASQAL_EXPR_DAY
+        RASQAL_EXPR_HOURS
+        RASQAL_EXPR_MINUTES
+        RASQAL_EXPR_SECONDS
+        RASQAL_EXPR_TIMEZONE
+        RASQAL_EXPR_CURRENT_DATETIME
+        RASQAL_EXPR_NOW
+        RASQAL_EXPR_FROM_UNIXTIME
+        RASQAL_EXPR_TO_UNIXTIME
+        RASQAL_EXPR_CONCAT
+        RASQAL_EXPR_STRLEN
+        RASQAL_EXPR_SUBSTR
+        RASQAL_EXPR_UCASE
+        RASQAL_EXPR_LCASE
+        RASQAL_EXPR_STRSTARTS
+        RASQAL_EXPR_STRENDS
+        RASQAL_EXPR_CONTAINS
+        RASQAL_EXPR_ENCODE_FOR_URI
+        RASQAL_EXPR_TZ
+        RASQAL_EXPR_RAND
+        RASQAL_EXPR_ABS
+        RASQAL_EXPR_ROUND
+        RASQAL_EXPR_CEIL
+        RASQAL_EXPR_FLOOR
 
     #// structs
     ctypedef struct rasqal_world:
@@ -172,8 +212,33 @@ cdef extern from "rasqal/rasqal.h":
     ctypedef struct rasqal_query:
         pass
 
+    ctypedef struct rasqal_expression:
+        rasqal_world* world
+        int usage
+        rasqal_op op
+        rasqal_expression* arg1
+        rasqal_expression* arg2
+        rasqal_expression* arg3
+        rasqal_literal* literal
+        unsigned char *value
+        raptor_uri* name
+        raptor_sequence* args
+        raptor_sequence* params
+        unsigned int flags
+
     ctypedef struct rasqal_graph_pattern:
-        pass
+        rasqal_query* query
+        rasqal_graph_pattern_operator op
+        raptor_sequence* triples
+        raptor_sequence* graph_patterns
+        int start_column
+        int end_column
+        rasqal_expression* filter_expression
+        int gp_index
+        rasqal_literal *origin
+        rasqal_variable *var
+        rasqal_projection* projection
+        rasqal_solution_modifier* modifier
 
     cdef union l_value:
         int integer
@@ -406,7 +471,7 @@ cdef extern from "rasqal/rasqal.h":
     #// graph pattern
     #//--------------------------------------------------------------------------------------------------------
     int rasqal_graph_pattern_add_sub_graph_pattern(rasqal_graph_pattern *graph_pattern, rasqal_graph_pattern *sub_graph_pattern)
-    #//rasqal_expression* rasqal_graph_pattern_get_filter_expression(rasqal_graph_pattern *gp)
+    rasqal_expression* rasqal_graph_pattern_get_filter_expression(rasqal_graph_pattern *gp)
     #//int rasqal_graph_pattern_set_filter_expression(rasqal_graph_pattern *gp, rasqal_expression *expr)
     raptor_sequence* rasqal_graph_pattern_get_flattened_triples(rasqal_query *query, rasqal_graph_pattern *graph_pattern)
     int rasqal_graph_pattern_get_index (rasqal_graph_pattern *gp)
@@ -421,6 +486,13 @@ cdef extern from "rasqal/rasqal.h":
     int rasqal_graph_pattern_print(rasqal_graph_pattern *gp, FILE *fh)
     int rasqal_graph_pattern_variable_bound_in(rasqal_graph_pattern *gp, rasqal_variable *v)
     int rasqal_graph_pattern_visit(rasqal_query *query, rasqal_graph_pattern *gp, rasqal_graph_pattern_visit_fn fn, void *user_data)
+
+    #//--------------------------------------------------------------------------------------------------------
+    #// expressions
+    #//--------------------------------------------------------------------------------------------------------
+    int rasqal_expression_print(rasqal_expression *e,  FILE *fh)
+    rasqal_literal *  rasqal_expression_evaluate(rasqal_world *world, raptor_locator *locator, rasqal_expression *e, int flags)
+    char * rasqal_expression_op_label(rasqal_op op)
 
     #//--------------------------------------------------------------------------------------------------------
     #// library

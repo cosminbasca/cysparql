@@ -12,4 +12,3 @@ def get_include_dir(default='/usr/local/include:/usr/include'):
     incpath = os.environ.get('C_INCLUDE_PATH', None)
     incpath = incpath if incpath else default
     return [p for p in incpath.split(':') if p]
-  
