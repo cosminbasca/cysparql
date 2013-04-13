@@ -13,6 +13,22 @@ q = '''
     } LIMIT 11
 '''
 
+q = '''
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+SELECT ?label ?lat ?long
+FROM <http://dbpedia.org>
+WHERE {
+        <http://dbpedia.org/resource/Karl_Gebhardt> rdfs:label ?label .
+        FILTER (lang(?abstract) = 'en') .
+        OPTIONAL {
+            <http://dbpedia.org/resource/Karl_Gebhardt> wgs84_pos:lat ?lat .
+            <http://dbpedia.org/resource/Karl_Gebhardt> wgs84_pos:long ?long
+        }
+        FILTER (lang(?abstract) = 'en')
+}
+'''
+
 t1= time.time()
 qry = Query.parse(q)
 print "Took ", float(time.time()-t1) / 1000.0," ms"
