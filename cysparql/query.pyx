@@ -676,7 +676,7 @@ cdef class Query:
 
 cpdef Query new_query(char* query, RasqalWorld world):
     cdef Query ttq          = Query.__new__(Query)
-    cdef bytes lang         = <bytes>"sparql"
+    cdef char* lang         = "sparql"
     cdef rasqal_query* rq   = NULL
     cdef RasqalWorld   w    = world if world else RasqalWorld()
     print 1
