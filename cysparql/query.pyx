@@ -677,6 +677,7 @@ cdef class Query:
 cpdef Query new_query(char* query, RasqalWorld world):
     cdef Query ttq = Query.__new__(Query)
     cdef bytes lang = <bytes>"sparql"
+    cdef rasqal_query* rq = NULL
     print 1
     if not world:
         ttq.w  = RasqalWorld()
@@ -688,8 +689,10 @@ cpdef Query new_query(char* query, RasqalWorld world):
     print 4
     print 'world wrapper = ',ttq.w
     print 'world pointer = ',<long>ttq.w.rw
-    ttq.rq = rasqal_new_query(ttq.w.rw, lang, NULL)
+    rq = rasqal_new_query(ttq.w.rw, lang, NULL)
     print 5
+    ttq.rq = rq
+    print 5.1
     rasqal_query_prepare(ttq.rq, <unsigned char*>query, NULL)
     print 6
 
