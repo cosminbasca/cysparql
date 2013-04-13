@@ -16,7 +16,7 @@ q = '''
 q = '''
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>
-SELECT ?label ?lat ?long
+SELECT *
 FROM <http://dbpedia.org>
 WHERE {
         <http://dbpedia.org/resource/Karl_Gebhardt> rdfs:label ?label .
@@ -39,3 +39,7 @@ print '--------'
 for tp in qry.triple_patterns:
     for part in tp:
         print type(part), part
+
+print '-------'
+print qry.vars
+print qry.projections
