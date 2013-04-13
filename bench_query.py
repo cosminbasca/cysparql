@@ -43,3 +43,5 @@ for tp in qry.triple_patterns:
 print '-------'
 print qry.vars
 print qry.projections
+for var in qry.vars:
+    print var.name
