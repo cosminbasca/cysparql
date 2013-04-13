@@ -676,20 +676,35 @@ cdef class Query:
 
 cpdef Query new_query(char* query, RasqalWorld world):
     cdef Query ttq = Query.__new__(Query)
+    print 1
     if not world:
         ttq.w  = RasqalWorld()
+        print 2
     else:
         ttq.w = world
+        print 3
     ttq.__idx__ = 0
+    print 4
     ttq.rq = rasqal_new_query(ttq.w.rw, "sparql", NULL)
+    print 5
     rasqal_query_prepare(ttq.rq, <unsigned char*>query, NULL)
+    print 6
 
     ttq.triple_patterns         = ttq.__get_triple_patterns__()
+    print 7
     ttq.prefixes                = ttq.__get_prefixes__()
+    print 8
     ttq.query_graph_pattern     = ttq.__get_graph_pattern__()
+    print 9
     ttq.graph_patterns          = ttq.__get_graph_patterns__()
+    print 10
     ttq.vars                    = list(AllVarsIterator(<object>ttq.rq, None))
+    print 11
     ttq.bound_vars              = list(BoundVarsIterator(<object>ttq.rq, None))
+    print 12
     ttq.projections             = ttq.bound_vars
+    print 13
     ttq.binding_vars            = list(BindingsVarsIterator(<object>ttq.rq, None))
+    print 14
+    print 'return'
     return ttq
