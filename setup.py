@@ -48,7 +48,7 @@ setup(
 #    exclude_package_data = { 'cysparql': ['*.c', '*.cpp', '*.h', '*.pyx', '*.pxd', '*.y', '*.l', '*.pxi', '*.log'],
 #                             'dist': ['*.*']},
     zip_safe = False,
-    scripts = [
-        # 'scripts/cytt_importer.py',
-    ],
+    # scripts = [
+    #     # 'scripts/cytt_importer.py',
+    # ],
 )

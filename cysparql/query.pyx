@@ -574,7 +574,7 @@ cdef class Sequence:
 #-----------------------------------------------------------------------------------------------------------------------
 #--- QUERY - KEEPS STATE (all are copies)
 #-----------------------------------------------------------------------------------------------------------------------
-def create_ttquery(cls, qstr, world=None):
+def parse_query(cls, qstr, world=None):
     return new_query(<char*>qstr, <RasqalWorld>world)
 
 
@@ -672,7 +672,7 @@ cdef class Query:
     def __str__(self):
         return '\n'.join([ 'TRIPLE: %s, %s, %s'%(t[0].n3(), t[1].n3(), t[2].n3()) for t in self ])
 
-    parse = classmethod(create_ttquery)
+    parse = classmethod(parse_query)
 
 cpdef Query new_query(char* query, RasqalWorld world):
     cdef Query ttq = Query.__new__(Query)
