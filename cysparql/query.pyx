@@ -685,6 +685,8 @@ cpdef Query new_query(char* query, RasqalWorld world):
         print 3
     ttq.__idx__ = 0
     print 4
+    print 'world wrapper = ',ttq.w
+    print 'world pointer = ',<long>ttq.w.rw
     ttq.rq = rasqal_new_query(ttq.w.rw, "sparql", NULL)
     print 5
     rasqal_query_prepare(ttq.rq, <unsigned char*>query, NULL)
