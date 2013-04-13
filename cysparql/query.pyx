@@ -5,8 +5,8 @@ from libc.stdio cimport *
 from libc.stdlib cimport *
 from libc.string cimport *
 # LOCAL
-from rasqal cimport *
-from raptor cimport *
+from .rasqal cimport *
+from .raptor cimport *
 
 from itertools import *
 from rdflib.term import URIRef, Literal, BNode
@@ -679,35 +679,18 @@ cpdef Query new_query(char* query, RasqalWorld world):
     cdef char* lang         = "sparql"
     cdef rasqal_query* rq   = NULL
     cdef RasqalWorld   w    = world if world else RasqalWorld()
-    print 1
     ttq.w = w
-    print 3
     ttq.__idx__ = 0
-    print 4
-    print 'world wrapper = ',w
-    print 'world pointer = ',<long>w.rw
     rq = rasqal_new_query(w.rw, lang, NULL)
-    print 5
     ttq.rq = rq
-    print 5.1
     rasqal_query_prepare(ttq.rq, <unsigned char*>query, NULL)
-    print 6
 
     ttq.triple_patterns         = ttq.__get_triple_patterns__()
-    print 7
     ttq.prefixes                = ttq.__get_prefixes__()
-    print 8
     ttq.query_graph_pattern     = ttq.__get_graph_pattern__()
-    print 9
     ttq.graph_patterns          = ttq.__get_graph_patterns__()
-    print 10
     ttq.vars                    = list(AllVarsIterator(<object>ttq.rq, None))
-    print 11
     ttq.bound_vars              = list(BoundVarsIterator(<object>ttq.rq, None))
-    print 12
     ttq.projections             = ttq.bound_vars
-    print 13
     ttq.binding_vars            = list(BindingsVarsIterator(<object>ttq.rq, None))
-    print 14
-    print 'return'
     return ttq
