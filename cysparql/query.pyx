@@ -675,21 +675,18 @@ cdef class Query:
     parse = classmethod(parse_query)
 
 cpdef Query new_query(char* query, RasqalWorld world):
-    cdef Query ttq = Query.__new__(Query)
-    cdef bytes lang = <bytes>"sparql"
-    cdef rasqal_query* rq = NULL
+    cdef Query ttq          = Query.__new__(Query)
+    cdef bytes lang         = <bytes>"sparql"
+    cdef rasqal_query* rq   = NULL
+    cdef RasqalWorld   w    = world if world else RasqalWorld()
     print 1
-    if not world:
-        ttq.w  = RasqalWorld()
-        print 2
-    else:
-        ttq.w = world
-        print 3
+    ttq.w = w
+    print 3
     ttq.__idx__ = 0
     print 4
-    print 'world wrapper = ',ttq.w
-    print 'world pointer = ',<long>ttq.w.rw
-    rq = rasqal_new_query(ttq.w.rw, lang, NULL)
+    print 'world wrapper = ',w
+    print 'world pointer = ',<long>w.rw
+    rq = rasqal_new_query(w.rw, lang, NULL)
     print 5
     ttq.rq = rq
     print 5.1
