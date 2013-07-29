@@ -211,7 +211,8 @@ cdef class QueryVar:
             self.__vid__ = v
 
     def n3(self):
-        return '?%s'%<str>self.var.name # not really valid N3
+        cdef bytes name = self.var.name
+        return '?%s'%name # not really valid N3
 
     cpdef is_not_selective(self):
         return True if self.__sel__ == SELECTIVITY_NO_TRIPLES else False
