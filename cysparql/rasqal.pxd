@@ -502,7 +502,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     void rasqal_free_world(rasqal_world *world)
     raptor_world* rasqal_world_get_raptor(rasqal_world *world)
     void rasqal_world_set_raptor(rasqal_world *world, raptor_world *raptor_world_ptr)
-    
+    int rasqal_world_set_warning_level(rasqal_world *world, unsigned int warning_level)
 
     #//--------------------------------------------------------------------------------------------------------
     #// memory

@@ -48,10 +48,18 @@ class TestDb(TestCase):
             ?p3 <http://xmlns.com/foaf/0.1/name> ?m3.
         }
         '''
+        disable_rasqal_warnings()
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def test_parse(self):
-        pass
+        q = Query(self.q_spo_1)
+        q = Query(self.q_spo_2)
+        q = Query(self.q_sop_1)
+        q = Query(self.q_sop_2)
+        q = Query(self.q_pos_1)
+        q = Query(self.q_pos_2)
+        q = Query(self.q_pso_1)
+        q = Query(self.q_ops_1)

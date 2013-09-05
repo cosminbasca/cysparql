@@ -14,7 +14,6 @@ from rdflib.term import URIRef, Literal, BNode
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
-LANGUAGE = 'sparql'
 VERB_UNKNOWN = 'UNKNOWN'
 VERB_SELECT = 'SELECT'
 VERB_CONSTRUCT = 'CONSTRUCT'
@@ -23,6 +22,13 @@ VERB_ASK = 'ASK'
 VERB_DELETE = 'DELETE'
 VERB_INSERT = 'INSERT'
 VERB_UPDATE = 'UPDATE'
+
+rasqal_warning_level = 50
+
+def disable_rasqal_warnings():
+    global rasqal_warning_level
+    rasqal_warning_level = 0
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -425,11 +431,11 @@ cdef class GraphPattern:
         return iter(self.triple_patterns)
 
     def __next__(self):
-        if self.__idx__ == len(self.triple_patterns):
+        if self._idx == len(self.triple_patterns):
             raise StopIteration
         else:
-            item = self.triple_patterns[self.__idx__]
-            self.__idx__ += 1
+            item = self.triple_patterns[self._idx]
+            self._idx += 1
             return item
 
     def __get_triple_patterns__(self):
@@ -572,9 +578,14 @@ cdef class Sequence:
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Query:
     def __cinit__(self, qstring):
-        cdef char* language = LANGUAGE
+        global rasqal_world_set_warning_level
+        cdef char* language = 'sparql'
         self._rworld = rasqal_new_world()
         self._rquery = rasqal_new_query(self._rworld, language, NULL)
+
+        # set the warning level
+        rasqal_world_set_warning_level(self._rworld, rasqal_warning_level)
+
         self.query_string = qstring
         cdef char* _qstring = self.query_string
 
