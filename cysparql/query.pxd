@@ -113,20 +113,22 @@ ctypedef public enum FilterExpressionOperator:
     FLT_OPERATOR_EXPR_STRENDS = RASQAL_EXPR_STRENDS
     FLT_OPERATOR_EXPR_CONTAINS = RASQAL_EXPR_CONTAINS
     FLT_OPERATOR_EXPR_ENCODE_FOR_URI = RASQAL_EXPR_ENCODE_FOR_URI
-#    FLT_OPERATOR_EXPR_TZ = RASQAL_EXPR_TZ
-#    FLT_OPERATOR_EXPR_RAND = RASQAL_EXPR_RAND
-#    FLT_OPERATOR_EXPR_ABS = RASQAL_EXPR_ABS
-#    FLT_OPERATOR_EXPR_ROUND = RASQAL_EXPR_ROUND
-#    FLT_OPERATOR_EXPR_CEIL = RASQAL_EXPR_CEIL
-#    FLT_OPERATOR_EXPR_FLOOR = RASQAL_EXPR_FLOOR
+    FLT_OPERATOR_EXPR_TZ = RASQAL_EXPR_TZ
+    FLT_OPERATOR_EXPR_RAND = RASQAL_EXPR_RAND
+    FLT_OPERATOR_EXPR_ABS = RASQAL_EXPR_ABS
+    FLT_OPERATOR_EXPR_ROUND = RASQAL_EXPR_ROUND
+    FLT_OPERATOR_EXPR_CEIL = RASQAL_EXPR_CEIL
+    FLT_OPERATOR_EXPR_FLOOR = RASQAL_EXPR_FLOOR
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Iterators (directly on rasqal sequences)
 #-----------------------------------------------------------------------------------------------------------------------
 cdef uri_to_str(raptor_uri* u)
 
+cdef class Query
+
 cdef class SequenceIterator:
-    cdef rasqal_query*      rq
+    cdef rasqal_query*      _rquery
     cdef void*              data
     cdef int                __idx__
 
@@ -147,12 +149,6 @@ cdef class QueryTripleIterator(SequenceIterator):
 
 cdef class GraphPatternIterator(SequenceIterator):
     cdef raptor_sequence* __seq__(self)
-
-#-----------------------------------------------------------------------------------------------------------------------
-# RASQAL WORLD
-#-----------------------------------------------------------------------------------------------------------------------
-cdef class RasqalWorld:
-    cdef rasqal_world* rw
 
 #-----------------------------------------------------------------------------------------------------------------------
 # QUERY LITERAL
@@ -236,7 +232,7 @@ cdef class Prefix:
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class GraphPattern:
     cdef rasqal_graph_pattern*  gp
-    cdef rasqal_query*          rq
+    cdef rasqal_query*          _rquery
     cdef int                    __idx__
     cdef public list            triple_patterns
     cdef public list            sub_graph_patterns
@@ -255,7 +251,7 @@ cdef class GraphPattern:
     cpdef bint is_filter(self)
     cpdef bint is_service(self)
 
-cdef GraphPattern new_graphpattern(rasqal_query* rq, rasqal_graph_pattern* gp)
+cdef GraphPattern new_graphpattern(rasqal_query* rquery, rasqal_graph_pattern* gp)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # SEQUENCE
@@ -270,9 +266,11 @@ cdef class Sequence:
 #--- QUERY - KEEPS STATE (all are copies)
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Query:
-    cdef RasqalWorld            w
-    cdef rasqal_query*          rq
-    cdef int                    __idx__
+    # private
+    cdef rasqal_query*          _rquery
+    cdef rasqal_world*          _rworld
+    # public
+    cdef public bytes           query_string
     cdef public list            vars
     cdef public list            bound_vars
     cdef public list            projections
@@ -288,5 +286,3 @@ cdef class Query:
     cpdef has_var(self, char* name)
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
-    
-cpdef Query new_query(char* query, RasqalWorld world)

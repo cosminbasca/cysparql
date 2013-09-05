@@ -14,32 +14,44 @@ from rdflib.term import URIRef, Literal, BNode
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
+LANGUAGE = 'sparql'
+VERB_UNKNOWN = 'UNKNOWN'
+VERB_SELECT = 'SELECT'
+VERB_CONSTRUCT = 'CONSTRUCT'
+VERB_DESCRIBE = 'DESCRIBE'
+VERB_ASK = 'ASK'
+VERB_DELETE = 'DELETE'
+VERB_INSERT = 'INSERT'
+VERB_UPDATE = 'UPDATE'
+
 #-----------------------------------------------------------------------------------------------------------------------
-# Iterators (directly on rasqal sequences)
+#
+# Direct iterators rasqal sequences
+#
 #-----------------------------------------------------------------------------------------------------------------------
-cdef inline uri_to_str(raptor_uri* u):
+cdef inline uri_to_str(raptor_uri*u):
     return raptor_uri_as_string(u) if u != NULL else None
 
 cdef class SequenceIterator:
-    def __cinit__(self, rq, data):
-        self.rq = <rasqal_query*>rq
+    def __cinit__(self, query, data):
+        self._rquery = (<Query>query)._rquery
         self.__idx__ = 0
-        self.data = NULL if data is None else <void*>data
+        self.data = NULL if data is None else <void*> data
 
     def __iter__(self):
         self.__idx__ = 0
         return self
 
-    cdef raptor_sequence* __seq__(self):
+    cdef raptor_sequence*__seq__(self):
         return NULL
 
-    cdef __item__(self, void* seq_item):
+    cdef __item__(self, void*seq_item):
         return None
 
     def __next__(self):
-        cdef raptor_sequence* seq   =  self.__seq__()
-        cdef int sz                 = 0
-        cdef void* _item            = NULL
+        cdef raptor_sequence*seq = self.__seq__()
+        cdef int sz = 0
+        cdef void*_item = NULL
         if seq != NULL:
             sz = raptor_sequence_size(seq)
             if self.__idx__ == sz:
@@ -53,56 +65,39 @@ cdef class SequenceIterator:
             raise StopIteration
 
 cdef class AllVarsIterator(SequenceIterator):
-    cdef raptor_sequence* __seq__(self):
-        return rasqal_query_get_all_variable_sequence(self.rq)
+    cdef raptor_sequence*__seq__(self):
+        return rasqal_query_get_all_variable_sequence(self._rquery)
 
-    cdef __item__(self, void* seq_item):
-        return new_queryvar(<rasqal_variable*>seq_item)
-
+    cdef __item__(self, void*seq_item):
+        return new_queryvar(<rasqal_variable*> seq_item)
 
 cdef class BoundVarsIterator(SequenceIterator):
-    cdef raptor_sequence* __seq__(self):
-        return rasqal_query_get_bound_variable_sequence(self.rq)
+    cdef raptor_sequence*__seq__(self):
+        return rasqal_query_get_bound_variable_sequence(self._rquery)
 
-    cdef __item__(self, void* seq_item):
-        return new_queryvar(<rasqal_variable*>seq_item)
-
+    cdef __item__(self, void*seq_item):
+        return new_queryvar(<rasqal_variable*> seq_item)
 
 cdef class BindingsVarsIterator(SequenceIterator):
-    cdef raptor_sequence* __seq__(self):
-        return rasqal_query_get_bindings_variables_sequence(self.rq)
+    cdef raptor_sequence*__seq__(self):
+        return rasqal_query_get_bindings_variables_sequence(self._rquery)
 
-    cdef __item__(self, void* seq_item):
-        return new_queryvar(<rasqal_variable*>seq_item)
-
+    cdef __item__(self, void*seq_item):
+        return new_queryvar(<rasqal_variable*> seq_item)
 
 cdef class QueryTripleIterator(SequenceIterator):
-    cdef raptor_sequence* __seq__(self):
-        return rasqal_query_get_triple_sequence(self.rq)
+    cdef raptor_sequence*__seq__(self):
+        return rasqal_query_get_triple_sequence(self._rquery)
 
-    cdef __item__(self, void* seq_item):
-        return new_triplepattern(<rasqal_triple*>seq_item)
-
+    cdef __item__(self, void*seq_item):
+        return new_triplepattern(<rasqal_triple*> seq_item)
 
 cdef class GraphPatternIterator(SequenceIterator):
-    cdef raptor_sequence* __seq__(self):
-        return rasqal_graph_pattern_get_sub_graph_pattern_sequence(<rasqal_graph_pattern*>self.data)
+    cdef raptor_sequence*__seq__(self):
+        return rasqal_graph_pattern_get_sub_graph_pattern_sequence(<rasqal_graph_pattern*> self.data)
 
-    cdef __item__(self, void* seq_item):
-        return new_graphpattern(<rasqal_query*>self.rq, <rasqal_graph_pattern*>seq_item)
-
-#-----------------------------------------------------------------------------------------------------------------------
-# RASQAL WORLD
-#-----------------------------------------------------------------------------------------------------------------------
-cdef class RasqalWorld:
-    def __cinit__(self):
-        self.rw  = rasqal_new_world()
-
-    def __dealloc__(self):
-        rasqal_free_world(self.rw)
-
-    def __str__(self):
-        return '"RasqalWorld wrapper"'
+    cdef __item__(self, void*seq_item):
+        return new_graphpattern(<rasqal_query*> self._rquery, <rasqal_graph_pattern*> seq_item)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # QUERY LITERAL
@@ -128,43 +123,42 @@ cdef class QueryLiteral:
         return True if rasqal_literal_is_rdf_literal(self.l) > 0 else False
 
     cpdef as_var(self):
-        cdef rasqal_variable* var = rasqal_literal_as_variable(self.l)
+        cdef rasqal_variable*var = rasqal_literal_as_variable(self.l)
         return new_queryvar(var) if var != NULL else None
 
     cpdef as_str(self):
         if self.l.type == RASQAL_LITERAL_URI or self.l.type == RASQAL_LITERAL_BLANK:
-            return <char*>rasqal_literal_as_string(self.l)
+            return <char*> rasqal_literal_as_string(self.l)
         elif self.l.type == RASQAL_LITERAL_VARIABLE:
             return self.l.value.variable.name if self.l.value.variable.name != NULL else ''
         return ''
 
     cpdef as_node(self):
-        cdef rasqal_literal* node = rasqal_literal_as_node(self.l)
+        cdef rasqal_literal*node = rasqal_literal_as_node(self.l)
         return new_queryliteral(node) if node != NULL else None
 
     def __str__(self):
         return self.as_str()
 
     cpdef debug(self):
-        rasqal_literal_print(<rasqal_literal*>self.l, stdout)
+        rasqal_literal_print(<rasqal_literal*> self.l, stdout)
 
     cpdef object value(self):
         cdef bytes lbl = None
         if self.l.type == RASQAL_LITERAL_URI:
-            lbl = <char*>rasqal_literal_as_string(self.l)
+            lbl = <char*> rasqal_literal_as_string(self.l)
             return URIRef(lbl)
         elif self.l.type == RASQAL_LITERAL_BLANK:
-            lbl = <char*>rasqal_literal_as_string(self.l)
+            lbl = <char*> rasqal_literal_as_string(self.l)
             return BNode(lbl)
         elif self.l.type == RASQAL_LITERAL_STRING:
-            lbl = <char*>self.l.string
+            lbl = <char*> self.l.string
             return Literal(lbl, lang=self.language, datatype=self.datatype)
         elif self.l.type == RASQAL_LITERAL_VARIABLE:
             return new_queryvar(self.l.value.variable)
         return None
 
-
-cdef QueryLiteral new_queryliteral(rasqal_literal* l):
+cdef QueryLiteral new_queryliteral(rasqal_literal*l):
     cdef QueryLiteral ql = QueryLiteral.__new__(QueryLiteral)
     ql.l = l
     return ql
@@ -190,13 +184,13 @@ cdef class QueryVar:
             return new_queryliteral(self.var.value) if self.var.value != NULL else None
 
     cpdef debug(self):
-        rasqal_variable_print(<rasqal_variable*>self.var, stdout)
+        rasqal_variable_print(<rasqal_variable*> self.var, stdout)
 
     def __str__(self):
         return self.n3()
 
     def __repr__(self):
-        return 'QueryVar(%s,vid=%s)'%(self.name, str(self.__vid__))
+        return 'QueryVar(%s,vid=%s)' % (self.name, str(self.__vid__))
 
     property resolved:
         def __get__(self):
@@ -212,7 +206,7 @@ cdef class QueryVar:
 
     def n3(self):
         cdef bytes name = self.var.name
-        return '?%s'%name # not really valid N3
+        return '?%s' % name # not really valid N3
 
     cpdef is_not_selective(self):
         return True if self.__sel__ == SELECTIVITY_NO_TRIPLES else False
@@ -231,7 +225,7 @@ cdef class QueryVar:
 
         if type(other) is QueryVar:
             lid1 = self.__vid__
-            lid2 = (<QueryVar>other).__vid__
+            lid2 = (<QueryVar> other).__vid__
 
             if op == 0: # <
                 return lid1 < lid2
@@ -246,14 +240,12 @@ cdef class QueryVar:
             elif op == 5: # >=
                 return lid1 >= lid2
 
-
     def __hash__(self):
         if self.__hashvalue__ == 0:
             self.__hashvalue__ = hash(self.name)
         return self.__hashvalue__
 
-
-cdef QueryVar new_queryvar(rasqal_variable* var):
+cdef QueryVar new_queryvar(rasqal_variable*var):
     cdef QueryVar v = QueryVar.__new__(QueryVar)
     v.var = var
     v.__vid__ = 0
@@ -270,22 +262,22 @@ cdef QueryVar copy_queryvar(QueryVar var):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Filter:
     cpdef debug(self):
-        rasqal_expression_print(<rasqal_expression*>self.expression, stdout)
+        rasqal_expression_print(<rasqal_expression*> self.expression, stdout)
 
     property operator_label:
         def __get__(self):
-            return <bytes>rasqal_expression_op_label(self.expression.op)
+            return <bytes> rasqal_expression_op_label(self.expression.op)
 
-cdef inline Filter new_filter(rasqal_expression* expr):
-    cdef Filter f       = Filter.__new__(Filter)
-    f.expression        = expr
-    f.filter_operator   = <FilterExpressionOperator>expr.op
-    f.literal           = new_queryliteral(expr.literal) if expr.literal != NULL else None
-    f.value             = <bytes>expr.value if expr.value != NULL else None
-    f.name              = uri_to_str(expr.name)
+cdef inline Filter new_filter(rasqal_expression*expr):
+    cdef Filter f = Filter.__new__(Filter)
+    f.expression = expr
+    f.filter_operator = <FilterExpressionOperator> expr.op
+    f.literal = new_queryliteral(expr.literal) if expr.literal != NULL else None
+    f.value = <bytes> expr.value if expr.value != NULL else None
+    f.name = uri_to_str(expr.name)
     # TODO: fill these lists !
-    f.args              = list()
-    f.params            = list()
+    f.args = list()
+    f.params = list()
     return f
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -293,7 +285,7 @@ cdef inline Filter new_filter(rasqal_expression* expr):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class TriplePattern:
     cpdef debug(self):
-        rasqal_triple_print(<rasqal_triple*>self.t, stdout)
+        rasqal_triple_print(<rasqal_triple*> self.t, stdout)
 
     def as_tuple(self):
         return self.s, self.p, self.o
@@ -311,7 +303,7 @@ cdef class TriplePattern:
             raise IndexError('index must be, 0,1,2 or 3 corresponding to S, P, O or ORIGIN')
 
     def __str__(self):
-        return '< %s, %s, %s ,%s>'%(str(self.s), str(self.p), str(self.o), str(self.c))
+        return '< %s, %s, %s ,%s>' % (str(self.s), str(self.p), str(self.o), str(self.c))
 
     def __repr__(self):
         return self.__str__()
@@ -363,44 +355,44 @@ cdef class TriplePattern:
         if type(self.o) is QueryVar: ptype += 1
         return ptype
 
-cdef TriplePattern new_triplepattern(rasqal_triple* t):
+cdef TriplePattern new_triplepattern(rasqal_triple*t):
     cdef TriplePattern tp = TriplePattern.__new__(TriplePattern)
-    tp.t        = t
-    tp.__idx__  = 0
-    tp.s_qliteral         = new_queryliteral(t.subject) if t.subject != NULL else None
-    tp.s                  = tp.s_qliteral.value()
-    tp.p_qliteral         = new_queryliteral(t.predicate) if t.predicate != NULL else None
-    tp.p                  = tp.p_qliteral.value()
-    tp.o_qliteral         = new_queryliteral(t.object) if t.object != NULL else None
-    tp.o                  = tp.o_qliteral.value()
-    tp.c_qliteral         = new_queryliteral(t.origin) if t.origin != NULL else None
-    tp.c                  = tp.c_qliteral.value() if tp.c_qliteral else None
+    tp.t = t
+    tp.__idx__ = 0
+    tp.s_qliteral = new_queryliteral(t.subject) if t.subject != NULL else None
+    tp.s = tp.s_qliteral.value()
+    tp.p_qliteral = new_queryliteral(t.predicate) if t.predicate != NULL else None
+    tp.p = tp.p_qliteral.value()
+    tp.o_qliteral = new_queryliteral(t.object) if t.object != NULL else None
+    tp.o = tp.o_qliteral.value()
+    tp.c_qliteral = new_queryliteral(t.origin) if t.origin != NULL else None
+    tp.c = tp.c_qliteral.value() if tp.c_qliteral else None
     return tp
 
 cdef TriplePattern copy_triplepattern(TriplePattern triple):
     cdef TriplePattern copy = TriplePattern.__new__(TriplePattern)
-    copy.t        = triple.t
-    copy.__idx__  = triple.__idx__
-    copy.s_qliteral         = triple.s_qliteral
+    copy.t = triple.t
+    copy.__idx__ = triple.__idx__
+    copy.s_qliteral = triple.s_qliteral
     if type(triple.s) is QueryVar:
         copy.s = copy_queryvar(triple.s)
     else:
-        copy.s                  = triple.s
-    copy.p_qliteral         = triple.p_qliteral
+        copy.s = triple.s
+    copy.p_qliteral = triple.p_qliteral
     if type(triple.p) is QueryVar:
         copy.p = copy_queryvar(triple.p)
     else:
-        copy.p                  = triple.p
-    copy.o_qliteral         = triple.o_qliteral
+        copy.p = triple.p
+    copy.o_qliteral = triple.o_qliteral
     if type(triple.o) is QueryVar:
         copy.o = copy_queryvar(triple.o)
     else:
-        copy.o                  = triple.o
-    copy.c_qliteral         = triple.c_qliteral
+        copy.o = triple.o
+    copy.c_qliteral = triple.c_qliteral
     if type(triple.c) is QueryVar:
         copy.c = copy_queryvar(triple.c)
     else:
-        copy.c                  = triple.c
+        copy.c = triple.c
     return copy
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -408,7 +400,7 @@ cdef TriplePattern copy_triplepattern(TriplePattern triple):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Prefix:
     def __cinit__(self, p):
-        self.p = <rasqal_prefix*>p
+        self.p = <rasqal_prefix*> p
 
     property prefix:
         def __get__(self):
@@ -419,12 +411,12 @@ cdef class Prefix:
             return uri_to_str(self.p.uri) if self.p.uri != NULL else None
 
     cpdef debug(self):
-        rasqal_prefix_print(<rasqal_prefix*>self.p, stdout)
+        rasqal_prefix_print(<rasqal_prefix*> self.p, stdout)
 
     def __str__(self):
-        return '(%s : %s)'%(self.prefix, self.uri)
+        return '(%s : %s)' % (self.prefix, self.uri)
 
-    
+
 #-----------------------------------------------------------------------------------------------------------------------
 # GRAPH PATERN
 #-----------------------------------------------------------------------------------------------------------------------
@@ -442,7 +434,7 @@ cdef class GraphPattern:
 
     def __get_triple_patterns__(self):
         triples = []
-        cdef rasqal_triple* t = NULL
+        cdef rasqal_triple*t = NULL
         cdef TriplePattern trp = None
         for i in count():
             t = rasqal_graph_pattern_get_triple(self.gp, i)
@@ -451,23 +443,24 @@ cdef class GraphPattern:
             trp = new_triplepattern(t)
             triples.append(trp)
         return triples
-        
+
     def __get_flattened_triple_patterns__(self):
-        cdef raptor_sequence* ts = rasqal_graph_pattern_get_flattened_triples(self.rq, self.gp)
+        cdef raptor_sequence*ts = rasqal_graph_pattern_get_flattened_triples(self._rquery, self.gp)
         cdef int sz = 0
         if ts != NULL:
             sz = raptor_sequence_size(ts)
-            return [new_triplepattern(<rasqal_triple*>raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
+            return [new_triplepattern(<rasqal_triple*> raptor_sequence_get_at(ts, i)) for i in xrange(sz)]
         return []
 
     def __get_subgraph_patterns__(self):
-        cdef raptor_sequence* seq   = rasqal_graph_pattern_get_sub_graph_pattern_sequence(self.gp)
+        cdef raptor_sequence*seq = rasqal_graph_pattern_get_sub_graph_pattern_sequence(self.gp)
         cdef int sz = 0
         if seq != NULL:
             sz = raptor_sequence_size(seq)
-            return [new_graphpattern(self.rq, <rasqal_graph_pattern*>raptor_sequence_get_at(seq, i)) for i in xrange(sz)]
+            return [new_graphpattern(self._rquery, <rasqal_graph_pattern*> raptor_sequence_get_at(seq, i)) for i in
+                    xrange(sz)]
         return []
-        
+
     property operator:
         def __get__(self):
             return rasqal_graph_pattern_get_operator(self.gp)
@@ -495,31 +488,31 @@ cdef class GraphPattern:
 
     cpdef bint is_service(self):
         return True if rasqal_graph_pattern_get_operator(self.gp) == RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE else False
-    
-cdef GraphPattern new_graphpattern(rasqal_query* rq, rasqal_graph_pattern* gp):
-    cdef GraphPattern grp                       = GraphPattern.__new__(GraphPattern)
-    cdef rasqal_literal* __ptr_literal          = NULL
-    cdef rasqal_variable* __ptr_variable        = NULL
-    cdef rasqal_expression* __ptr_expression    = NULL
 
-    grp.gp                      = gp
-    grp.rq                      = rq
-    grp.__idx__                 = 0
-    grp.triple_patterns         = grp.__get_triple_patterns__()
-    grp.sub_graph_patterns      = grp.__get_subgraph_patterns__()
-    grp.flattened_triple_patterns= grp.__get_flattened_triple_patterns__()
+cdef GraphPattern new_graphpattern(rasqal_query*rquery, rasqal_graph_pattern*gp):
+    cdef GraphPattern grp = GraphPattern.__new__(GraphPattern)
+    cdef rasqal_literal*__ptr_literal = NULL
+    cdef rasqal_variable*__ptr_variable = NULL
+    cdef rasqal_expression*__ptr_expression = NULL
 
-    __ptr_literal               = rasqal_graph_pattern_get_origin(gp)
-    grp.origin                  = new_queryliteral(__ptr_literal) if __ptr_literal != NULL else None
+    grp.gp = gp
+    grp._rquery = rquery
+    grp.__idx__ = 0
+    grp.triple_patterns = grp.__get_triple_patterns__()
+    grp.sub_graph_patterns = grp.__get_subgraph_patterns__()
+    grp.flattened_triple_patterns = grp.__get_flattened_triple_patterns__()
 
-    __ptr_literal               = rasqal_graph_pattern_get_service(gp)
-    grp.service                 = new_queryliteral(__ptr_literal) if __ptr_literal != NULL else None
+    __ptr_literal = rasqal_graph_pattern_get_origin(gp)
+    grp.origin = new_queryliteral(__ptr_literal) if __ptr_literal != NULL else None
 
-    __ptr_variable              = rasqal_graph_pattern_get_variable(gp)
-    grp.variable                = new_queryvar(__ptr_variable) if __ptr_variable != NULL else None
+    __ptr_literal = rasqal_graph_pattern_get_service(gp)
+    grp.service = new_queryliteral(__ptr_literal) if __ptr_literal != NULL else None
 
-    __ptr_expression            = rasqal_graph_pattern_get_filter_expression(gp)
-    grp.filter                  = new_filter(__ptr_expression) if __ptr_expression != NULL else None
+    __ptr_variable = rasqal_graph_pattern_get_variable(gp)
+    grp.variable = new_queryvar(__ptr_variable) if __ptr_variable != NULL else None
+
+    __ptr_expression = rasqal_graph_pattern_get_filter_expression(gp)
+    grp.filter = new_filter(__ptr_expression) if __ptr_expression != NULL else None
 
     return grp
 #-----------------------------------------------------------------------------------------------------------------------
@@ -527,142 +520,161 @@ cdef GraphPattern new_graphpattern(rasqal_query* rq, rasqal_graph_pattern* gp):
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Sequence:
     def __cinit__(self, sq):
-        self.sq = <raptor_sequence*>sq
+        self.sq = <raptor_sequence*> sq
         self.__idx__ = 0
-        
+
     def __len__(self):
-        return raptor_sequence_size(<raptor_sequence*>self.sq)
+        return raptor_sequence_size(<raptor_sequence*> self.sq)
 
     def __setitem__(self, i, value):
-        raptor_sequence_set_at(<raptor_sequence*>self.sq, i, <void*>value)
+        raptor_sequence_set_at(<raptor_sequence*> self.sq, i, <void*> value)
 
     def __delitem__(self, i):
-        raptor_sequence_delete_at(<raptor_sequence*>self.sq, i)
+        raptor_sequence_delete_at(<raptor_sequence*> self.sq, i)
 
     def __getitem__(self, i):
-        return <object>raptor_sequence_get_at(<raptor_sequence*>self.sq, i)
-        
+        return <object> raptor_sequence_get_at(<raptor_sequence*> self.sq, i)
+
     cpdef debug(self):
-        raptor_sequence_print(<raptor_sequence*>self.sq, stdout)
+        raptor_sequence_print(<raptor_sequence*> self.sq, stdout)
 
     def __and__(self, other):
-        raptor_sequence_join(<raptor_sequence*>self.sq, <raptor_sequence*>other)
+        raptor_sequence_join(<raptor_sequence*> self.sq, <raptor_sequence*> other)
 
     def shift(self, data):
-        raptor_sequence_shift(<raptor_sequence*>self.sq, <void*>data)
+        raptor_sequence_shift(<raptor_sequence*> self.sq, <void*> data)
 
     def unshift(self):
-        return <object>raptor_sequence_unshift(<raptor_sequence*>self.sq)
+        return <object> raptor_sequence_unshift(<raptor_sequence*> self.sq)
 
     def pop(self):
-        return <object>raptor_sequence_pop(<raptor_sequence*>self.sq)
+        return <object> raptor_sequence_pop(<raptor_sequence*> self.sq)
 
     def push(self, data):
-        raptor_sequence_push(<raptor_sequence*>self.sq, <void*>data)
+        raptor_sequence_push(<raptor_sequence*> self.sq, <void*> data)
 
     def __iter__(self):
         self.__idx__ = 0
         return self
 
     def __next__(self):
-        if self.__idx__ == raptor_sequence_size(<raptor_sequence*>self.sq):
+        if self.__idx__ == raptor_sequence_size(<raptor_sequence*> self.sq):
             raise StopIteration
         else:
-            item = <object>raptor_sequence_get_at(<raptor_sequence*>self.sq, self.__idx__)
+            item = <object> raptor_sequence_get_at(<raptor_sequence*> self.sq, self.__idx__)
             self.__idx__ += 1
             return item
 
 #-----------------------------------------------------------------------------------------------------------------------
-#--- QUERY - KEEPS STATE (all are copies)
+#
+# QUERY - KEEPS STATE (all are copies)
+#
 #-----------------------------------------------------------------------------------------------------------------------
-def parse_query(cls, qstr, world=None):
-    return new_query(<char*>qstr, <RasqalWorld>world)
-
-
 cdef class Query:
+    def __cinit__(self, qstring):
+        cdef char* language = LANGUAGE
+        self._rworld = rasqal_new_world()
+        self._rquery = rasqal_new_query(self._rworld, language, NULL)
+        self.query_string = qstring
+        cdef char* _qstring = self.query_string
+
+        # parse
+        rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)
+
+        self.triple_patterns = self.__get_triple_patterns__()
+        self.prefixes = self.__get_prefixes__()
+        self.query_graph_pattern = self.__get_graph_pattern__()
+        self.graph_patterns = self.__get_graph_patterns__()
+        self.vars = list(AllVarsIterator(self, None))
+        self.bound_vars = list(BoundVarsIterator(self, None))
+        self.projections = self.bound_vars
+        self.binding_vars = list(BindingsVarsIterator(self, None))
+
     def __dealloc__(self):
-        rasqal_free_query(self.rq)
+        rasqal_free_query(self._rquery)
+        rasqal_free_world(self._rworld)
 
     cpdef debug(self):
-        rasqal_query_print(self.rq, stdout)
+        rasqal_query_print(self._rquery, stdout)
 
     cpdef get_bindings_var(self, i):
-        return QueryVar(<object>rasqal_query_get_bindings_variable(self.rq, i))
+        return QueryVar(<object> rasqal_query_get_bindings_variable(self._rquery, i))
 
     cpdef get_var(self, i):
-        return QueryVar(<object>rasqal_query_get_variable(self.rq, i))
+        return QueryVar(<object> rasqal_query_get_variable(self._rquery, i))
 
-    cpdef has_var(self, char* name):
-        return True if rasqal_query_has_variable(self.rq, <unsigned char*>name) > 0 else False
+    cpdef has_var(self, char*name):
+        return True if rasqal_query_has_variable(self._rquery, <unsigned char*> name) > 0 else False
 
     cpdef get_triple(self, i):
-        return new_triplepattern(rasqal_query_get_triple(self.rq, i))
+        return new_triplepattern(rasqal_query_get_triple(self._rquery, i))
 
     cpdef get_prefix(self, i):
-        return Prefix(<object>rasqal_query_get_prefix(self.rq, i))
+        return Prefix(<object> rasqal_query_get_prefix(self._rquery, i))
 
     def __get_triple_patterns__(self):
-        cdef raptor_sequence* ts =  rasqal_query_get_triple_sequence(self.rq)
+        cdef raptor_sequence*ts = rasqal_query_get_triple_sequence(self._rquery)
         cdef int sz = 0
         if ts != NULL:
             sz = raptor_sequence_size(ts)
-            return [new_triplepattern(rasqal_query_get_triple(self.rq, i)) for i in xrange(sz)]
+            return [new_triplepattern(rasqal_query_get_triple(self._rquery, i)) for i in xrange(sz)]
         return []
 
     def __get_prefixes__(self):
-        cdef raptor_sequence* ps =  rasqal_query_get_prefix_sequence(self.rq)
+        cdef raptor_sequence*ps = rasqal_query_get_prefix_sequence(self._rquery)
         cdef int sz = 0
         if ps != NULL:
             sz = raptor_sequence_size(ps)
-            return [Prefix(<object>rasqal_query_get_prefix(self.rq, i)) for i in xrange(sz)]
+            return [Prefix(<object> rasqal_query_get_prefix(self._rquery, i)) for i in xrange(sz)]
         return []
 
     def __get_graph_pattern__(self):
-        return new_graphpattern(self.rq, rasqal_query_get_query_graph_pattern(self.rq))
+        return new_graphpattern(self._rquery, rasqal_query_get_query_graph_pattern(self._rquery))
 
     def __get_graph_patterns__(self):
-        cdef raptor_sequence* seq   = rasqal_query_get_graph_pattern_sequence(self.rq)
+        cdef raptor_sequence*seq = rasqal_query_get_graph_pattern_sequence(self._rquery)
         cdef int sz = 0
         if seq != NULL:
             sz = raptor_sequence_size(seq)
-            return [new_graphpattern(self.rq, <rasqal_graph_pattern*>raptor_sequence_get_at(seq, i)) for i in xrange(sz)]
+            return [new_graphpattern(self._rquery, <rasqal_graph_pattern*> raptor_sequence_get_at(seq, i)) for i in
+                    xrange(sz)]
         return []
 
     property label:
         def __get__(self):
-            return rasqal_query_get_label(self.rq)
+            return rasqal_query_get_label(self._rquery)
 
     property limit:
         def __get__(self):
-            return rasqal_query_get_limit(self.rq)
+            return rasqal_query_get_limit(self._rquery)
 
     property name:
         def __get__(self):
-            return rasqal_query_get_name(self.rq)
+            return rasqal_query_get_name(self._rquery)
 
     property offset:
         def __get__(self):
-            return rasqal_query_get_offset(self.rq)
+            return rasqal_query_get_offset(self._rquery)
 
     property verb:
         def __get__(self):
-            cdef int v = rasqal_query_get_verb(self.rq)
+            cdef int v = rasqal_query_get_verb(self._rquery)
             if v == RASQAL_QUERY_VERB_UNKNOWN:
-                return 'unknown'
+                return VERB_UNKNOWN
             elif v == RASQAL_QUERY_VERB_SELECT:
-                return 'select'
+                return VERB_SELECT
             elif v == RASQAL_QUERY_VERB_CONSTRUCT:
-                return 'construct'
+                return VERB_CONSTRUCT
             elif v == RASQAL_QUERY_VERB_DESCRIBE:
-                return 'describe'
+                return VERB_DESCRIBE
             elif v == RASQAL_QUERY_VERB_ASK:
-                return 'ask'
+                return VERB_ASK
             elif v == RASQAL_QUERY_VERB_DELETE:
-                return 'delete'
+                return VERB_DELETE
             elif v == RASQAL_QUERY_VERB_INSERT:
-                return 'insert'
+                return VERB_INSERT
             elif v == RASQAL_QUERY_VERB_UPDATE:
-                return 'update'
+                return VERB_UPDATE
 
     def __getitem__(self, i):
         return self.triple_patterns[i]
@@ -671,27 +683,5 @@ cdef class Query:
         return iter(self.triple_patterns)
 
     def __str__(self):
-        return '\n'.join([ 'TRIPLE: %s, %s, %s'%(t[0].n3(), t[1].n3(), t[2].n3()) for t in self ])
+        return '\n'.join(['TRIPLE: %s, %s, %s' % (t[0].n3(), t[1].n3(), t[2].n3()) for t in self])
 
-    parse = classmethod(parse_query)
-
-cpdef Query new_query(char* query, RasqalWorld world):
-    cdef Query ttq          = Query.__new__(Query)
-    cdef char* lang         = "sparql"
-    cdef rasqal_query* rq   = NULL
-    cdef RasqalWorld   w    = world if world else RasqalWorld()
-    ttq.w = w
-    ttq.__idx__ = 0
-    rq = rasqal_new_query(w.rw, lang, NULL)
-    ttq.rq = rq
-    rasqal_query_prepare(ttq.rq, <unsigned char*>query, NULL)
-
-    ttq.triple_patterns         = ttq.__get_triple_patterns__()
-    ttq.prefixes                = ttq.__get_prefixes__()
-    ttq.query_graph_pattern     = ttq.__get_graph_pattern__()
-    ttq.graph_patterns          = ttq.__get_graph_patterns__()
-    ttq.vars                    = list(AllVarsIterator(<object>ttq.rq, None))
-    ttq.bound_vars              = list(BoundVarsIterator(<object>ttq.rq, None))
-    ttq.projections             = ttq.bound_vars
-    ttq.binding_vars            = list(BindingsVarsIterator(<object>ttq.rq, None))
-    return ttq

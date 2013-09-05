@@ -30,8 +30,9 @@ WHERE {
 '''
 
 t1= time.time()
-qry = Query.parse(q)
-print "Took ", float(time.time()-t1) / 1000.0," ms"
+qry = Query(q)
+print qry.query_string
+print "Took ", float(time.time()-t1) * 1000.0," ms"
 qry.debug()
 print qry.triple_patterns
 
