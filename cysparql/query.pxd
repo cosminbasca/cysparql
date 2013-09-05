@@ -129,8 +129,8 @@ cdef class Query
 
 cdef class SequenceIterator:
     cdef rasqal_query*      _rquery
+    cdef int                _idx
     cdef void*              data
-    cdef int                __idx__
 
     cdef raptor_sequence* __seq__(self)
     cdef object __item__(self, void* itm)
@@ -203,7 +203,7 @@ cdef Filter new_filter(rasqal_expression* expr)
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class TriplePattern:
     cdef rasqal_triple*       t
-    cdef int                    __idx__
+    cdef int                    _idx
     cdef public QueryLiteral    s_qliteral
     cdef public QueryLiteral    p_qliteral
     cdef public QueryLiteral    o_qliteral
@@ -233,7 +233,7 @@ cdef class Prefix:
 cdef class GraphPattern:
     cdef rasqal_graph_pattern*  gp
     cdef rasqal_query*          _rquery
-    cdef int                    __idx__
+    cdef int                    _idx
     cdef public list            triple_patterns
     cdef public list            sub_graph_patterns
     cdef public list            flattened_triple_patterns
@@ -258,7 +258,7 @@ cdef GraphPattern new_graphpattern(rasqal_query* rquery, rasqal_graph_pattern* g
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Sequence:
     cdef raptor_sequence*       sq
-    cdef int                    __idx__
+    cdef int                    _idx
 
     cpdef debug(self)
 

@@ -34,12 +34,12 @@ cdef inline uri_to_str(raptor_uri*u):
 
 cdef class SequenceIterator:
     def __cinit__(self, query, data):
+        self._idx = 0
         self._rquery = (<Query>query)._rquery
-        self.__idx__ = 0
         self.data = NULL if data is None else <void*> data
 
     def __iter__(self):
-        self.__idx__ = 0
+        self._idx = 0
         return self
 
     cdef raptor_sequence*__seq__(self):
@@ -54,12 +54,12 @@ cdef class SequenceIterator:
         cdef void*_item = NULL
         if seq != NULL:
             sz = raptor_sequence_size(seq)
-            if self.__idx__ == sz:
+            if self._idx == sz:
                 raise StopIteration
             else:
-                _item = raptor_sequence_get_at(seq, self.__idx__)
+                _item = raptor_sequence_get_at(seq, self._idx)
                 item = self.__item__(_item)
-                self.__idx__ += 1
+                self._idx += 1
                 return item
         else:
             raise StopIteration
@@ -312,23 +312,23 @@ cdef class TriplePattern:
         return 4
 
     def __iter__(self):
-        self.__idx__ = 0
+        self._idx = 0
         return self
 
     def __next__(self):
-        if self.__idx__ == 4:
+        if self._idx == 4:
             raise StopIteration
         else:
             item = None
-            if self.__idx__ == 0:
+            if self._idx == 0:
                 item = self.s
-            elif self.__idx__ == 1:
+            elif self._idx == 1:
                 item = self.p
-            elif self.__idx__ == 2:
+            elif self._idx == 2:
                 item = self.o
-            elif self.__idx__ == 3:
+            elif self._idx == 3:
                 item = self.c
-            self.__idx__ += 1
+            self._idx += 1
             return item
 
     def __contains__(self, item):
@@ -358,7 +358,7 @@ cdef class TriplePattern:
 cdef TriplePattern new_triplepattern(rasqal_triple*t):
     cdef TriplePattern tp = TriplePattern.__new__(TriplePattern)
     tp.t = t
-    tp.__idx__ = 0
+    tp._idx = 0
     tp.s_qliteral = new_queryliteral(t.subject) if t.subject != NULL else None
     tp.s = tp.s_qliteral.value()
     tp.p_qliteral = new_queryliteral(t.predicate) if t.predicate != NULL else None
@@ -372,7 +372,7 @@ cdef TriplePattern new_triplepattern(rasqal_triple*t):
 cdef TriplePattern copy_triplepattern(TriplePattern triple):
     cdef TriplePattern copy = TriplePattern.__new__(TriplePattern)
     copy.t = triple.t
-    copy.__idx__ = triple.__idx__
+    copy._idx = triple._idx
     copy.s_qliteral = triple.s_qliteral
     if type(triple.s) is QueryVar:
         copy.s = copy_queryvar(triple.s)
@@ -497,7 +497,7 @@ cdef GraphPattern new_graphpattern(rasqal_query*rquery, rasqal_graph_pattern*gp)
 
     grp.gp = gp
     grp._rquery = rquery
-    grp.__idx__ = 0
+    grp._idx = 0
     grp.triple_patterns = grp.__get_triple_patterns__()
     grp.sub_graph_patterns = grp.__get_subgraph_patterns__()
     grp.flattened_triple_patterns = grp.__get_flattened_triple_patterns__()
@@ -521,7 +521,7 @@ cdef GraphPattern new_graphpattern(rasqal_query*rquery, rasqal_graph_pattern*gp)
 cdef class Sequence:
     def __cinit__(self, sq):
         self.sq = <raptor_sequence*> sq
-        self.__idx__ = 0
+        self._idx = 0
 
     def __len__(self):
         return raptor_sequence_size(<raptor_sequence*> self.sq)
@@ -554,15 +554,15 @@ cdef class Sequence:
         raptor_sequence_push(<raptor_sequence*> self.sq, <void*> data)
 
     def __iter__(self):
-        self.__idx__ = 0
+        self._idx = 0
         return self
 
     def __next__(self):
-        if self.__idx__ == raptor_sequence_size(<raptor_sequence*> self.sq):
+        if self._idx == raptor_sequence_size(<raptor_sequence*> self.sq):
             raise StopIteration
         else:
-            item = <object> raptor_sequence_get_at(<raptor_sequence*> self.sq, self.__idx__)
-            self.__idx__ += 1
+            item = <object> raptor_sequence_get_at(<raptor_sequence*> self.sq, self._idx)
+            self._idx += 1
             return item
 
 #-----------------------------------------------------------------------------------------------------------------------
