@@ -46,3 +46,7 @@ print qry.vars
 print qry.projections
 for var in qry.vars:
     print var.name
+print '-------'
+print qry.graph_patterns
+for gp in qry.graph_patterns:
+    print gp
