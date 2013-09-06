@@ -6,7 +6,7 @@ from libc.stdlib cimport *
 from libc.string cimport *
 # LOCAL
 from rasqal cimport *
-from raptor cimport *
+from raptor2 cimport *
 from util cimport *
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -17,14 +17,14 @@ from util cimport *
 cdef TriplePattern new_TriplePattern(rasqal_triple* triple):
     cdef TriplePattern tp = TriplePattern()
     tp._rtriple = triple
-    tp.subject_qliteral = new_QueryLiteral(t.subject) if t.subject != NULL else None
-    tp.predicate_qliteral = new_QueryLiteral(t.predicate) if t.predicate != NULL else None
-    tp.object_qliteral = new_QueryLiteral(t.object) if t.object != NULL else None
-    tp.context_qliteral = new_QueryLiteral(t.origin) if t.origin != NULL else None
+    tp.subject_qliteral = new_QueryLiteral(triple.subject) if triple.subject != NULL else None
+    tp.predicate_qliteral = new_QueryLiteral(triple.predicate) if triple.predicate != NULL else None
+    tp.object_qliteral = new_QueryLiteral(triple.object) if triple.object != NULL else None
+    tp.context_qliteral = new_QueryLiteral(triple.origin) if triple.origin != NULL else None
     return tp
 
 cdef class TriplePattern:
-    cdef __cinit__(self, tpattern = None):
+    def __cinit__(self, tpattern = None):
         self._rtriple = NULL
         self._idx = 0
         self.subject_qliteral = None
@@ -202,7 +202,7 @@ cdef GraphPattern new_GraphPattern(rasqal_query* query, rasqal_graph_pattern* gr
     grp.filter = new_Filter(_expression) if _expression != NULL else None
 
     grp.triple_patterns = new_TriplePatternSequence(query,
-        graphpattern.triples)
+        (<rasqal_graph_pattern*>graphpattern).triples)
 
     grp.flattened_triple_patterns = new_TriplePatternSequence(query,
         rasqal_graph_pattern_get_flattened_triples(query, graphpattern) )

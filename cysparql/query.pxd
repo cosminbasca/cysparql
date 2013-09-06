@@ -11,27 +11,29 @@ from filter cimport *
 from pattern cimport *
 
 
-#-----------------------------------------------------------------------------------------------------------------------
-#
-# the prefix
-#
-#-----------------------------------------------------------------------------------------------------------------------
-cdef class Prefix:
-    cdef rasqal_prefix* _rprefix
-
-    cpdef debug(self)
-
+cdef class Prefix
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # related sequences
 #
 #-----------------------------------------------------------------------------------------------------------------------
-cdef class AllVarsIterator(Sequence)
-cdef class BoundVarsIterator(Sequence)
-cdef class BindingsVarsIterator(Sequence)
-cdef class QueryTripleIterator(Sequence)
-cdef class GraphPatternIterator(Sequence)
+cdef Sequence new_PrefixSequence(rasqal_query* query, raptor_sequence* sequence)
+cdef class PrefixSequence(Sequence):
+    pass
+
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# the prefix
+#
+#-----------------------------------------------------------------------------------------------------------------------
+cdef Prefix new_Prefix(rasqal_prefix* prefix)
+
+cdef class Prefix:
+    cdef rasqal_prefix* _rprefix
+
+    cpdef debug(self)
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -44,14 +46,14 @@ cdef class Query:
     cdef rasqal_world*          _rworld
     # public
     cdef public bytes           query_string
-    cdef public list            vars
-    cdef public list            bound_vars
-    cdef public list            projections
-    cdef public list            binding_vars
-    cdef public list            prefixes
-    cdef public list            triple_patterns
     cdef public GraphPattern    query_graph_pattern
-    cdef public list            graph_patterns
+
+    cdef public Sequence        vars
+    cdef public Sequence        projections
+    cdef public Sequence        binding_vars
+    cdef public Sequence        prefixes
+    cdef public Sequence        triple_patterns
+    cdef public Sequence        graph_patterns
 
     cpdef debug(self)
     cpdef get_bindings_var(self, i)

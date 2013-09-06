@@ -5,11 +5,9 @@ from libc.stdio cimport *
 from libc.stdlib cimport *
 from libc.string cimport *
 # LOCAL
-from .rasqal cimport *
-from .raptor cimport *
+from rasqal cimport *
+from raptor2 cimport *
 
-from itertools import *
-from rdflib.term import URIRef, Literal, BNode
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -29,44 +27,50 @@ def disable_rasqal_warnings():
     global rasqal_warning_level
     rasqal_warning_level = 0
 
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# related sequences
+#
+#-----------------------------------------------------------------------------------------------------------------------
+cdef inline Sequence new_PrefixSequence(rasqal_query* query, raptor_sequence* sequence):
+    cdef Sequence seq = PrefixSequence()
+    seq._rquery = query
+    seq._rsequence = sequence
+    return seq
+
+cdef class PrefixSequence(Sequence):
+    cdef __item__(self, void* seq_item):
+        return new_Prefix(<rasqal_prefix*>seq_item)
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # the prefix
 #
 #-----------------------------------------------------------------------------------------------------------------------
+cdef Prefix new_Prefix(rasqal_prefix* prefix):
+    cdef Prefix pref = Prefix()
+    pref._rprefix = prefix
+    return pref
+
 cdef class Prefix:
     def __cinit__(self):
         self._rprefix = NULL
 
     property prefix:
         def __get__(self):
-            return self.p.prefix if self.p.prefix != NULL else ''
+            return self._rprefix.prefix if self._rprefix.prefix != NULL else ''
 
     property uri:
         def __get__(self):
-            return uri_to_str(self.p.uri) if self.p.uri != NULL else None
+            return uri_to_str(self._rprefix.uri) if self._rprefix.uri != NULL else None
 
     cpdef debug(self):
-        rasqal_prefix_print(<rasqal_prefix*> self.p, stdout)
+        rasqal_prefix_print(<rasqal_prefix*> self._rprefix, stdout)
 
     def __str__(self):
-        return '(%s : %s)' % (self.prefix, self.uri)
+        return 'Prefix(%s : %s)' % (self.prefix, self.uri)
 
-
-cdef class VarSequence(Sequence):
-    cdef __item__(self, void* seq_item):
-        return new_queryvar(<rasqal_variable*> seq_item)
-
-
-cdef class TriplePatternSequence(Sequence):
-    cdef __item__(self, void* seq_item):
-        return new_triplepattern(<rasqal_triple*> seq_item)
-
-
-cdef class GraphPatternSequence(Sequence):
-    cdef __item__(self, void* seq_item):
-        return new_graphpattern(<rasqal_query*> self._rquery, <rasqal_graph_pattern*> seq_item)
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -88,15 +92,28 @@ cdef class Query:
 
         # parse
         rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)
+        # setup query
+        self.query_graph_pattern = new_GraphPattern(self._rquery,
+            rasqal_query_get_query_graph_pattern(self._rquery))
 
-        self.triple_patterns = self.__get_triple_patterns__()
-        self.prefixes = self.__get_prefixes__()
-        self.query_graph_pattern = self.__get_graph_pattern__()
-        self.graph_patterns = self.__get_graph_patterns__()
-        self.vars = list(AllVarsIterator(self, None))
-        self.bound_vars = list(BoundVarsIterator(self, None))
-        self.projections = self.bound_vars
-        self.binding_vars = list(BindingsVarsIterator(self, None))
+        # the sequences
+        self.triple_patterns = new_TriplePatternSequence(self._rquery,
+            rasqal_query_get_triple_sequence(self._rquery))
+
+        self.prefixes = new_PrefixSequence(self._rquery,
+            rasqal_query_get_prefix_sequence(self._rquery))
+
+        self.graph_patterns = new_GraphPatternSequence(self._rquery,
+            rasqal_query_get_graph_pattern_sequence(self._rquery))
+
+        self.vars = new_QueryVarSequence(self._rquery,
+            rasqal_query_get_all_variable_sequence(self._rquery))
+
+        self.projections = new_QueryVarSequence(self._rquery,
+            rasqal_query_get_bound_variable_sequence(self._rquery))
+
+        self.binding_vars = new_QueryVarSequence(self._rquery,
+            rasqal_query_get_bindings_variables_sequence(self._rquery))
 
     def __dealloc__(self):
         rasqal_free_query(self._rquery)
@@ -115,38 +132,10 @@ cdef class Query:
         return True if rasqal_query_has_variable(self._rquery, <unsigned char*> name) > 0 else False
 
     cpdef get_triple(self, i):
-        return new_triplepattern(rasqal_query_get_triple(self._rquery, i))
+        return new_TriplePattern(rasqal_query_get_triple(self._rquery, i))
 
     cpdef get_prefix(self, i):
-        return Prefix(<object> rasqal_query_get_prefix(self._rquery, i))
-
-    def __get_triple_patterns__(self):
-        cdef raptor_sequence*ts = rasqal_query_get_triple_sequence(self._rquery)
-        cdef int sz = 0
-        if ts != NULL:
-            sz = raptor_sequence_size(ts)
-            return [new_triplepattern(rasqal_query_get_triple(self._rquery, i)) for i in xrange(sz)]
-        return []
-
-    def __get_prefixes__(self):
-        cdef raptor_sequence*ps = rasqal_query_get_prefix_sequence(self._rquery)
-        cdef int sz = 0
-        if ps != NULL:
-            sz = raptor_sequence_size(ps)
-            return [Prefix(<object> rasqal_query_get_prefix(self._rquery, i)) for i in xrange(sz)]
-        return []
-
-    def __get_graph_pattern__(self):
-        return new_graphpattern(self._rquery, rasqal_query_get_query_graph_pattern(self._rquery))
-
-    def __get_graph_patterns__(self):
-        cdef raptor_sequence*seq = rasqal_query_get_graph_pattern_sequence(self._rquery)
-        cdef int sz = 0
-        if seq != NULL:
-            sz = raptor_sequence_size(seq)
-            return [new_graphpattern(self._rquery, <rasqal_graph_pattern*> raptor_sequence_get_at(seq, i)) for i in
-                    xrange(sz)]
-        return []
+        return new_Prefix(rasqal_query_get_prefix(self._rquery, i))
 
     property label:
         def __get__(self):

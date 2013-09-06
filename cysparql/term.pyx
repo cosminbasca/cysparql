@@ -6,7 +6,7 @@ from libc.stdlib cimport *
 from libc.string cimport *
 # LOCAL
 from rasqal cimport *
-from raptor cimport *
+from raptor2 cimport *
 from util cimport *
 
 from rdflib.term import URIRef, Literal, BNode
@@ -81,6 +81,22 @@ cdef class QueryLiteral:
         elif self._rliteral.type == RASQAL_LITERAL_VARIABLE:
             return new_QueryVar(self._rliteral.value.variable)
         return None
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# related sequences
+#
+#-----------------------------------------------------------------------------------------------------------------------
+cdef inline Sequence new_QueryVarSequence(rasqal_query* query, raptor_sequence* sequence):
+    cdef Sequence seq = QueryVarSequence()
+    seq._rquery = query
+    seq._rsequence = sequence
+    return seq
+
+cdef class QueryVarSequence(Sequence):
+    cdef __item__(self, void* seq_item):
+        return new_QueryVar(<rasqal_variable*>seq_item)
 
 
 

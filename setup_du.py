@@ -21,6 +21,10 @@ def extension(name, libs, language='c', options=[], c_sources=[]):
 setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [
-        extension('query' , ['raptor2', 'rasqal'], options=['-w']),
+        extension('sequence',   ['raptor2', 'rasqal'], options=['-w']),
+        extension('term',       ['raptor2', 'rasqal'], options=['-w']),
+        extension('filter',     ['raptor2', 'rasqal'], options=['-w']),
+        extension('pattern',    ['raptor2', 'rasqal'], options=['-w']),
+        extension('query',      ['raptor2', 'rasqal'], options=['-w']),
     ],
 )

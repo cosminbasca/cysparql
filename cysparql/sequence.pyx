@@ -6,9 +6,10 @@ from libc.stdlib cimport *
 from libc.string cimport *
 # LOCAL
 from rasqal cimport *
-from raptor cimport *
+from raptor2 cimport *
 from util cimport *
 
+# TODO: decide wether mutable or imutable ...
 cdef class Sequence:
     def __cinit__(self):
         """this class must be subclassed to be of any use. Provide your own factory constructor methods"""
@@ -26,7 +27,8 @@ cdef class Sequence:
         raptor_sequence_delete_at(<raptor_sequence*> self._rsequence, i)
 
     def __getitem__(self, i):
-        return <object> raptor_sequence_get_at(<raptor_sequence*> self._rsequence, i)
+        cdef void* item = raptor_sequence_get_at(<raptor_sequence*> self._rsequence, i)
+        return self.__item__(item) if item != NULL else None
 
     cpdef debug(self):
         raptor_sequence_print(<raptor_sequence*> self._rsequence, stdout)
@@ -60,5 +62,5 @@ cdef class Sequence:
         else:
             item = raptor_sequence_get_at(<raptor_sequence*> self._rsequence, self._idx)
             self._idx += 1
-            return self.__item__(item)
+            return self.__item__(item) if item != NULL else None
 

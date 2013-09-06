@@ -38,10 +38,12 @@ cdef class TriplePattern:
 #
 #-----------------------------------------------------------------------------------------------------------------------
 cdef Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence)
-cdef class TriplePatternSequence(Sequence)
+cdef class TriplePatternSequence(Sequence):
+    pass
 
 cdef Sequence new_GraphPatternSequence(rasqal_query* query, raptor_sequence* sequence)
-cdef class GraphPatternSequence(Sequence)
+cdef class GraphPatternSequence(Sequence):
+    pass
 
 
 #-----------------------------------------------------------------------------------------------------------------------

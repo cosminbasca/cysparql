@@ -4,6 +4,7 @@ from cpython cimport *
 from libc.stdio cimport *
 from libc.stdlib cimport *
 from rasqal cimport *
+from raptor2 cimport *
 from util cimport *
 
 

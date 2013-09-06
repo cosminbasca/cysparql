@@ -6,7 +6,7 @@ from libc.stdlib cimport *
 from libc.string cimport *
 # LOCAL
 from rasqal cimport *
-from raptor cimport *
+from raptor2 cimport *
 from util cimport *
 from term cimport *
 

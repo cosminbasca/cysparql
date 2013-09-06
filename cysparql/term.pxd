@@ -5,8 +5,7 @@ from libc.stdio cimport *
 from libc.stdlib cimport *
 from rasqal cimport *
 from util cimport *
-
-
+from sequence cimport *
 
 
 cdef class QueryLiteral
@@ -17,7 +16,7 @@ cdef class QueryVar
 # the query literal
 #
 #-----------------------------------------------------------------------------------------------------------------------
-cdef QueryLiteral new_Queryliteral(rasqal_literal* literal)
+cdef QueryLiteral new_QueryLiteral(rasqal_literal* literal)
 
 cdef class QueryLiteral:
     cdef rasqal_literal* _rliteral
@@ -29,6 +28,15 @@ cdef class QueryLiteral:
     cpdef debug(self)
     cpdef object value(self)
 
+
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# related sequences
+#
+#-----------------------------------------------------------------------------------------------------------------------
+cdef Sequence new_QueryVarSequence(rasqal_query* query, raptor_sequence* sequence)
+cdef class QueryVarSequence(Sequence):
+    pass
 
 #-----------------------------------------------------------------------------------------------------------------------
 #

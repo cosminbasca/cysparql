@@ -42,7 +42,11 @@ setup(
     packages = ["cysparql"],
     package_dir = {"cysparql":"cysparql"},
     ext_modules = [
-            extension('query' , ['raptor2', 'rasqal'], options=['-w']),
+            extension('sequence',   ['raptor2', 'rasqal'], options=['-w']),
+            extension('term',       ['raptor2', 'rasqal'], options=['-w']),
+            extension('filter',     ['raptor2', 'rasqal'], options=['-w']),
+            extension('pattern',    ['raptor2', 'rasqal'], options=['-w']),
+            extension('query',      ['raptor2', 'rasqal'], options=['-w']),
     ],
     install_requires = manual_deps + pip_deps + private_deps,
     include_package_data = True,
