@@ -24,7 +24,7 @@ def extension(name, libs, language='c', options=[], c_sources=[]):
 private_deps = []
 
 pip_deps = [
-    'cython>=0.18',
+    'cython>=0.19.1',
     'rdflib>=3.2.1',
     'pytools>=2013.5.6',
     'pandas>=0.12.0'
@@ -35,20 +35,17 @@ manual_deps = []
 setup(
     name ='cysparql',
     version = str_version,
-    description = 'cython wrapper of rasqal - an efficient and fast C SPARQL parser',
+    description = 'cython wrapper of rasqal - an efficient and fast native C SPARQL parser',
     author = 'Cosmin Basca',
     author_email = 'basca@ifi.uzh.ch',
     cmdclass = {'build_ext': build_ext},
     packages = ["cysparql"],
     package_dir = {"cysparql":"cysparql"},
-    # package_data = {"cysparql": []},
     ext_modules = [
             extension('query' , ['raptor2', 'rasqal'], options=['-w']),
     ],
     install_requires = manual_deps + pip_deps + private_deps,
     include_package_data = True,
-#    exclude_package_data = { 'cysparql': ['*.c', '*.cpp', '*.h', '*.pyx', '*.pxd', '*.y', '*.l', '*.pxi', '*.log'],
-#                             'dist': ['*.*']},
     zip_safe = False,
     # scripts = [
     #     # 'scripts/cytt_importer.py',
