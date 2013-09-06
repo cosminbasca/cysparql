@@ -28,6 +28,12 @@ cdef class TriplePattern:
     cdef public QueryLiteral    object_qliteral
     cdef public QueryLiteral    context_qliteral
 
+    cdef public object __subject__
+    cdef public object __predicate__
+    cdef public object __object__
+    cdef public object __context__
+
+
     cpdef debug(self)
     cdef int pattern_type(self)
 

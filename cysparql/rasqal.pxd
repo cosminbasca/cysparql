@@ -511,3 +511,15 @@ cdef extern from "rasqal/rasqal.h" nogil:
     void* rasqal_calloc_memory(size_t nmemb, size_t size)
     void rasqal_free_memory(void *ptr)
 
+
+ctypedef struct rasqal_graph_pattern_struct:
+    rasqal_query* query
+    rasqal_graph_pattern_operator op
+    raptor_sequence* triples
+    raptor_sequence* graph_patterns
+    int start_column
+    int end_column
+    rasqal_expression* filter_expression
+    int gp_index
+    rasqal_literal *origin
+    rasqal_variable *var
