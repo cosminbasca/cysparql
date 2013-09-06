@@ -20,12 +20,11 @@ SELECT *
 FROM <http://dbpedia.org>
 WHERE {
         <http://dbpedia.org/resource/Karl_Gebhardt> rdfs:label ?label .
-        FILTER (lang(?abstract) = 'en') .
         OPTIONAL {
             <http://dbpedia.org/resource/Karl_Gebhardt> wgs84_pos:lat ?lat .
             <http://dbpedia.org/resource/Karl_Gebhardt> wgs84_pos:long ?long
         }
-        FILTER (lang(?abstract) = 'en')
+        FILTER (lang(?label) = 'en')
 }
 '''
 
@@ -50,3 +49,7 @@ print '-------'
 print qry.graph_patterns
 for gp in qry.graph_patterns:
     print gp
+
+print '---------'
+label = qry.get_var(0)
+print label.name, label.n3()

@@ -123,10 +123,10 @@ cdef class Query:
         rasqal_query_print(self._rquery, stdout)
 
     cpdef get_bindings_var(self, i):
-        return QueryVar(<object> rasqal_query_get_bindings_variable(self._rquery, i))
+        return new_QueryVar(rasqal_query_get_bindings_variable(self._rquery, i))
 
     cpdef get_var(self, i):
-        return QueryVar(<object> rasqal_query_get_variable(self._rquery, i))
+        return new_QueryVar(rasqal_query_get_variable(self._rquery, i))
 
     cpdef has_var(self, char*name):
         return True if rasqal_query_has_variable(self._rquery, <unsigned char*> name) > 0 else False
