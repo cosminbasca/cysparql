@@ -202,7 +202,7 @@ cdef GraphPattern new_GraphPattern(rasqal_query* query, rasqal_graph_pattern* gr
     grp.filter = new_Filter(_expression) if _expression != NULL else None
 
     grp.triple_patterns = new_TriplePatternSequence(query,
-        (<rasqal_graph_pattern_struct*>graphpattern).triples)
+        internal_rasqal_graph_pattern_get_triples(graphpattern))
 
     grp.flattened_triple_patterns = new_TriplePatternSequence(query,
         rasqal_graph_pattern_get_flattened_triples(query, graphpattern))

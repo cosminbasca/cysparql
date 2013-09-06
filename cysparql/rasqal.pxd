@@ -5,11 +5,13 @@ from raptor2 cimport *
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
-#//-----------------------------------------------------------------------------------------------------------------------
-#// the rasqal sparql parsing library
-#//-----------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# the rasqal sparql parsing library
+#
+#-----------------------------------------------------------------------------------------------------------------------
 cdef extern from "rasqal/rasqal.h" nogil:
-    #// forward declarations
+    #forward declarations
     ctypedef struct rasqal_variable
     ctypedef struct rasqal_xsd_decimal
     ctypedef struct rasqal_xsd_datetime
@@ -25,10 +27,9 @@ cdef extern from "rasqal/rasqal.h" nogil:
     ctypedef struct rasqal_variables_table
     ctypedef struct rasqal_expression
     ctypedef struct raptor_iostream
-    ctypedef struct rasqal_projection
     ctypedef struct rasqal_solution_modifier
 
-    #//enums
+    #enums
     ctypedef enum rasqal_feature:
         RASQAL_FEATURE_NO_NET
         RASQAL_FEATURE_LAST
@@ -205,7 +206,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
         RASQAL_EXPR_CEIL
         RASQAL_EXPR_FLOOR
 
-    #// structs
+    # structs
     ctypedef struct rasqal_world:
         pass
 
@@ -227,18 +228,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
         unsigned int flags
 
     ctypedef struct rasqal_graph_pattern:
-        rasqal_query* query
-        rasqal_graph_pattern_operator op
-        raptor_sequence* triples
-        raptor_sequence* graph_patterns
-        int start_column
-        int end_column
-        rasqal_expression* filter_expression
-        int gp_index
-        rasqal_literal *origin
-        rasqal_variable *var
-        rasqal_projection* projection
-        rasqal_solution_modifier* modifier
+        pass
 
     cdef union l_value:
         int integer
@@ -346,17 +336,17 @@ cdef extern from "rasqal/rasqal.h" nogil:
     raptor_sequence* rasqal_query_get_describe_sequence(rasqal_query *query)
     int rasqal_query_get_distinct(rasqal_query *query)
     int rasqal_query_get_explain(rasqal_query *query)
-    #//rasqal_expression* rasqal_query_get_group_condition(rasqal_query *query, int idx)
+    rasqal_expression* rasqal_query_get_group_condition(rasqal_query *query, int idx)
     raptor_sequence* rasqal_query_get_group_conditions_sequence(rasqal_query *query)
     rasqal_graph_pattern* rasqal_query_get_graph_pattern(rasqal_query *query, int idx)
     raptor_sequence* rasqal_query_get_graph_pattern_sequence(rasqal_query *query)
-    #//rasqal_expression* rasqal_query_get_having_condition(rasqal_query *query, int idx)
+    rasqal_expression* rasqal_query_get_having_condition(rasqal_query *query, int idx)
     raptor_sequence* rasqal_query_get_having_conditions_sequence(rasqal_query *query)
     char* rasqal_query_get_label(rasqal_query *query)
     int rasqal_query_get_limit(rasqal_query *query)
     char* rasqal_query_get_name(rasqal_query *query)
     int rasqal_query_get_offset(rasqal_query *query)
-    #//rasqal_expression* rasqal_query_get_order_condition(rasqal_query *query, int idx)
+    rasqal_expression* rasqal_query_get_order_condition(rasqal_query *query, int idx)
     raptor_sequence* rasqal_query_get_order_conditions_sequence(rasqal_query *query)
     rasqal_prefix* rasqal_query_get_prefix(rasqal_query *query, int idx)
     raptor_sequence* rasqal_query_get_prefix_sequence(rasqal_query *query)
@@ -472,7 +462,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     #//--------------------------------------------------------------------------------------------------------
     int rasqal_graph_pattern_add_sub_graph_pattern(rasqal_graph_pattern *graph_pattern, rasqal_graph_pattern *sub_graph_pattern)
     rasqal_expression* rasqal_graph_pattern_get_filter_expression(rasqal_graph_pattern *gp)
-    #//int rasqal_graph_pattern_set_filter_expression(rasqal_graph_pattern *gp, rasqal_expression *expr)
+    int rasqal_graph_pattern_set_filter_expression(rasqal_graph_pattern *gp, rasqal_expression *expr)
     raptor_sequence* rasqal_graph_pattern_get_flattened_triples(rasqal_query *query, rasqal_graph_pattern *graph_pattern)
     int rasqal_graph_pattern_get_index (rasqal_graph_pattern *gp)
     rasqal_graph_pattern_operator rasqal_graph_pattern_get_operator(rasqal_graph_pattern *graph_pattern)
@@ -511,8 +501,26 @@ cdef extern from "rasqal/rasqal.h" nogil:
     void* rasqal_calloc_memory(size_t nmemb, size_t size)
     void rasqal_free_memory(void *ptr)
 
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# access to internal structs
+#
+#-----------------------------------------------------------------------------------------------------------------------
+ctypedef struct _rasqal_projection:
+    rasqal_query* query
+    raptor_sequence* variables
+    int wildcard
+    unsigned int distinct
 
-ctypedef struct rasqal_graph_pattern_struct:
+ctypedef struct _rasqal_solution_modifier:
+    rasqal_query* query
+    raptor_sequence* order_conditions
+    raptor_sequence* group_conditions
+    raptor_sequence* having_conditions
+    int limit
+    int offset
+
+ctypedef struct _rasqal_graph_pattern:
     rasqal_query* query
     rasqal_graph_pattern_operator op
     raptor_sequence* triples
@@ -523,3 +531,10 @@ ctypedef struct rasqal_graph_pattern_struct:
     int gp_index
     rasqal_literal *origin
     rasqal_variable *var
+    _rasqal_projection* projection
+    _rasqal_solution_modifier* modifier
+    unsigned int silent
+    raptor_sequence* data_graphs
+
+cdef inline raptor_sequence* internal_rasqal_graph_pattern_get_triples(rasqal_graph_pattern *graph_pattern):
+    return (<_rasqal_graph_pattern*>graph_pattern).triples
