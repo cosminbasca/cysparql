@@ -24,9 +24,7 @@ private_deps = []
 
 pip_deps = [
     'cython>=0.19.1',
-    'rdflib>=3.2.1',
-    'pytools>=2013.5.6',
-    'pandas>=0.12.0'
+    'rdflib>=4.0.1',
 ]
 
 manual_deps = []

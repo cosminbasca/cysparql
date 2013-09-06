@@ -1,2 +1,2 @@
-cython>=0.18
-rdflib>=3.2.1
+cython>=0.19.1
+rdflib>=4.0.1

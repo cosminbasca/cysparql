@@ -1,17 +1,10 @@
 import traceback
-from pytools import distinct_pairs
 
 __author__ = 'basca'
 
 from unittest import TestCase
 import functools
-import os
-import shutil
-import tempfile
 from cysparql import *
-import logging
-import binascii
-from pandas.core.frame import DataFrame, Series
 from rdflib.term import Literal as rdflib_Literal
 from rdflib.term import URIRef as rdflib_URIRef
 from rdflib.term import BNode as rdflib_BNode
