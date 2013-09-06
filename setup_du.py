@@ -17,7 +17,6 @@ def extension(name, libs, language='c', options=[], c_sources=[]):
                      library_dirs 	    = get_lib_dir(),
                      include_dirs       = get_include_dir(),
                      extra_compile_args = ['-fPIC']+options)
-
 setup(
     cmdclass = {'build_ext': build_ext},
     ext_modules = [

@@ -510,4 +510,4 @@ cdef extern from "rasqal/rasqal.h" nogil:
     void* rasqal_alloc_memory(size_t size)
     void* rasqal_calloc_memory(size_t nmemb, size_t size)
     void rasqal_free_memory(void *ptr)
-    
+
