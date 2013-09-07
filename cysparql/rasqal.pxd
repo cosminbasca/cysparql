@@ -536,5 +536,5 @@ ctypedef struct _rasqal_graph_pattern:
     unsigned int silent
     raptor_sequence* data_graphs
 
-cdef inline raptor_sequence* internal_rasqal_graph_pattern_get_triples(rasqal_graph_pattern *graph_pattern):
-    return (<_rasqal_graph_pattern*>graph_pattern).triples
+# cdef inline raptor_sequence* internal_rasqal_graph_pattern_get_triples(rasqal_graph_pattern *graph_pattern):
+#     return (<_rasqal_graph_pattern*>graph_pattern).triples

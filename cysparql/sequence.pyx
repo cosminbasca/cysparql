@@ -21,6 +21,8 @@ cdef class Sequence:
         self._rsequence = NULL
         self._rquery = NULL
         self._idx = 0
+        self._start = -1
+        self._end = -1
 
     def __len__(self):
         return raptor_sequence_size(<raptor_sequence*> self._rsequence)
@@ -36,13 +38,14 @@ cdef class Sequence:
         return <object> seq_item
 
     def __iter__(self):
-        self._idx = 0
+        self._idx = 0 if self._start < 0 else self._start
         return self
 
     def __next__(self):
         cdef void* item = NULL
         if self._rsequence == NULL \
-            or self._idx >= raptor_sequence_size(<raptor_sequence*> self._rsequence):
+            or self._idx >= raptor_sequence_size(<raptor_sequence*> self._rsequence) \
+            or (self._end > 0 and self._idx > self._end):
             raise StopIteration
         else:
             item = raptor_sequence_get_at(<raptor_sequence*> self._rsequence, self._idx)

@@ -179,10 +179,12 @@ cdef class TriplePattern:
 # related sequences
 #
 #-----------------------------------------------------------------------------------------------------------------------
-cdef inline Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence):
+cdef inline Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence, int start=-1, int end=-1):
     cdef Sequence seq = TriplePatternSequence()
     seq._rquery = query
     seq._rsequence = sequence
+    seq._start = start
+    seq._end = end
     return seq
 
 cdef class TriplePatternSequence(Sequence):
@@ -190,10 +192,12 @@ cdef class TriplePatternSequence(Sequence):
         return new_TriplePattern(<rasqal_triple*>seq_item)
 
 
-cdef inline Sequence new_GraphPatternSequence(rasqal_query* query, raptor_sequence* sequence):
+cdef inline Sequence new_GraphPatternSequence(rasqal_query* query, raptor_sequence* sequence, int start=-1, int end=-1):
     cdef Sequence seq = GraphPatternSequence()
     seq._rquery = query
     seq._rsequence = sequence
+    seq._start = start
+    seq._end = end
     return seq
 
 cdef class GraphPatternSequence(Sequence):
@@ -229,7 +233,9 @@ cdef GraphPattern new_GraphPattern(rasqal_query* query, rasqal_graph_pattern* gr
     grp.filter = new_Filter(_expression) if _expression != NULL else None
 
     grp.triple_patterns = new_TriplePatternSequence(query,
-        internal_rasqal_graph_pattern_get_triples(graphpattern))
+        (<_rasqal_graph_pattern*>graphpattern).triples,
+        (<_rasqal_graph_pattern*>graphpattern).start_column, # start
+        (<_rasqal_graph_pattern*>graphpattern).end_column) # end
 
     grp.flattened_triple_patterns = new_TriplePatternSequence(query,
         rasqal_graph_pattern_get_flattened_triples(query, graphpattern))
@@ -264,6 +270,9 @@ cdef class GraphPattern:
         def __get__(self):
             cdef int op = rasqal_graph_pattern_get_operator(self._rgraphpattern)
             return Operator.reverse_mapping[op]
+
+    def __getitem__(self, idx):
+        return self.sub_graph_patterns[idx]
 
     cpdef debug(self):
         rasqal_graph_pattern_print(self._rgraphpattern, stdout)

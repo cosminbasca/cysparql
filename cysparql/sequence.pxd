@@ -17,6 +17,8 @@ cdef class Sequence:
     cdef raptor_sequence*       _rsequence
     cdef rasqal_query*          _rquery
     cdef int                    _idx
+    cdef int                    _start
+    cdef int                    _end
 
     cpdef debug(self)
     cdef __item__(self, void* seq_item)

@@ -43,11 +43,11 @@ cdef class TriplePattern:
 # related sequences
 #
 #-----------------------------------------------------------------------------------------------------------------------
-cdef Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence)
+cdef Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence, int start=*, int end=*)
 cdef class TriplePatternSequence(Sequence):
     pass
 
-cdef Sequence new_GraphPatternSequence(rasqal_query* query, raptor_sequence* sequence)
+cdef Sequence new_GraphPatternSequence(rasqal_query* query, raptor_sequence* sequence, int start=*, int end=*)
 cdef class GraphPatternSequence(Sequence):
     pass
 
