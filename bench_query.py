@@ -37,6 +37,10 @@ print qry.triple_patterns
 
 print '--------'
 for tp in qry.triple_patterns:
+    print 'SUBJECT = ',tp.subject
+    print 'PREDICATE = ',tp.predicate
+    print 'OBJECT = ',tp.object
+    print 'iter...'
     for part in tp:
         print type(part), part
 
