@@ -1,6 +1,9 @@
 from collections import namedtuple
 from pprint import pprint
 from cysparql import *
+# requires python-Levenshtein
+from Levenshtein import distance
+from rdflib.term import URIRef, Literal
 
 __author__ = 'basca'
 
@@ -80,7 +83,7 @@ def total_decomp(graph_pattern):
     _decomp(p)
     return p
 
-def  print_operator_tree(gp, deppth = 0):
+def print_operator_tree(gp, deppth = 0):
     print '\t'.join(['' for i in xrange(deppth)])+gp.operator_label
     for g in gp:
         print_operator_tree(g, deppth = deppth+1)
@@ -91,8 +94,38 @@ def  print_operator_tree(gp, deppth = 0):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
+DELTA_FACTOR = 1.0 / 3.0
 
+def delta_term(x1, x2, k = DELTA_FACTOR):
+    s1 = unicode(x1.n3())
+    s2 = unicode(x2.n3())
+    d = float(distance(s1, s2))
 
+    # print type(x1), s1, ' ----- ', type(x2), s2, ' ----- ',d
+
+    m = float(max(len(s1), len(s2)))
+    if isinstance(x1, QueryVar) and isinstance(x2, QueryVar):
+        assert 0 <= k < 1, 'k is not between 0 and 1, for the x1,x2 in Vars'
+        return d / (m + 1.0) * float(k)
+    elif (isinstance(x1, URIRef) and isinstance(x2, URIRef)) \
+        or (isinstance(x1, Literal) and isinstance(x2, Literal)):
+        return d / (m + 1.0)
+    else:
+        return 1.0
+
+def delta_tpattern(t1, t2):
+    assert isinstance(t1, TriplePattern)
+    assert isinstance(t2, TriplePattern)
+    return  delta_term(t1.subject, t2.subject) + \
+            delta_term(t1.predicate, t2.predicate) + \
+            delta_term(t1.object, t2.object)
+
+def delta_gpattern(p1, p2):
+    assert isinstance(p1, Pattern)
+    assert isinstance(p2, Pattern)
+    if len(p1.children) == 1 and len(p2.children) == 1:
+        return delta_tpattern(p1.children[0], p2.children[0])
+    return float('Inf')
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # test
@@ -120,6 +153,11 @@ SELECT * WHERE {
     all_patterns = total_decomp(GP)
 
     pprint(all_patterns)
+    t1 = all_patterns.children[0].children[0]
+    t2 = all_patterns.children[0].children[1]
+    print t1
+    print t2
+    print delta_tpattern(t1, t2)
 
 if __name__ == '__main__':
     main()
