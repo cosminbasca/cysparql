@@ -55,6 +55,8 @@ cdef class Query:
     cdef public Sequence        triple_patterns
     cdef public Sequence        graph_patterns
 
+    cdef public dict            __vars__
+
     cpdef debug(self)
     cpdef get_bindings_var(self, i)
     cpdef get_var(self, i)

@@ -115,6 +115,8 @@ cdef class Query:
         self.binding_vars = new_QueryVarSequence(self._rquery,
             rasqal_query_get_bindings_variables_sequence(self._rquery))
 
+        self.__vars__ = None
+
     def __dealloc__(self):
         rasqal_free_query(self._rquery)
         rasqal_free_world(self._rworld)
@@ -136,6 +138,12 @@ cdef class Query:
 
     cpdef get_prefix(self, i):
         return new_Prefix(rasqal_query_get_prefix(self._rquery, i))
+
+    property variables:
+        def __get__(self):
+            if not self.__vars__:
+                self.__vars__ = dict([(v.name, v) for v in self.vars])
+            return self.__vars__
 
     property label:
         def __get__(self):

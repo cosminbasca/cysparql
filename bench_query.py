@@ -53,3 +53,5 @@ for gp in qry.graph_patterns:
 print '---------'
 label = qry.get_var(0)
 print label.name, label.n3()
+
+print qry.variables['label'].n3()
