@@ -9,19 +9,20 @@ __author__ = 'basca'
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-GP_UNION = 'union'
-GP_AND = 'and'
-GP_OPTIONAL = 'optional'
-
-def decompose(graph_pattern, decomp_type):
-    if decomp_type == GP_UNION:
+def decompose(graph_pattern):
+    op = graph_pattern.operator
+    if op == Operator.OPTIONAL:
+        return op.sub_graph_patterns
+    elif op == Operator.UNION:
         pass
-    elif decomp_type == GP_OPTIONAL:
-        pass
-    elif decomp_type == GP_AND:
+    else: # defaults to AND
         pass
 
 
+def  print_operator_tree(gp, deppth = 0):
+    print '\t'.join(['' for i in xrange(deppth)])+gp.operator_label
+    for g in gp:
+        print_operator_tree(g, deppth = deppth+1)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -57,8 +58,7 @@ SELECT * WHERE {
     query = Query(qstring)
     query.debug()
     GP = query.query_graph_pattern
-    print GP.operator
-    print GP.operator_label
+    print_operator_tree(GP)
 
 
 if __name__ == '__main__':

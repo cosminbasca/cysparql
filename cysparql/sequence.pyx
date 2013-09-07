@@ -41,7 +41,8 @@ cdef class Sequence:
 
     def __next__(self):
         cdef void* item = NULL
-        if self._idx >= raptor_sequence_size(<raptor_sequence*> self._rsequence):
+        if self._rsequence == NULL \
+            or self._idx >= raptor_sequence_size(<raptor_sequence*> self._rsequence):
             raise StopIteration
         else:
             item = raptor_sequence_get_at(<raptor_sequence*> self._rsequence, self._idx)
