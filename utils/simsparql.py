@@ -58,7 +58,7 @@ SELECT * WHERE {
     query.debug()
     GP = query.query_graph_pattern
     print GP.operator
-    print Operator.UNION
+    print GP.operator_label
 
 
 if __name__ == '__main__':

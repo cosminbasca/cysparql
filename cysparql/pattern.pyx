@@ -9,28 +9,32 @@ from rasqal cimport *
 from raptor2 cimport *
 from util cimport *
 
-from abc import ABCMeta
-
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # the triple pattern
 #
 #-----------------------------------------------------------------------------------------------------------------------
-class Operator(object):
-    __metaclass__ = ABCMeta
+def enum(*sequential, **named):
+    """taken from: http://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python"""
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    reverse = dict((value, key) for key, value in enums.iteritems())
+    enums['reverse_mapping'] = reverse
+    return type('Enum', (), enums)
 
-    UNKNOWN = OPERATOR_UNKNOWN
-    BASIC = OPERATOR_BASIC
-    OPTIONAL = OPERATOR_OPTIONAL
-    UNION = OPERATOR_UNION
-    GROUP = OPERATOR_GROUP
-    GRAPH = OPERATOR_GRAPH
-    FILTER = OPERATOR_FILTER
-    LET = OPERATOR_LET
-    SELECT = OPERATOR_SELECT
-    SERVICE = OPERATOR_SERVICE
-    MINUS = OPERATOR_MINUS
-    LAST = OPERATOR_LAST
+Operator = enum(
+    UNKNOWN = OPERATOR_UNKNOWN,
+    BASIC = OPERATOR_BASIC,
+    OPTIONAL = OPERATOR_OPTIONAL,
+    UNION = OPERATOR_UNION,
+    GROUP = OPERATOR_GROUP,
+    GRAPH = OPERATOR_GRAPH,
+    FILTER = OPERATOR_FILTER,
+    LET = OPERATOR_LET,
+    SELECT = OPERATOR_SELECT,
+    SERVICE = OPERATOR_SERVICE,
+    MINUS = OPERATOR_MINUS,
+    LAST = OPERATOR_LAST,
+)
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -255,6 +259,11 @@ cdef class GraphPattern:
     property operator:
         def __get__(self):
             return rasqal_graph_pattern_get_operator(self._rgraphpattern)
+
+    property operator_label:
+        def __get__(self):
+            cdef int op = rasqal_graph_pattern_get_operator(self._rgraphpattern)
+            return Operator.reverse_mapping[op]
 
     cpdef debug(self):
         rasqal_graph_pattern_print(self._rgraphpattern, stdout)
