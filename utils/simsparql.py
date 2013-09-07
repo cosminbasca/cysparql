@@ -106,12 +106,9 @@ def delta_term(x1, x2, k = DELTA_FACTOR):
     if isinstance(x1, QueryVar) and isinstance(x2, QueryVar):
         assert 0 <= k < 1, 'k is not between 0 and 1, for the x1,x2 in Vars'
         return d / (m + 1.0) * float(k)
-    # as described in paper
     elif (isinstance(x1, URIRef) and isinstance(x2, URIRef)) \
         or (isinstance(x1, Literal) and isinstance(x2, Literal)):
         return d / (m + 1.0)
-    # elif isinstance(x1, (URIRef, Literal)) and isinstance(x2, (URIRef, Literal)):
-    #     return d / (m + 1.0)
     else:
         return 1.0
 
@@ -178,10 +175,9 @@ SELECT * WHERE {
 
     for i in xrange(len(t)):
         _delta = lambda itm: delta_tpattern(t[i], itm)
-        scores = map(_delta, t[:i]+t[i+1:])
-        # print 'scores = ',scores
+        _rest = t[:i]+t[i+1:]
+        scores = map(_delta, _rest)
         print 'min score T%d = %.2f'%(i+1, min(scores)), scores
-    # print 'T1 >>> ',min(delta_tpattern(t1, t2), delta_tpattern(t1, t5), delta_tpattern(t1, t6))
 
 if __name__ == '__main__':
     main()
