@@ -9,6 +9,29 @@ from rasqal cimport *
 from raptor2 cimport *
 from util cimport *
 
+from abc import ABCMeta
+
+#-----------------------------------------------------------------------------------------------------------------------
+#
+# the triple pattern
+#
+#-----------------------------------------------------------------------------------------------------------------------
+class Operator(object):
+    __metaclass__ = ABCMeta
+
+    UNKNOWN = OPERATOR_UNKNOWN
+    BASIC = OPERATOR_BASIC
+    OPTIONAL = OPERATOR_OPTIONAL
+    UNION = OPERATOR_UNION
+    GROUP = OPERATOR_GROUP
+    GRAPH = OPERATOR_GRAPH
+    FILTER = OPERATOR_FILTER
+    LET = OPERATOR_LET
+    SELECT = OPERATOR_SELECT
+    SERVICE = OPERATOR_SERVICE
+    MINUS = OPERATOR_MINUS
+    LAST = OPERATOR_LAST
+
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # the triple pattern

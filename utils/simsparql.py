@@ -57,10 +57,8 @@ SELECT * WHERE {
     query = Query(qstring)
     query.debug()
     GP = query.query_graph_pattern
-    print GP
-    print list(GP.triple_patterns)
-    # for gp in GP:
-    #     print gp
+    print GP.operator
+    print Operator.UNION
 
 
 if __name__ == '__main__':
