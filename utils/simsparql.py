@@ -100,16 +100,18 @@ def delta_term(x1, x2, k = DELTA_FACTOR):
     s1 = unicode(x1.n3())
     s2 = unicode(x2.n3())
     d = float(distance(s1, s2))
-
-    # print type(x1), s1, ' ----- ', type(x2), s2, ' ----- ',d
-
     m = float(max(len(s1), len(s2)))
+    # print type(x1), s1, ' ----- ', type(x2), s2, ' ----- ',d, ', ',m
+
     if isinstance(x1, QueryVar) and isinstance(x2, QueryVar):
         assert 0 <= k < 1, 'k is not between 0 and 1, for the x1,x2 in Vars'
         return d / (m + 1.0) * float(k)
+    # as described in paper
     elif (isinstance(x1, URIRef) and isinstance(x2, URIRef)) \
         or (isinstance(x1, Literal) and isinstance(x2, Literal)):
         return d / (m + 1.0)
+    # elif isinstance(x1, (URIRef, Literal)) and isinstance(x2, (URIRef, Literal)):
+    #     return d / (m + 1.0)
     else:
         return 1.0
 
@@ -126,6 +128,12 @@ def delta_gpattern(p1, p2):
     if len(p1.children) == 1 and len(p2.children) == 1:
         return delta_tpattern(p1.children[0], p2.children[0])
     return float('Inf')
+
+def generalize_term(x1, x2):
+    if delta_term(x1, x2) == 0:
+        return x1
+    return
+
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # test
@@ -149,15 +157,26 @@ SELECT * WHERE {
     '''
 
     query = Query(qstring)
+    # query.debug()
     GP = query.query_graph_pattern
+    # GP.debug()
+    tpatterns = list(query.triple_patterns)
     all_patterns = total_decomp(GP)
 
     pprint(all_patterns)
-    t1 = all_patterns.children[0].children[0]
-    t2 = all_patterns.children[0].children[1]
-    print t1
-    print t2
-    print delta_tpattern(t1, t2)
+    t1,t2,t6,t5 = tpatterns
+    print 'T1: ', t1
+    print 'T2: ', t2
+    print 'T5: ', t5
+    print 'T6: ', t6
+    print 'D(T1, T2) = ',delta_tpattern(t1, t2)
+    print 'D(T1, T5) = ',delta_tpattern(t1, t5)
+    print 'D(T1, T6) = ',delta_tpattern(t1, t6)
+
+    print 'T1 >>> ',min(delta_tpattern(t1, t2), delta_tpattern(t1, t5), delta_tpattern(t1, t6))
+    print 'T2 >>> ',min(delta_tpattern(t2, t1), delta_tpattern(t2, t5), delta_tpattern(t2, t6))
+    print 'T5 >>> ',min(delta_tpattern(t5, t1), delta_tpattern(t5, t2), delta_tpattern(t5, t6))
+    print 'T6 >>> ',min(delta_tpattern(t6, t1), delta_tpattern(t6, t2), delta_tpattern(t6, t5))
 
 if __name__ == '__main__':
     main()
