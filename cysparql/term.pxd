@@ -44,6 +44,7 @@ cdef class QueryVarSequence(Sequence):
 #
 #-----------------------------------------------------------------------------------------------------------------------
 cdef QueryVar new_QueryVar(rasqal_variable* var)
+# cdef QueryVar create_new_QueryVar()
 
 cdef class QueryVar:
     cdef rasqal_variable* _rvariable

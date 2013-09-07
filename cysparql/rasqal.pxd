@@ -501,6 +501,16 @@ cdef extern from "rasqal/rasqal.h" nogil:
     void* rasqal_calloc_memory(size_t nmemb, size_t size)
     void rasqal_free_memory(void *ptr)
 
+    #//--------------------------------------------------------------------------------------------------------
+    #// variables table
+    #//--------------------------------------------------------------------------------------------------------
+    rasqal_variables_table* rasqal_new_variables_table(rasqal_world* world)
+    void rasqal_free_variables_table(rasqal_variables_table* vt)
+    rasqal_variable*  rasqal_variables_table_add(rasqal_variables_table* vt, rasqal_variable_type tp, const char *name, rasqal_literal *value)
+    int rasqal_variables_table_add_variable(rasqal_variables_table *vt, rasqal_variable *variable)
+    rasqal_variable*  rasqal_variables_table_get_by_name(rasqal_variables_table *vt, rasqal_variable_type tp, const char *name)
+    int rasqal_variables_table_contains(rasqal_variables_table *vt, rasqal_variable_type tp, const char *name)
+
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # access to internal structs
@@ -535,6 +545,3 @@ ctypedef struct _rasqal_graph_pattern:
     _rasqal_solution_modifier* modifier
     unsigned int silent
     raptor_sequence* data_graphs
-
-# cdef inline raptor_sequence* internal_rasqal_graph_pattern_get_triples(rasqal_graph_pattern *graph_pattern):
-#     return (<_rasqal_graph_pattern*>graph_pattern).triples

@@ -152,6 +152,9 @@ SELECT * WHERE {
         OPTIONAL {
             ?p2 ?associationWith ?p1 .
         }
+    } UNION {
+        example:Bob foaf:firstName "Bob" .
+        example:Bob foaf:lastName "Alice" .
     }
 }
     '''
@@ -164,19 +167,21 @@ SELECT * WHERE {
     all_patterns = total_decomp(GP)
 
     pprint(all_patterns)
-    t1,t2,t6,t5 = tpatterns
-    print 'T1: ', t1
-    print 'T2: ', t2
-    print 'T5: ', t5
-    print 'T6: ', t6
-    print 'D(T1, T2) = ',delta_tpattern(t1, t2)
-    print 'D(T1, T5) = ',delta_tpattern(t1, t5)
-    print 'D(T1, T6) = ',delta_tpattern(t1, t6)
+    t1,t2,t3,t4,t6,t5 = tpatterns
+    t = [t1, t2, t6, t5, t4, t3]
+    print 'T1: ', t[0]
+    print 'T2: ', t[1]
+    print 'T3: ', t[2]
+    print 'T4: ', t[3]
+    print 'T5: ', t[4]
+    print 'T6: ', t[5]
 
-    print 'T1 >>> ',min(delta_tpattern(t1, t2), delta_tpattern(t1, t5), delta_tpattern(t1, t6))
-    print 'T2 >>> ',min(delta_tpattern(t2, t1), delta_tpattern(t2, t5), delta_tpattern(t2, t6))
-    print 'T5 >>> ',min(delta_tpattern(t5, t1), delta_tpattern(t5, t2), delta_tpattern(t5, t6))
-    print 'T6 >>> ',min(delta_tpattern(t6, t1), delta_tpattern(t6, t2), delta_tpattern(t6, t5))
+    for i in xrange(len(t)):
+        _delta = lambda itm: delta_tpattern(t[i], itm)
+        scores = map(_delta, t[:i]+t[i+1:])
+        # print 'scores = ',scores
+        print 'min score T%d = %.2f'%(i+1, min(scores)), scores
+    # print 'T1 >>> ',min(delta_tpattern(t1, t2), delta_tpattern(t1, t5), delta_tpattern(t1, t6))
 
 if __name__ == '__main__':
     main()
