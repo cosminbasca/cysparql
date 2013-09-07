@@ -32,10 +32,11 @@ def decomp_and(gp):
     if gp.operator != Operator.BASIC:
         return None
     # decomp
+    tps = list(gp.triple_patterns)
     return Pattern(
         type=PatternTypes.AND,
-        children=list(gp.triple_patterns)
-    )
+        children=tps
+    ) if len(tps) > 1 else tps[0]
 
 def decomp_optional(gp):
     # test
@@ -83,7 +84,6 @@ def  print_operator_tree(gp, deppth = 0):
     print '\t'.join(['' for i in xrange(deppth)])+gp.operator_label
     for g in gp:
         print_operator_tree(g, deppth = deppth+1)
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
