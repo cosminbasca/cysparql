@@ -227,7 +227,7 @@ cdef class GraphPattern:
         self.flattened_triple_patterns = None
 
     def __iter__(self):
-        return iter(self.triple_patterns)
+        return iter(self.sub_graph_patterns)
 
     property operator:
         def __get__(self):
