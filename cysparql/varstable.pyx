@@ -34,7 +34,7 @@ cdef class QueryVarsTable:
         return new_QueryVar(v)
 
     cpdef bint add_variable(self, QueryVar var):
-        return rasqal_variables_table_add_variable(self._rvtable, var._rvariable)
+        return False if rasqal_variables_table_add_variable(self._rvtable, var._rvariable) > 0 else True
 
     def __getitem__(self, name):
         cdef char* _name = name
