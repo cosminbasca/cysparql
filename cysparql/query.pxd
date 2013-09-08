@@ -61,7 +61,7 @@ cdef class Query:
     cpdef debug(self)
     cpdef get_bindings_var(self, i)
     cpdef get_var(self, i)
-    cpdef has_var(self, char* name)
+    cpdef has_var(self, bytes name)
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
     cpdef QueryVarsTable create_vars_table(self)

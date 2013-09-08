@@ -358,6 +358,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     rasqal_query_verb rasqal_query_get_verb(rasqal_query *query)
     int rasqal_query_get_wildcard(rasqal_query *query)
     int rasqal_query_has_variable(rasqal_query *query, unsigned char *name)
+    int rasqal_query_has_variable2(rasqal_query* query, rasqal_variable_type type, unsigned char *name)
     int rasqal_query_prepare(rasqal_query *query,unsigned char *query_string, raptor_uri *base_uri)
     int rasqal_query_print(rasqal_query *query, FILE *fh)
     void rasqal_query_graph_pattern_visit(rasqal_query *query, rasqal_graph_pattern_visit_fn visit_fn, void *data)

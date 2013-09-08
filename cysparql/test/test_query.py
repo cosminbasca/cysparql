@@ -64,3 +64,42 @@ class TestQuery(BaseTestCase):
         qp_uris = set([str(p.uri) for p in prefixes])
         self.assertEqual(qp_keys, pref_keys)
         self.assertEqual(qp_uris, pref_uris)
+
+    def test_07_limit(self):
+        query = self.get_query()
+        self.assertEqual(query.limit, -1)
+
+    def test_08_offset(self):
+        query = self.get_query()
+        self.assertEqual(query.offset, -1)
+
+    def test_09_verb(self):
+        query = self.get_query()
+        self.assertEqual(query.verb, 'SELECT')
+
+    def test_10_label(self):
+        query = self.get_query()
+        self.assertEqual(query.label, 'SPARQL 1.1 (DRAFT) Query and Update Languages')
+
+    def test_11_getitem(self):
+        query = self.get_query()
+        tp = query[0]
+        self.assertIsInstance(tp, TriplePattern)
+        self.assertEqual(str(tp.subject), 'http://dbpedia.org/resource/Karl_Gebhardt')
+        self.assertIsInstance(tp.object, QueryVar)
+        self.assertEqual(tp.object.name, 'lat')
+
+    def test_12_iter(self):
+        query = self.get_query()
+        for tp in query:
+            self.assertIsInstance(tp, TriplePattern)
+
+    def test_13_create_vars_table(self):
+        query = self.get_query()
+        vt = query.create_vars_table()
+        self.assertIsInstance(vt, QueryVarsTable)
+
+    def test_14_has_var(self):
+        query = self.get_query()
+        self.assertTrue(query.has_var('label'))
+        self.assertFalse(query.has_var('latX'))

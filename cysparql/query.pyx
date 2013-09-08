@@ -132,8 +132,10 @@ cdef class Query:
     cpdef get_var(self, i):
         return new_QueryVar(rasqal_query_get_variable(self._rquery, i))
 
-    cpdef has_var(self, char*name):
-        return True if rasqal_query_has_variable(self._rquery, <unsigned char*> name) > 0 else False
+    cpdef has_var(self, bytes name):
+        cdef unsigned char* _name = name
+        cdef int rv = rasqal_query_has_variable2(self._rquery, RASQAL_VARIABLE_TYPE_NORMAL, _name)
+        return True if rv > 0 else False
 
     cpdef get_triple(self, i):
         return new_TriplePattern(rasqal_query_get_triple(self._rquery, i))
