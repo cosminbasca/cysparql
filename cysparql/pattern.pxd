@@ -32,6 +32,7 @@ cdef class TriplePattern:
     cdef public object __predicate__
     cdef public object __object__
     cdef public object __context__
+    cdef long _hashvalue
 
 
     cpdef debug(self)

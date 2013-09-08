@@ -172,6 +172,11 @@ cdef class TriplePattern:
         if type(self.object) is QueryVar: ptype += 1
         return ptype
 
+    def __hash__(self):
+        if self._hashvalue == 0:
+            self._hashvalue = hash((self.subject, self.predicate, self.object, self.context))
+        return self._hashvalue
+
 
 
 #-----------------------------------------------------------------------------------------------------------------------

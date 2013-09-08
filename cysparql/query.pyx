@@ -8,6 +8,8 @@ from libc.string cimport *
 from rasqal cimport *
 from raptor2 cimport *
 
+from rdflib.term import URIRef
+
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -63,7 +65,7 @@ cdef class Prefix:
 
     property uri:
         def __get__(self):
-            return uri_to_str(self._rprefix.uri) if self._rprefix.uri != NULL else None
+            return URIRef(uri_to_str(self._rprefix.uri)) if self._rprefix.uri != NULL else None
 
     cpdef debug(self):
         rasqal_prefix_print(<rasqal_prefix*> self._rprefix, stdout)
