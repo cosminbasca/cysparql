@@ -139,6 +139,9 @@ cdef class Query:
     cpdef get_prefix(self, i):
         return new_Prefix(rasqal_query_get_prefix(self._rquery, i))
 
+    cpdef QueryVarsTable create_vars_table(self):
+        return new_QueryVarsTable(self._rworld)
+
     property variables:
         def __get__(self):
             if not self.__vars__:

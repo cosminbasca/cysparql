@@ -24,6 +24,7 @@ setup(
         extension('term',       ['raptor2', 'rasqal'], options=['-w']),
         extension('filter',     ['raptor2', 'rasqal'], options=['-w']),
         extension('pattern',    ['raptor2', 'rasqal'], options=['-w']),
+        extension('varstable',  ['raptor2', 'rasqal'], options=['-w']),
         extension('query',      ['raptor2', 'rasqal'], options=['-w']),
     ],
 )

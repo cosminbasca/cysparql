@@ -59,3 +59,18 @@ label = qry.get_var(0)
 print label.name, label.n3()
 
 print qry.variables['label'].n3()
+
+vt = qry.create_vars_table()
+user2 = vt.add_new_variable("user2")
+print user2, type(user2)
+vt.add_variable(list(qry.projections)[0])
+print list(qry.projections)[0]
+n = list(qry.projections)[0].name
+print 'name ',n
+v1 = vt['user2']
+print 'v1 = ',v1
+v2 = vt[n]
+print 'v2 = ',v2
+del vt
+print v2
+print v1

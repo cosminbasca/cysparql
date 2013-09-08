@@ -9,6 +9,7 @@ from term cimport *
 from sequence import *
 from filter cimport *
 from pattern cimport *
+from varstable cimport *
 
 
 cdef class Prefix
@@ -63,3 +64,4 @@ cdef class Query:
     cpdef has_var(self, char* name)
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
+    cpdef QueryVarsTable create_vars_table(self)
