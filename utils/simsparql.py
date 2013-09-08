@@ -151,7 +151,7 @@ SELECT * WHERE {
         }
     } UNION {
         example:Bob foaf:firstName "Bob" .
-        example:Bob foaf:lastName "Alice" .
+        example:Alice foaf:lastName "Alice" .
     }
 }
     '''
