@@ -90,7 +90,7 @@ def print_operator_tree(gp, deppth = 0):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-# simmilarity and merging
+# simmilarity
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -101,8 +101,6 @@ def delta_term(x1, x2, k = DELTA_FACTOR):
     s2 = unicode(x2.n3())
     d = float(distance(s1, s2))
     m = float(max(len(s1), len(s2)))
-    # print type(x1), s1, ' ----- ', type(x2), s2, ' ----- ',d, ', ',m
-
     if isinstance(x1, QueryVar) and isinstance(x2, QueryVar):
         assert 0 <= k < 1, 'k is not between 0 and 1, for the x1,x2 in Vars'
         return d / (m + 1.0) * float(k)
@@ -125,6 +123,13 @@ def delta_gpattern(p1, p2):
     if len(p1.children) == 1 and len(p2.children) == 1:
         return delta_tpattern(p1.children[0], p2.children[0])
     return float('Inf')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# generalization
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 def generalize_term(x1, x2):
     if delta_term(x1, x2) == 0:
