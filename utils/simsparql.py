@@ -137,6 +137,10 @@ def generalize_term(x1, x2):
     return
 
 
+def graph_pattern_matching(p1, p2, delta_max, mappings):
+    assert isinstance(p1, Pattern)
+    assert isinstance(p2, Pattern)
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------
