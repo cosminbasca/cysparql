@@ -279,6 +279,9 @@ cdef class GraphPattern:
     def __getitem__(self, idx):
         return self.sub_graph_patterns[idx]
 
+    def __len__(self):
+        return self.sub_graph_patterns.__len__()
+
     cpdef debug(self):
         rasqal_graph_pattern_print(self._rgraphpattern, stdout)
 

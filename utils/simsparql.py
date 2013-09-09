@@ -72,15 +72,16 @@ def decomp(graph_pattern):
             return res
     return None
 
-def THETA(graph_pattern, complete = False):
-    def _decomp(p):
-        if isinstance(p, Pattern) and p.children is not None:
-            for i in xrange(len(p.children)):
-                p.children[i] = decomp(p.children[i])
-                _decomp(p.children[i])
+def expand(p):
+    if isinstance(p, Pattern) and p.children is not None:
+        for i in xrange(len(p.children)):
+            p.children[i] = decomp(p.children[i])
+            expand(p.children[i])
+
+def THETA(graph_pattern, expand_all= False):
     p = decomp(graph_pattern)
-    if complete:
-        _decomp(p)
+    if expand_all:
+        expand(p)
     return p
 
 def print_operator_tree(gp, deppth = 0):
@@ -128,6 +129,12 @@ def delta_gpattern(p1, p2):
         return delta_tpattern(p1.children[0], p2.children[0])
     return float('Inf')
 
+def DELTA(p1, p2):
+    if isinstance(p1, Pattern) and isinstance(p2, Pattern):
+        return delta_gpattern(p1, p2)
+    elif isinstance(p1, TriplePattern) and isinstance(p2, TriplePattern):
+        return delta_tpattern(p1, p2)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -144,8 +151,38 @@ def generalize_term(x1, x2):
 def graph_pattern_matching(p1, p2, delta_max, mappings):
     assert isinstance(p1, Pattern)
     assert isinstance(p2, Pattern)
+    s1 = THETA(p1)
+    s2 = THETA(p2)
 
-
+    if KAPPA(p1) != KAPPA(p2) \
+        or len(s1.children) != len(s2.children):
+        return None
+    for g1 in s1.children:
+        found_mapping = False
+        for g2 in s2.children:
+            if len(g1) == 1 and len(g2) == 1:
+                if KAPPA(g1) == KAPPA(g2):
+                    _g1 = mappings.get(g2, None)
+                    if _g1 is None:
+                        if DELTA(g1, g2) <= delta_max:
+                            mappings[g2] = g1
+                            found_mapping = True
+                            break
+                        elif DELTA(g1, g2) < DELTA(_g1, g2):
+                            mappings[g2] = g1
+                            # TODO: ADD here
+                            found_mapping = True
+                            break
+                    else:
+                        pass
+            else:
+                old_mappings = mappings
+                mappings = graph_pattern_matching(g1, g2, delta_max, mappings)
+                if mappings and len(mappings) > 0 and mappings != old_mappings:
+                    found_mapping = True
+        if found_mapping:
+            return None
+    return mappings
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
