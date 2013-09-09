@@ -7,6 +7,8 @@ from rdflib.term import URIRef, Literal
 
 __author__ = 'basca'
 
+disable_rasqal_warnings()
+
 PatternTypes = enum(UNION='union', OPTIONAL='optional', AND='and')
 Pattern = namedtuple('Pattern', ['type', 'children'])
 
@@ -191,7 +193,7 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
 # test
 #
 # ----------------------------------------------------------------------------------------------------------------------
-def main():
+def test_1():
     qstring = '''
 PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX example: <http://www.example.org/rdf#>
@@ -237,8 +239,34 @@ SELECT * WHERE {
         print 'min score T%d = %.2f'%(i+1, min(scores))
 
     mappings = graph_pattern_matching(GP[0], GP[2], 2, {})
-    print
     print 'mappings --> ',mappings
 
+
+def test_2():
+    Q1 = """
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX example: <http://www.example.org/rdf#>
+SELECT ?n ?b WHERE {
+    ?a foaf:knows ?b .
+    ?a foaf:firstName ?n .
+}
+    """
+
+    Q2 ="""
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX example: <http://www.example.org/rdf#>
+SELECT ?b WHERE {
+    ?s foaf:knows ?another .
+    ?s foaf:firstName "Bob" .
+}
+    """
+
+    q1 = Query(Q1)
+    q2 = Query(Q2)
+    M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 2.0, {})
+    print 'Mappings -> '
+    pprint(M)
+
 if __name__ == '__main__':
-    main()
+    # test_1()
+    test_2()
