@@ -171,7 +171,7 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
                             break
                         elif DELTA(g1, g2) < DELTA(_g1, g2):
                             mappings[g2] = g1
-                            # TODO: ADD here
+                            s1.children.add(_g1)
                             found_mapping = True
                             break
                     else:
@@ -234,6 +234,9 @@ SELECT * WHERE {
         scores = map(_delta, _rest)
         # print 'min score T%d = %.2f'%(i+1, min(scores)), scores
         print 'min score T%d = %.2f'%(i+1, min(scores))
+
+    mappings = graph_pattern_matching(all_patterns.children[0], all_patterns.children[1], 1, {})
+    print mappings
 
 if __name__ == '__main__':
     main()
