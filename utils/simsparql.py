@@ -214,7 +214,7 @@ SELECT * WHERE {
     GP = query.query_graph_pattern
     # GP.debug()
     tpatterns = list(query.triple_patterns)
-    all_patterns = THETA(GP, complete=True)
+    all_patterns = THETA(GP, True)
     print KAPPA(GP)
 
     pprint(all_patterns)
@@ -231,7 +231,8 @@ SELECT * WHERE {
         _delta = lambda itm: delta_tpattern(t[i], itm)
         _rest = t[:i]+t[i+1:]
         scores = map(_delta, _rest)
-        print 'min score T%d = %.2f'%(i+1, min(scores)), scores
+        # print 'min score T%d = %.2f'%(i+1, min(scores)), scores
+        print 'min score T%d = %.2f'%(i+1, min(scores))
 
 if __name__ == '__main__':
     main()
