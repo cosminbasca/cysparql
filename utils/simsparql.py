@@ -153,10 +153,6 @@ def generalize_term(x1, x2):
 def graph_pattern_matching(p1, p2, delta_max, mappings):
     assert isinstance(p1, GraphPattern)
     assert isinstance(p2, GraphPattern)
-    print '---[ INVESTIGATE ]---------------------------------------------------------------'
-    p1.debug()
-    print
-    p2.debug()
     s1 = THETA(p1)
     s2 = THETA(p2)
 
