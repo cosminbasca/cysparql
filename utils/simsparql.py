@@ -158,7 +158,7 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
 
     if KAPPA(p1) != KAPPA(p2) \
         or len(s1.children) != len(s2.children):
-        return None
+        return {}
     while len(s1.children):
         g1 = s1.children.pop(0) # pop first
         found_mapping = False
@@ -184,7 +184,7 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
                 if mappings and len(mappings) > 0 and mappings != old_mappings:
                     found_mapping = True
         if found_mapping:
-            return None
+            return {}
     return mappings
 
 # ----------------------------------------------------------------------------------------------------------------------
