@@ -72,15 +72,15 @@ def decomp(graph_pattern):
             return res
     return None
 
-def total_decomp(graph_pattern):
+def THETA(graph_pattern, complete = False):
     def _decomp(p):
         if isinstance(p, Pattern) and p.children is not None:
             for i in xrange(len(p.children)):
                 p.children[i] = decomp(p.children[i])
                 _decomp(p.children[i])
-
     p = decomp(graph_pattern)
-    _decomp(p)
+    if complete:
+        _decomp(p)
     return p
 
 def print_operator_tree(gp, deppth = 0):
@@ -88,6 +88,10 @@ def print_operator_tree(gp, deppth = 0):
     for g in gp:
         print_operator_tree(g, deppth = deppth+1)
 
+
+def KAPPA(graph_pattern):
+    p = decomp(graph_pattern)
+    return p.type
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # simmilarity
@@ -173,7 +177,8 @@ SELECT * WHERE {
     GP = query.query_graph_pattern
     # GP.debug()
     tpatterns = list(query.triple_patterns)
-    all_patterns = total_decomp(GP)
+    all_patterns = THETA(GP, complete=True)
+    print KAPPA(GP)
 
     pprint(all_patterns)
     t1,t2,t3,t4,t6,t5 = tpatterns
