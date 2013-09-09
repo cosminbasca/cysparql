@@ -282,6 +282,11 @@ cdef class GraphPattern:
     def __len__(self):
         return self.sub_graph_patterns.__len__()
 
+    def __hash__(self):
+        if self._hashvalue == 0:
+            self._hashvalue = rasqal_graph_pattern_get_index(self._rgraphpattern)
+        return self._hashvalue
+
     cpdef debug(self):
         rasqal_graph_pattern_print(self._rgraphpattern, stdout)
 

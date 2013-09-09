@@ -72,6 +72,7 @@ cdef class GraphPattern:
     cdef public Sequence        triple_patterns
     cdef public Sequence        sub_graph_patterns
     cdef public Sequence        flattened_triple_patterns
+    cdef long _hashvalue
 
     cpdef debug(self)
     cpdef bint is_optional(self)
