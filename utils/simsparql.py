@@ -92,6 +92,8 @@ def print_operator_tree(gp, deppth = 0):
 
 def KAPPA(graph_pattern):
     p = decomp(graph_pattern)
+    if isinstance(p, TriplePattern):
+        return PatternTypes.AND
     return p.type
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -149,8 +151,8 @@ def generalize_term(x1, x2):
 
 
 def graph_pattern_matching(p1, p2, delta_max, mappings):
-    assert isinstance(p1, Pattern)
-    assert isinstance(p2, Pattern)
+    assert isinstance(p1, GraphPattern)
+    assert isinstance(p2, GraphPattern)
     s1 = THETA(p1)
     s2 = THETA(p2)
 
@@ -161,7 +163,8 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
         g1 = s1.children.pop(0) # pop first
         found_mapping = False
         for g2 in s2.children:
-            if len(g1) == 1 and len(g2) == 1:
+            if (len(g1) == 1 and len(g2) == 1)\
+                or (isinstance(g1, TriplePattern) and isinstance(g2, TriplePattern)):
                 if KAPPA(g1) == KAPPA(g2):
                     _g1 = mappings.get(g2, None)
                     if _g1 is None:
@@ -169,13 +172,12 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
                             mappings[g2] = g1
                             found_mapping = True
                             break
-                        elif DELTA(g1, g2) < DELTA(_g1, g2):
+                    else:
+                        if DELTA(g1, g2) < DELTA(_g1, g2):
                             mappings[g2] = g1
                             s1.children.add(_g1)
                             found_mapping = True
                             break
-                    else:
-                        pass
             else:
                 old_mappings = mappings
                 mappings = graph_pattern_matching(g1, g2, delta_max, mappings)
@@ -235,7 +237,7 @@ SELECT * WHERE {
         # print 'min score T%d = %.2f'%(i+1, min(scores)), scores
         print 'min score T%d = %.2f'%(i+1, min(scores))
 
-    mappings = graph_pattern_matching(all_patterns.children[0], all_patterns.children[1], 1, {})
+    mappings = graph_pattern_matching(GP[0], GP[2], 2, {})
     print mappings
 
 if __name__ == '__main__':
