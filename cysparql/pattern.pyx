@@ -174,7 +174,7 @@ cdef class TriplePattern:
 
     def __hash__(self):
         if self._hashvalue == 0:
-            self._hashvalue = hash(tuple(
+            self._hashvalue = hash((
                 hash(self.subject_qliteral),
                 hash(self.predicate_qliteral),
                 hash(self.object_qliteral),
