@@ -28,3 +28,25 @@ class TermTestCase(BaseTestCase):
         qlit_val = qlit.value()
         self.assertIsInstance(qlit_val, QueryVar)
         self.assertEqual(qlit_val.name, 'lat')
+
+    def test_03_create_typed_literal(self):
+        _types = {
+            LiteralType.BOOLEAN: "1",
+            LiteralType.INTEGER: "10",
+            LiteralType.FLOAT: "10.20",
+            LiteralType.DOUBLE: "10.20",
+            LiteralType.DECIMAL: "11",
+        }
+        w = RasqalWorld()
+        for t, v in _types.items():
+            tlit = QueryLiteral.new_typed_literal(w, t, v)
+            self.assertIsInstance(tlit, QueryLiteral)
+            self.assertEqual(tlit.literal_type, t)
+            self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+    def test_04_create_bool_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_bool_literal(w, 1)
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.BOOLEAN)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])

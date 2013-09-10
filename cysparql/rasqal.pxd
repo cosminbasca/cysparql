@@ -28,6 +28,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     ctypedef struct rasqal_expression
     ctypedef struct raptor_iostream
     ctypedef struct rasqal_solution_modifier
+    ctypedef struct rasqal_xsd_date
 
     #enums
     ctypedef enum rasqal_feature:
@@ -100,6 +101,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
         RASQAL_LITERAL_QNAME
         RASQAL_LITERAL_VARIABLE
         RASQAL_LITERAL_INTEGER_SUBTYPE
+        RASQAL_LITERAL_DATE
         RASQAL_LITERAL_LAST
 
     ctypedef enum rasqal_variable_type:
@@ -229,27 +231,6 @@ cdef extern from "rasqal/rasqal.h" nogil:
 
     ctypedef struct rasqal_graph_pattern:
         pass
-
-    cdef union l_value:
-        int integer
-        double floating
-        raptor_uri* uri
-        rasqal_variable* variable
-        rasqal_xsd_decimal* decimal
-        rasqal_xsd_datetime* datetime
-        
-    ctypedef struct rasqal_literal:
-        rasqal_world *world
-        int usage
-        rasqal_literal_type type
-        unsigned char *string
-        unsigned int string_len
-        l_value value
-        char *language
-        raptor_uri *datatype
-        unsigned char *flags
-        rasqal_literal_type parent_type
-        int valid
 
     ctypedef struct rasqal_variable:
         rasqal_variables_table* vars_table
@@ -548,3 +529,25 @@ ctypedef struct _rasqal_graph_pattern:
     _rasqal_solution_modifier* modifier
     unsigned int silent
     raptor_sequence* data_graphs
+
+cdef union _l_value:
+    int integer                     # integer and boolean types
+    double floating                 # double and float
+    raptor_uri* uri                 # uri (can be temporarily NULL if a qname, see flags below)
+    rasqal_variable* variable       # variable
+    rasqal_xsd_decimal* decimal     # decimal
+    rasqal_xsd_datetime* datetime   # datetime
+    rasqal_xsd_date* date           # date
+
+ctypedef struct _rasqal_literal:
+    rasqal_world *world
+    int usage
+    rasqal_literal_type type
+    unsigned char *string           # UTF-8 string, pattern, qname, blank, double, float, decimal, datetime
+    unsigned int string_len
+    _l_value value
+    char *language
+    raptor_uri *datatype
+    unsigned char *flags
+    rasqal_literal_type parent_type
+    int valid

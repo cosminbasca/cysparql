@@ -6,6 +6,7 @@ from libc.stdlib cimport *
 from rasqal cimport *
 from cutil cimport *
 from sequence cimport *
+from world cimport *
 
 
 cdef class QueryLiteral

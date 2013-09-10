@@ -10,25 +10,36 @@ from raptor2 cimport *
 from cutil cimport *
 
 from rdflib.term import URIRef, Literal, BNode
+from util import enum
 
-#-----------------------------------------------------------------------------------------------------------------------
-# rasqal supported literal types:
-#
-# RASQAL_LITERAL_BLANK,
-# RASQAL_LITERAL_URI,
-# RASQAL_LITERAL_STRING,
-# RASQAL_LITERAL_XSD_STRING,
-# RASQAL_LITERAL_BOOLEAN,
-# RASQAL_LITERAL_INTEGER,
-# RASQAL_LITERAL_FLOAT,
-# RASQAL_LITERAL_DOUBLE,
-# RASQAL_LITERAL_DECIMAL,
-# RASQAL_LITERAL_DATETIME,
-# RASQAL_LITERAL_UDT,
-# RASQAL_LITERAL_PATTERN,
-# RASQAL_LITERAL_QNAME,
-# RASQAL_LITERAL_VARIABLE,
-# RASQAL_LITERAL_DATE
+LiteralType = enum(
+    UNKNOWN = UNKNOWN,
+    BLANK =BLANK,
+    URI = URI,
+    STRING = STRING,
+    XSD_STRING = XSD_STRING,
+    BOOLEAN = BOOLEAN,
+    INTEGER = INTEGER,
+    FLOAT = FLOAT,
+    DOUBLE = DOUBLE,
+    DECIMAL = DECIMAL,
+    DATETIME = DATETIME,
+    UDT = UDT,
+    PATTERN = PATTERN,
+    QNAME = QNAME,
+    VARIABLE = VARIABLE,
+    DATE = DATE,
+)
+
+
+numeric_types = {
+    LiteralType.BOOLEAN,
+    LiteralType.INTEGER,
+    LiteralType.FLOAT,
+    LiteralType.DOUBLE,
+    LiteralType.DECIMAL,
+}
+
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # the query literal
@@ -49,15 +60,27 @@ cdef class QueryLiteral:
 
     property language:
         def __get__(self):
-            return self._rliteral.language if self._rliteral.language != NULL else None
+            return (<_rasqal_literal*>self._rliteral).language if (<_rasqal_literal*>self._rliteral).language != NULL else None
 
     property datatype:
         def __get__(self):
-            return uri_to_str(self._rliteral.datatype) if self._rliteral.datatype != NULL else None
+            cdef raptor_uri* _dtype = rasqal_literal_datatype(self._rliteral)
+            cdef bytes _uri = uri_to_str(_dtype) if _dtype != NULL else None
+            return URIRef(_uri)
 
     property literal_type:
         def __get__(self):
-            return rasqal_literal_type_label(self._rliteral.type)
+            return (<_rasqal_literal*>self._rliteral).type
+
+    property literal_rdf_type:
+        def __get__(self):
+            return rasqal_literal_get_rdf_term_type(self._rliteral)
+
+    property literal_type_label:
+        def __get__(self):
+            cdef char* _label = rasqal_literal_type_label((<_rasqal_literal*>self._rliteral).type)
+            cdef bytes _l = _label if _label != NULL else None
+            return _l
 
     cpdef is_rdf_literal(self):
         return rasqal_literal_is_rdf_literal(self._rliteral) > 0
@@ -67,12 +90,9 @@ cdef class QueryLiteral:
         return new_QueryVar(var) if var != NULL else None
 
     cpdef as_str(self):
-        if self._rliteral.type == RASQAL_LITERAL_URI \
-            or self._rliteral.type == RASQAL_LITERAL_BLANK:
-            return <char*> rasqal_literal_as_string(self._rliteral)
-        elif self._rliteral.type == RASQAL_LITERAL_VARIABLE:
-            return self._rliteral.value.variable.name if self._rliteral.value.variable.name != NULL else ''
-        return ''
+        """Return the string format of a literal."""
+        cdef bytes _str = <char*> rasqal_literal_as_string(self._rliteral)
+        return _str
 
     cpdef as_node(self):
         """Turn a literal into a new RDF string, URI or blank literal."""
@@ -87,23 +107,40 @@ cdef class QueryLiteral:
 
     cpdef object value(self):
         cdef bytes lbl = None
-        if self._rliteral.type == RASQAL_LITERAL_URI:
+        if (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_URI:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return URIRef(lbl)
-        elif self._rliteral.type == RASQAL_LITERAL_BLANK:
+        elif (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_BLANK:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return BNode(lbl)
-        elif self._rliteral.type == RASQAL_LITERAL_STRING:
-            lbl = <char*> self._rliteral.string
+        elif (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_STRING:
+            lbl = <char*> (<_rasqal_literal*>self._rliteral).string
             return Literal(lbl, lang=self.language, datatype=self.datatype)
-        elif self._rliteral.type == RASQAL_LITERAL_VARIABLE:
-            return new_QueryVar(self._rliteral.value.variable)
+        elif (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_VARIABLE:
+            return new_QueryVar((<_rasqal_literal*>self._rliteral).value.variable)
         return None
 
     def __hash__(self):
         if self._hashvalue == 0:
             self._hashvalue = hash(self.as_str())
         return self._hashvalue
+
+    # factory constructor methods
+    @classmethod
+    def new_typed_literal(cls, world, ltype, value):
+        """only intereger typed literals from strings"""
+        assert ltype in numeric_types, 'not a numeric type'
+        assert isinstance(value, basestring)
+        cdef char* _value = value
+        cdef rasqal_literal* _literal = rasqal_new_typed_literal((<RasqalWorld>world)._rworld, ltype, _value)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+    @classmethod
+    def new_bool_literal(cls, world, value):
+        assert isinstance(value, (int, long))
+        cdef rasqal_literal* _literal = rasqal_new_boolean_literal((<RasqalWorld>world)._rworld, value)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
 
 
 #-----------------------------------------------------------------------------------------------------------------------

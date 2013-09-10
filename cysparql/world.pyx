@@ -42,4 +42,4 @@ cdef class RasqalWorld:
 
     cpdef bint check_query_language(self, bytes name):
         cdef char* _name = name
-        return False if rasqal_language_name_check(self._rworld, _name) != 0 else True
+        return True if rasqal_language_name_check(self._rworld, _name) != 0 else False
