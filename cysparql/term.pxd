@@ -46,7 +46,6 @@ cdef class QueryVarSequence(Sequence):
 #
 #-----------------------------------------------------------------------------------------------------------------------
 cdef QueryVar new_QueryVar(rasqal_variable* var)
-# cdef QueryVar create_new_QueryVar()
 
 cdef class QueryVar:
     cdef rasqal_variable* _rvariable
@@ -55,5 +54,3 @@ cdef class QueryVar:
     cdef bind(self, rasqal_literal* literal)
     cpdef is_unbound(self)
     cpdef debug(self)
-
-# TODO: add conversion to and from RdfLib for binding to vars and vice versa
