@@ -7,7 +7,7 @@ from libc.string cimport *
 # LOCAL
 from rasqal cimport *
 from raptor2 cimport *
-from util cimport *
+from cutil cimport *
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -174,7 +174,12 @@ cdef class TriplePattern:
 
     def __hash__(self):
         if self._hashvalue == 0:
-            self._hashvalue = hash((self.subject, self.predicate, self.object, self.context))
+            self._hashvalue = hash(tuple(
+                hash(self.subject_qliteral),
+                hash(self.predicate_qliteral),
+                hash(self.object_qliteral),
+                hash(self.context_qliteral)
+            ))
         return self._hashvalue
 
 

@@ -5,25 +5,15 @@ from libc.stdio cimport *
 from libc.stdlib cimport *
 from rasqal cimport *
 from cutil cimport *
-from term cimport *
-
-cdef class Filter
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
-# the filter pattern
+# the rasqal world
 #
 #-----------------------------------------------------------------------------------------------------------------------
-cdef Filter new_Filter(rasqal_expression* expr)
+cdef class RasqalWorld:
+    cdef rasqal_world*          _rworld
 
-cdef class Filter:
-    cdef rasqal_expression* _rexpression
-    cdef public FilterExpressionOperator filter_operator
-    cdef public QueryLiteral literal
-    cdef public bytes value
-    cdef public bytes name
-    cdef public list args
-    cdef public list params
-
-    cpdef debug(self)
-
+    cpdef bint open(self)
+    cpdef bint set_warning_level(self, int wlevel)
+    cpdef bint check_query_language(self, bytes name)

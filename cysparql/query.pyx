@@ -23,12 +23,6 @@ VERB_DELETE = 'DELETE'
 VERB_INSERT = 'INSERT'
 VERB_UPDATE = 'UPDATE'
 
-rasqal_warning_level = 50
-
-def disable_rasqal_warnings():
-    global rasqal_warning_level
-    rasqal_warning_level = 0
-
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # related sequences
@@ -76,18 +70,15 @@ cdef class Prefix:
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
-# QUERY - KEEPS STATE (all are copies)
+# the query
 #
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Query:
-    def __cinit__(self, qstring):
-        global rasqal_world_set_warning_level
+    def __cinit__(self, qstring, world = None):
         cdef char* language = 'sparql'
-        self._rworld = rasqal_new_world()
-        self._rquery = rasqal_new_query(self._rworld, language, NULL)
+        self.world = world if world else RasqalWorld()
 
-        # set the warning level
-        rasqal_world_set_warning_level(self._rworld, rasqal_warning_level)
+        self._rquery = rasqal_new_query(self.world._rworld, language, NULL)
 
         self.query_string = qstring
         cdef char* _qstring = self.query_string
@@ -121,7 +112,6 @@ cdef class Query:
 
     def __dealloc__(self):
         rasqal_free_query(self._rquery)
-        rasqal_free_world(self._rworld)
 
     cpdef debug(self):
         rasqal_query_print(self._rquery, stdout)
@@ -144,7 +134,7 @@ cdef class Query:
         return new_Prefix(rasqal_query_get_prefix(self._rquery, i))
 
     cpdef QueryVarsTable create_vars_table(self):
-        return new_QueryVarsTable(self._rworld)
+        return new_QueryVarsTable(self.world._rworld)
 
     property variables:
         def __get__(self):

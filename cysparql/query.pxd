@@ -4,12 +4,13 @@ from cpython cimport *
 from libc.stdio cimport *
 from libc.stdlib cimport *
 from rasqal cimport *
-from util cimport *
+from cutil cimport *
 from term cimport *
 from sequence import *
 from filter cimport *
 from pattern cimport *
 from varstable cimport *
+from world cimport *
 
 
 cdef class Prefix
@@ -44,8 +45,8 @@ cdef class Prefix:
 cdef class Query:
     # private
     cdef rasqal_query*          _rquery
-    cdef rasqal_world*          _rworld
     # public
+    cdef public RasqalWorld     world
     cdef public bytes           query_string
     cdef public GraphPattern    query_graph_pattern
 

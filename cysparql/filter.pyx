@@ -7,7 +7,7 @@ from libc.string cimport *
 # LOCAL
 from rasqal cimport *
 from raptor2 cimport *
-from util cimport *
+from cutil cimport *
 from term cimport *
 
 #-----------------------------------------------------------------------------------------------------------------------

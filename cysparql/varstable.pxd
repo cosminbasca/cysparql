@@ -4,7 +4,7 @@ from cpython cimport *
 from libc.stdio cimport *
 from libc.stdlib cimport *
 from rasqal cimport *
-from util cimport *
+from cutil cimport *
 from sequence cimport *
 from term cimport *
 

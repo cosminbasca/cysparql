@@ -4,7 +4,7 @@ from cpython cimport *
 from libc.stdio cimport *
 from libc.stdlib cimport *
 from rasqal cimport *
-from util cimport *
+from cutil cimport *
 from sequence cimport *
 
 
@@ -20,6 +20,7 @@ cdef QueryLiteral new_QueryLiteral(rasqal_literal* literal)
 
 cdef class QueryLiteral:
     cdef rasqal_literal* _rliteral
+    cdef long _hashvalue
 
     cpdef is_rdf_literal(self)
     cpdef as_var(self)

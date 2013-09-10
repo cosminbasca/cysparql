@@ -7,12 +7,28 @@ from libc.string cimport *
 # LOCAL
 from rasqal cimport *
 from raptor2 cimport *
-from util cimport *
+from cutil cimport *
 
 from rdflib.term import URIRef, Literal, BNode
 
-
-
+#-----------------------------------------------------------------------------------------------------------------------
+# rasqal supported literal types:
+#
+# RASQAL_LITERAL_BLANK,
+# RASQAL_LITERAL_URI,
+# RASQAL_LITERAL_STRING,
+# RASQAL_LITERAL_XSD_STRING,
+# RASQAL_LITERAL_BOOLEAN,
+# RASQAL_LITERAL_INTEGER,
+# RASQAL_LITERAL_FLOAT,
+# RASQAL_LITERAL_DOUBLE,
+# RASQAL_LITERAL_DECIMAL,
+# RASQAL_LITERAL_DATETIME,
+# RASQAL_LITERAL_UDT,
+# RASQAL_LITERAL_PATTERN,
+# RASQAL_LITERAL_QNAME,
+# RASQAL_LITERAL_VARIABLE,
+# RASQAL_LITERAL_DATE
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # the query literal
@@ -26,6 +42,7 @@ cdef inline QueryLiteral new_QueryLiteral(rasqal_literal* literal):
 
 cdef class QueryLiteral:
     def __cinit__(self, qliteral = None):
+        self._hashvalue = 0
         self._rliteral = NULL
         if qliteral and isinstance(qliteral, QueryLiteral):
             self._rliteral = (<QueryLiteral>qliteral)._rliteral
@@ -58,7 +75,8 @@ cdef class QueryLiteral:
         return ''
 
     cpdef as_node(self):
-        cdef rasqal_literal*node = rasqal_literal_as_node(self._rliteral)
+        """Turn a literal into a new RDF string, URI or blank literal."""
+        cdef rasqal_literal* node = rasqal_literal_as_node(self._rliteral)
         return new_QueryLiteral(node) if node != NULL else None
 
     def __str__(self):
@@ -81,6 +99,11 @@ cdef class QueryLiteral:
         elif self._rliteral.type == RASQAL_LITERAL_VARIABLE:
             return new_QueryVar(self._rliteral.value.variable)
         return None
+
+    def __hash__(self):
+        if self._hashvalue == 0:
+            self._hashvalue = hash(self.as_str())
+        return self._hashvalue
 
 
 #-----------------------------------------------------------------------------------------------------------------------
