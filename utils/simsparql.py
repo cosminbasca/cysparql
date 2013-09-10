@@ -244,7 +244,7 @@ def generalize_queries(q1, q2, delta_max = 1.0):
     q_template = q1.query_string
     tp_mapping = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, delta_max, {})
     if len(tp_mapping) == 0:
-        return q_template
+        return None
 
     term_mapping = {}
     tp_vars = set()
@@ -354,9 +354,9 @@ SELECT ?var_0 ?var_2 WHERE {
     print q1.query_string
     print '--------------------------------------------------------------------------------------------------------'
 
-    M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 1.0, {})
-    print 'Mappings -> '
-    pprint(M)
+    # M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 1.0, {})
+    # print 'Mappings -> '
+    # pprint(M)
 
     gen_q = generalize_queries(q1, q2, delta_max=1.0)
     print 'Generalized Query -> '
