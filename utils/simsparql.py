@@ -1,4 +1,5 @@
 from collections import namedtuple
+from itertools import count
 from pprint import pprint
 from cysparql import *
 # requires python-Levenshtein
@@ -147,11 +148,40 @@ def DELTA(p1, p2):
 #
 # ----------------------------------------------------------------------------------------------------------------------
 
-def generalize_term(x1, x2):
-    if delta_term(x1, x2) == 0:
-        return x1
-    return
+def unique_var(variables):
+    for i in count():
+        _var = '?V%d'%i
+        if _var not in variables:
+            return _var
 
+def generalize_term(x1, x2, tp_vars, term_mapping):
+    """tp_vars = triple pattern vars"""
+    if DELTA(x1, x2) == 0:
+        term_mapping[x2]=x1
+        return x1
+    new_var = unique_var(tp_vars)
+    tp_vars.add(new_var)
+    term_mapping[x1] = new_var
+    term_mapping[x2] = new_var
+    return new_var
+
+def gemeralize_tpattern(t1, t2, tp_vars, term_mapping):
+    assert isinstance(t1, TriplePattern)
+    assert isinstance(t2, TriplePattern)
+
+    for v in set([ part.n3() for tp in [t1, t2] for part in tp if isinstance(part, QueryVar) ]):
+        tp_vars.add(v)
+
+    for i in xrange(3):
+        part = generalize_term(t1[i], t2[i], tp_vars, term_mapping)
+        if isinstance(part, basestring) and part.startswith('?'):
+            tp_vars.add(part)
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
+# matching
+#
+# ----------------------------------------------------------------------------------------------------------------------
 
 def graph_pattern_matching(p1, p2, delta_max, mappings):
     assert isinstance(p1, GraphPattern)
@@ -197,6 +227,30 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
         if not found_mapping:
             return {}
     return mappings
+
+
+def generalize_queries(q1, q2, delta_max = 1.0):
+    if isinstance(q1, basestring):
+        q1 = Query(q1)
+    if isinstance(q2, basestring):
+        q2 = Query(q2)
+
+    q_template = q1.query_string
+    tp_mapping = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, delta_max, {})
+    if len(tp_mapping) == 0:
+        return q_template
+
+    term_mapping = {}
+    tp_vars = set()
+    for t1, t2 in tp_mapping.items():
+        gemeralize_tpattern(t1, t2, tp_vars, term_mapping)
+    # generalize
+    for term, mapping in term_mapping.items():
+        s1 = term if isinstance(term, basestring) else term.n3()
+        s2 = mapping if isinstance(mapping, basestring) else mapping.n3()
+        q_template = q_template.replace(s1, s2)
+
+    return q_template
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -245,8 +299,8 @@ SELECT * WHERE {
         _delta = lambda itm: delta_tpattern(t[i], itm)
         _rest = t[:i]+t[i+1:]
         scores = map(_delta, _rest)
-        # print 'min score T%d = %.2f'%(i+1, min(scores)), scores
-        print 'min score T%d = %.2f'%(i+1, min(scores))
+        print 'min score T%d = %.2f'%(i+1, min(scores)), scores
+        # print 'min score T%d = %.2f'%(i+1, min(scores))
 
     mappings = graph_pattern_matching(GP[0], GP[2], 2, {})
     print 'mappings --> ',mappings
@@ -277,6 +331,10 @@ SELECT ?b WHERE {
     M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 1.0, {})
     print 'Mappings -> '
     pprint(M)
+
+    gen_q = generalize_queries(q1, q2, delta_max=1.0)
+    print 'Generalized Query -> '
+    print gen_q
 
 if __name__ == '__main__':
     # test_1()

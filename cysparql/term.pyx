@@ -276,23 +276,23 @@ cdef class QueryVar:
         return '?%s' % name
 
     def __richcmp__(self, other, op):
-        if not other:   return False
-        cdef long _hashvalue_other = 0
-        if isinstance(other, QueryVar):
-            _hashvalue_other = (<QueryVar> other)._hashvalue
+        if not other:
+            return False
+        hashvalue_other = hash(other)
+        hash_self = self.__hash__()
 
-            if op == 0: # <
-                return self._hashvalue < _hashvalue_other
-            elif op == 2: #==
-                return self._hashvalue == _hashvalue_other
-            elif op == 4: # >
-                return self._hashvalue > _hashvalue_other
-            elif op == 1: # <=
-                return self._hashvalue <= _hashvalue_other
-            elif op == 3: # !=
-                return self._hashvalue != _hashvalue_other
-            elif op == 5: # >=
-                return self._hashvalue >= _hashvalue_other
+        if op == 0: # <
+            return hash_self < hashvalue_other
+        elif op == 2: #==
+            return hash_self == hashvalue_other
+        elif op == 4: # >
+            return hash_self > hashvalue_other
+        elif op == 1: # <=
+            return hash_self <= hashvalue_other
+        elif op == 3: # !=
+            return hash_self != hashvalue_other
+        elif op == 5: # >=
+            return hash_self >= hashvalue_other
 
     def __hash__(self):
         if self._hashvalue == 0:
