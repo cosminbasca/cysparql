@@ -66,7 +66,7 @@ cdef class QueryLiteral:
         def __get__(self):
             cdef raptor_uri* _dtype = rasqal_literal_datatype(self._rliteral)
             cdef bytes _uri = uri_to_str(_dtype) if _dtype != NULL else None
-            return URIRef(_uri)
+            return URIRef(_uri) if _uri else None
 
     property literal_type:
         def __get__(self):
@@ -105,7 +105,7 @@ cdef class QueryLiteral:
     cpdef debug(self):
         rasqal_literal_print(<rasqal_literal*> self._rliteral, stdout)
 
-    cpdef object value(self):
+    cpdef to_python(self):
         cdef bytes lbl = None
         if (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_URI:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
@@ -122,7 +122,7 @@ cdef class QueryLiteral:
 
     def __hash__(self):
         if self._hashvalue == 0:
-            self._hashvalue = hash(self.as_str())
+            self._hashvalue = hash(self.to_python())
         return self._hashvalue
 
     # factory constructor methods

@@ -27,8 +27,8 @@ cdef class QueryLiteral:
     cpdef as_var(self)
     cpdef as_str(self)
     cpdef as_node(self)
+    cpdef to_python(self)
     cpdef debug(self)
-    cpdef object value(self)
 
 
 #-----------------------------------------------------------------------------------------------------------------------

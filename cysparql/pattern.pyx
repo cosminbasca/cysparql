@@ -49,6 +49,7 @@ cdef class TriplePattern:
     def __cinit__(self, tpattern = None):
         self._rtriple = NULL
         self._idx = 0
+        self._hashvalue = 0
         self.subject_qliteral = None
         self.predicate_qliteral = None
         self.object_qliteral = None
@@ -69,19 +70,19 @@ cdef class TriplePattern:
     property subject:
         def __get__(self):
             if not self.__subject__:
-                self.__subject__ = self.subject_qliteral.value()
+                self.__subject__ = self.subject_qliteral.to_python()
             return self.__subject__
 
     property predicate:
         def __get__(self):
             if not self.__predicate__:
-                self.__predicate__ = self.predicate_qliteral.value()
+                self.__predicate__ = self.predicate_qliteral.to_python()
             return self.__predicate__
 
     property object:
         def __get__(self):
             if not self.__object__:
-                self.__object__ = self.object_qliteral.value()
+                self.__object__ = self.object_qliteral.to_python()
             return self.__object__
 
     property context:
@@ -89,7 +90,7 @@ cdef class TriplePattern:
             if self.context_qliteral == None: return None
 
             if not self.__context__:
-                self.__context__ = self.context_qliteral.value()
+                self.__context__ = self.context_qliteral.to_python()
             return self.__context__
 
 
@@ -223,7 +224,6 @@ cdef GraphPattern new_GraphPattern(rasqal_query* query, rasqal_graph_pattern* gr
 
     grp._rgraphpattern = graphpattern
     grp._rquery = query
-    grp._idx = 0
 
     _literal = rasqal_graph_pattern_get_origin(graphpattern)
     grp.origin = new_QueryLiteral(_literal) if _literal != NULL else None
@@ -255,6 +255,7 @@ cdef class GraphPattern:
         self._rgraphpattern = NULL
         self._rquery = NULL
         self._idx = 0
+        self._hashvalue = 0
 
         self.service = None
         self.variable = None

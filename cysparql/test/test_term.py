@@ -17,7 +17,7 @@ class TermTestCase(BaseTestCase):
         query = self.get_query()
         qlit = self.get_qliteral_uri(query)
         self.assertIsInstance(qlit, QueryLiteral)
-        qlit_val = qlit.value()
+        qlit_val = qlit.to_python()
         self.assertIsInstance(qlit_val, URIRef)
         self.assertEqual(str(qlit_val), 'http://dbpedia.org/resource/Karl_Gebhardt')
 
@@ -25,7 +25,7 @@ class TermTestCase(BaseTestCase):
         query = self.get_query()
         qlit = self.get_qliteral_var(query)
         self.assertIsInstance(qlit, QueryLiteral)
-        qlit_val = qlit.value()
+        qlit_val = qlit.to_python()
         self.assertIsInstance(qlit_val, QueryVar)
         self.assertEqual(qlit_val.name, 'lat')
 
