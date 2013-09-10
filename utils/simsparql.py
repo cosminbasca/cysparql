@@ -263,9 +263,6 @@ SELECT ?b WHERE {
 
     q1 = Query(Q1)
     q2 = Query(Q2)
-    q2.debug()
-    tp = list(q2.triple_patterns)
-    print tp
 
     M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 2.0, {})
     print 'Mappings -> '
