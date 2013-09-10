@@ -122,6 +122,7 @@ def delta_term(x1, x2, k = DELTA_FACTOR):
 def delta_tpattern(t1, t2):
     assert isinstance(t1, TriplePattern)
     assert isinstance(t2, TriplePattern)
+    # print '(',delta_term(t1.subject, t2.subject),' + ',delta_term(t1.predicate, t2.predicate),' + ',delta_term(t1.object, t2.object),')'
     return  delta_term(t1.subject, t2.subject) + \
             delta_term(t1.predicate, t2.predicate) + \
             delta_term(t1.object, t2.object)
@@ -163,18 +164,25 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
         return {}
     while len(s1.children):
         g1 = s1.children.pop(0) # pop first
+        # print 'TEST G1 = ',g1
         found_mapping = False
         for g2 in s2.children:
+            # print '\t with G2 = ',g2
             if (len(g1) == 1 and len(g2) == 1) or (isinstance(g1, TriplePattern) and isinstance(g2, TriplePattern)): # test for triple patterns
                 if KAPPA(g1) == KAPPA(g2):
                     _g1 = mappings.get(g2, None)
+                    _delta = DELTA(g1, g2)
                     if _g1 is None:
-                        if DELTA(g1, g2) <= delta_max:
+                        # print '\tDELTA = ',_delta
+                        # print '\tD_MAX = ',delta_max
+                        if _delta <= delta_max:
                             mappings[g2] = g1
                             found_mapping = True
                             break
                     else:
-                        if DELTA(g1, g2) < DELTA(_g1, g2):
+                        # print '\tDELTA = ',_delta
+                        # print "\tD**   = ",DELTA(_g1, g2)
+                        if _delta < DELTA(_g1, g2):
                             mappings[g2] = g1
                             s1.children.add(_g1)
                             found_mapping = True
@@ -184,6 +192,8 @@ def graph_pattern_matching(p1, p2, delta_max, mappings):
                 mappings = graph_pattern_matching(g1, g2, delta_max, mappings)
                 if mappings and len(mappings) > 0 and mappings != old_mappings:
                     found_mapping = True
+
+        # print '\tFOUND = ',found_mapping
         if not found_mapping:
             return {}
     return mappings
@@ -248,7 +258,7 @@ PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX example: <http://www.example.org/rdf#>
 SELECT ?n ?b WHERE {
     ?a foaf:knows ?b .
-    ?a foaf:firstName ?n .
+    ?a foaf:firstName "Marley" .
 }
     """
 
@@ -264,7 +274,7 @@ SELECT ?b WHERE {
     q1 = Query(Q1)
     q2 = Query(Q2)
 
-    M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 2.0, {})
+    M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 1.0, {})
     print 'Mappings -> '
     pprint(M)
 
