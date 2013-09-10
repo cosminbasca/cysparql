@@ -149,6 +149,9 @@ cdef class Query:
     property limit:
         def __get__(self):
             return rasqal_query_get_limit(self._rquery)
+        def __set__(self, val):
+            assert isinstance(val, (long, int))
+            rasqal_query_set_limit(self._rquery, val)
 
     property name:
         def __get__(self):
@@ -157,6 +160,27 @@ cdef class Query:
     property offset:
         def __get__(self):
             return rasqal_query_get_offset(self._rquery)
+        def __set__(self, val):
+            assert isinstance(val, (long, int))
+            rasqal_query_set_offset(self._rquery, val)
+
+    property distinct:
+        def __get__(self):
+            return True if rasqal_query_get_distinct(self._rquery) != 0 else False
+        def __set__(self, val):
+            rasqal_query_set_distinct(self._rquery, 1 if val else 0)
+
+    property explain:
+        def __get__(self):
+            return True if rasqal_query_get_explain(self._rquery) != 0 else False
+        def __set__(self, val):
+            rasqal_query_set_explain(self._rquery, 0 if val else 1)
+
+    property wildcard:
+        def __get__(self):
+            return True if rasqal_query_get_wildcard(self._rquery) != 0 else False
+        def __set__(self, val):
+            rasqal_query_set_wildcard(self._rquery, 0 if val else 1)
 
     property verb:
         def __get__(self):
