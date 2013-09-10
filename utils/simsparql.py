@@ -151,7 +151,7 @@ def DELTA(p1, p2):
 
 def unique_var(variables):
     for i in count():
-        _var = '?V%d'%i
+        _var = '?var_%d'%i
         if _var not in variables:
             return _var
 
@@ -332,6 +332,15 @@ PREFIX example: <http://www.example.org/rdf#>
 SELECT ?b WHERE {
     ?s foaf:knows ?another .
     ?s foaf:firstName "Bob" .
+}
+    """
+
+    Q3 = """
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX example: <http://www.example.org/rdf#>
+SELECT ?var_0 ?var_2 WHERE {
+    ?var_0 foaf:knows ?var_2 .
+    ?var_0 foaf:firstName ?var_1 .
 }
     """
 
