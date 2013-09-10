@@ -40,6 +40,19 @@ numeric_types = {
     LiteralType.DECIMAL,
 }
 
+py_literal_types = {
+    LiteralType.STRING,
+    LiteralType.XSD_STRING,
+    LiteralType.BOOLEAN,
+    LiteralType.INTEGER,
+    LiteralType.FLOAT,
+    LiteralType.DOUBLE,
+    LiteralType.DECIMAL,
+    LiteralType.DATETIME,
+    LiteralType.UDT,
+    LiteralType.DATE,
+}
+
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # the query literal
@@ -107,17 +120,18 @@ cdef class QueryLiteral:
 
     cpdef to_python(self):
         cdef bytes lbl = None
-        if (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_URI:
+        cdef rasqal_literal_type _type = (<_rasqal_literal*>self._rliteral).type
+        if _type == RASQAL_LITERAL_URI:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return URIRef(lbl)
-        elif (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_BLANK:
+        elif _type == RASQAL_LITERAL_BLANK:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return BNode(lbl)
-        elif (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_STRING:
+        elif _type == RASQAL_LITERAL_VARIABLE:
+            return new_QueryVar((<_rasqal_literal*>self._rliteral).value.variable)
+        elif _type in py_literal_types:
             lbl = <char*> (<_rasqal_literal*>self._rliteral).string
             return Literal(lbl, lang=self.language, datatype=self.datatype)
-        elif (<_rasqal_literal*>self._rliteral).type == RASQAL_LITERAL_VARIABLE:
-            return new_QueryVar((<_rasqal_literal*>self._rliteral).value.variable)
         return None
 
     def __hash__(self):
@@ -178,6 +192,13 @@ cdef class QueryLiteral:
         if dtype:
             _dtype = raptor_new_uri((<RasqalWorld>world).get_raptor_world(), dtype)
         cdef rasqal_literal* _literal = rasqal_new_string_literal((<RasqalWorld>world)._rworld, _value, _lang, _dtype, NULL)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+    @classmethod
+    def new_uri_literal(cls, world, uri):
+        assert isinstance(uri, (basestring, URIRef))
+        cdef raptor_uri* _uri = raptor_new_uri((<RasqalWorld>world).get_raptor_world(), uri)
+        cdef rasqal_literal* _literal = rasqal_new_uri_literal((<RasqalWorld>world)._rworld, _uri)
         return new_QueryLiteral(_literal) if _literal != NULL else None
 
 

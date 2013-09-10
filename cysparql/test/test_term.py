@@ -92,3 +92,10 @@ class TermTestCase(BaseTestCase):
         self.assertEqual(tlit.literal_type, LiteralType.FLOAT)
         self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
 
+    def test_10_create_string_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_uri_literal(w, "http://www.w3.org/2001/XMLSchema#float")
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.URI)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
