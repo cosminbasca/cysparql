@@ -140,6 +140,7 @@ def DELTA(p1, p2):
         return delta_gpattern(p1, p2)
     elif isinstance(p1, TriplePattern) and isinstance(p2, TriplePattern):
         return delta_tpattern(p1, p2)
+    return delta_term(p1, p2)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -157,13 +158,15 @@ def unique_var(variables):
 def generalize_term(x1, x2, tp_vars, term_mapping):
     """tp_vars = triple pattern vars"""
     if DELTA(x1, x2) == 0:
-        term_mapping[x2]=x1
         return x1
-    new_var = unique_var(tp_vars)
-    tp_vars.add(new_var)
-    term_mapping[x1] = new_var
-    term_mapping[x2] = new_var
-    return new_var
+    else:
+        new_var = unique_var(tp_vars)
+        if x1 in term_mapping and x2 in term_mapping:
+            return term_mapping[x1]
+        tp_vars.add(new_var)
+        term_mapping[x1] = new_var
+        term_mapping[x2] = new_var
+        return new_var
 
 def gemeralize_tpattern(t1, t2, tp_vars, term_mapping):
     assert isinstance(t1, TriplePattern)
@@ -173,7 +176,10 @@ def gemeralize_tpattern(t1, t2, tp_vars, term_mapping):
         tp_vars.add(v)
 
     for i in xrange(3):
+        # pprint(term_mapping)
+        # print 'TEST : ',t1[i],' , ',t2[i]
         part = generalize_term(t1[i], t2[i], tp_vars, term_mapping)
+        # print '\t=> ',part
         if isinstance(part, basestring) and part.startswith('?'):
             tp_vars.add(part)
 
@@ -245,10 +251,14 @@ def generalize_queries(q1, q2, delta_max = 1.0):
     for t1, t2 in tp_mapping.items():
         gemeralize_tpattern(t1, t2, tp_vars, term_mapping)
     # generalize
+    # print 'TERM MAPPINGS'
+    # pprint(term_mapping)
     for term, mapping in term_mapping.items():
+        # print '\treplace ',term,type(term),' - ',mapping,type(mapping)
         s1 = term if isinstance(term, basestring) else term.n3()
         s2 = mapping if isinstance(mapping, basestring) else mapping.n3()
-        q_template = q_template.replace(s1, s2)
+        q_template = q_template.replace('"%s"'%s1 if isinstance(term, Literal) else s1,
+                                        '"%s"'%s2 if isinstance(mapping, Literal) else s2)
 
     return q_template
 
@@ -310,9 +320,9 @@ def test_2():
     Q1 = """
 PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX example: <http://www.example.org/rdf#>
-SELECT ?n ?b WHERE {
-    ?a foaf:knows ?b .
-    ?a foaf:firstName "Marley" .
+SELECT ?abcd ?b WHERE {
+    ?abcd foaf:knows ?b .
+    ?abcd foaf:firstName "Marley" .
 }
     """
 
