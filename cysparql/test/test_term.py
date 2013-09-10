@@ -50,3 +50,45 @@ class TermTestCase(BaseTestCase):
         self.assertIsInstance(tlit, QueryLiteral)
         self.assertEqual(tlit.literal_type, LiteralType.BOOLEAN)
         self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+    def test_05_create_decimal_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_decimal_literal(w, "1234567890")
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.DECIMAL)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+    def test_06_create_double_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_double_literal(w, 12231423.12323)
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.DOUBLE)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+    def test_07_create_integer_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_integer_literal(w, 12231423)
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.INTEGER)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+    def test_08_create_simple_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_simple_literal(w, "123easDFADAS")
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.BLANK)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+    def test_09_create_string_literal(self):
+        w = RasqalWorld()
+        tlit = QueryLiteral.new_string_literal(w, "some name", lang="en")
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.language, "en")
+        self.assertEqual(tlit.literal_type, LiteralType.STRING)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+
+        tlit = QueryLiteral.new_string_literal(w, "45.89", dtype="http://www.w3.org/2001/XMLSchema#float")
+        self.assertIsInstance(tlit, QueryLiteral)
+        self.assertEqual(tlit.literal_type, LiteralType.FLOAT)
+        self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
+

@@ -141,6 +141,46 @@ cdef class QueryLiteral:
         cdef rasqal_literal* _literal = rasqal_new_boolean_literal((<RasqalWorld>world)._rworld, value)
         return new_QueryLiteral(_literal) if _literal != NULL else None
 
+    @classmethod
+    def new_decimal_literal(cls, world, value):
+        assert isinstance(value, basestring)
+        cdef char* _value = value
+        cdef rasqal_literal* _literal = rasqal_new_decimal_literal((<RasqalWorld>world)._rworld, _value)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+    @classmethod
+    def new_double_literal(cls, world, value):
+        assert isinstance(value, float)
+        cdef rasqal_literal* _literal = rasqal_new_double_literal((<RasqalWorld>world)._rworld, value)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+    @classmethod
+    def new_integer_literal(cls, world, value):
+        assert isinstance(value, (int, long))
+        cdef rasqal_literal* _literal = rasqal_new_numeric_literal_from_long((<RasqalWorld>world)._rworld, <rasqal_literal_type>INTEGER, value)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+    @classmethod
+    def new_simple_literal(cls, world, value):
+        assert isinstance(value, basestring)
+        cdef char* _value = value
+        cdef rasqal_literal* _literal = rasqal_new_simple_literal((<RasqalWorld>world)._rworld, <rasqal_literal_type>BLANK, _value)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+    @classmethod
+    def new_string_literal(cls, world, value, lang = None, dtype = None):
+        assert isinstance(value, basestring)
+        cdef char* _value = value
+        cdef char* _lang = NULL
+        if lang:
+            _lang = lang
+        cdef raptor_uri* _dtype = NULL
+        if dtype:
+            _dtype = raptor_new_uri((<RasqalWorld>world).get_raptor_world(), dtype)
+        cdef rasqal_literal* _literal = rasqal_new_string_literal((<RasqalWorld>world)._rworld, _value, _lang, _dtype, NULL)
+        return new_QueryLiteral(_literal) if _literal != NULL else None
+
+
 
 
 #-----------------------------------------------------------------------------------------------------------------------

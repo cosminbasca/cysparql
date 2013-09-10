@@ -416,6 +416,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     rasqal_literal* rasqal_new_double_literal(rasqal_world *world, double d)
     rasqal_literal* rasqal_new_float_literal(rasqal_world *world, float f)
     rasqal_literal* rasqal_new_integer_literal(rasqal_world *world, rasqal_literal_type type, int integer)
+    rasqal_literal* rasqal_new_numeric_literal_from_long(rasqal_world *world, rasqal_literal_type type, long value)
     rasqal_literal* rasqal_new_pattern_literal(rasqal_world *world, char *pattern, char *flags)
     rasqal_literal* rasqal_new_simple_literal(rasqal_world *world, rasqal_literal_type type, char *string)
     rasqal_literal* rasqal_new_string_literal(rasqal_world *world, char *string, char *language, raptor_uri *datatype, unsigned char *datatype_qname)
