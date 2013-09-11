@@ -14,3 +14,22 @@ for tlit in literals:
     print tlit, tlit.literal_type_label
     print tlit.as_str(), ' -----> ',tlit.to_python().n3()
 
+
+
+Q = """
+PREFIX foaf: <http://xmlns.com/foaf/>
+PREFIX example: <http://www.example.org/rdf#>
+SELECT ?var_0 ?var_2 WHERE {
+    ?var_0 foaf:knows ?var_2 .
+    ?var_0 foaf:firstName ?var_1 .
+}
+    """
+
+q = Query(Q)
+print q.query_string
+print q.distinct
+q.distinct = True
+print 'after setting'
+print q.distinct
+print q
+

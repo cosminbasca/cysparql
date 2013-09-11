@@ -358,6 +358,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     unsigned char* rasqal_query_get_feature_string(rasqal_query *query, rasqal_feature feature)
     rasqal_update_operation* rasqal_query_get_update_operation(rasqal_query *query, int idx)
     raptor_sequence* rasqal_query_get_update_operations_sequence(rasqal_query *query)
+    int rasqal_query_write(raptor_iostream *iostr, rasqal_query *query, raptor_uri *format_uri, raptor_uri *base_uri)
 
     #//--------------------------------------------------------------------------------------------------------
     #// XSD api

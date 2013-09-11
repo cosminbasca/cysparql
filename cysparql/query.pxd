@@ -44,6 +44,7 @@ cdef class Prefix:
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Query:
     # private
+    cdef raptor_uri*            _format_uri
     cdef rasqal_query*          _rquery
     # public
     cdef public RasqalWorld     world
@@ -66,3 +67,4 @@ cdef class Query:
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
     cpdef QueryVarsTable create_vars_table(self)
+    cpdef to_str(self)

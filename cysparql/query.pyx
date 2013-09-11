@@ -9,7 +9,7 @@ from rasqal cimport *
 from raptor2 cimport *
 
 from rdflib.term import URIRef
-
+from cStringIO import StringIO
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -79,6 +79,7 @@ cdef class Query:
         self.world = world if world else RasqalWorld()
 
         self._rquery = rasqal_new_query(self.world._rworld, language, NULL)
+        self._format_uri = raptor_new_uri(self.world.get_raptor_world(), 'http://www.w3.org/TR/2006/CR-rdf-sparql-query-20060406/')
 
         self.query_string = qstring
         cdef char* _qstring = self.query_string
@@ -111,7 +112,10 @@ cdef class Query:
         self.__vars__ = None
 
     def __dealloc__(self):
-        rasqal_free_query(self._rquery)
+        if self._rquery != NULL:
+            rasqal_free_query(self._rquery)
+        if self._format_uri != NULL:
+            raptor_free_uri(self._format_uri)
 
     cpdef debug(self):
         rasqal_query_print(self._rquery, stdout)
@@ -208,6 +212,27 @@ cdef class Query:
     def __iter__(self):
         return iter(self.triple_patterns)
 
+    cpdef to_str(self):
+        cdef raptor_world* rap_world = self.world.get_raptor_world()
+        cdef char* _str = NULL
+        cdef size_t _len = -1
+        # cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_string(rap_world, <void**>&_str, &_len, NULL)
+        cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_file_handle(rap_world, stdout)
+        if rap_iostr == NULL:
+            return ''
+        # write query to iostream
+        cdef int rv = rasqal_query_write(rap_iostr, self._rquery, self._format_uri, NULL)
+        # print 'RV = ',rv,' LEN STR = ',_len
+        cdef bytes _str_rep = <bytes>''
+        if rv == 0:
+            _str_rep = _str[:_len]
+
+        if _str != NULL:
+            free(_str)
+        raptor_free_iostream(rap_iostr)
+        return _str_rep
+
     def __str__(self):
-        return '\n'.join(['TRIPLE: %s, %s, %s' % (t[0].n3(), t[1].n3(), t[2].n3()) for t in self])
+        # return '\n'.join(['TRIPLE: %s, %s, %s' % (t[0].n3(), t[1].n3(), t[2].n3()) for t in self])
+        return self.to_str()
 
