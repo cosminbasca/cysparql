@@ -213,21 +213,21 @@ cdef class Query:
 
     cpdef to_str(self):
         cdef raptor_world* rap_world = self.world.get_raptor_world()
-        cdef void* string_buffer = NULL
-        cdef size_t string_buffer_len
-        cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_string(rap_world, &string_buffer, &string_buffer_len, NULL)
+        cdef void* _str_buffer = NULL
+        cdef size_t _str_buffer_len
+        cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_string(rap_world, &_str_buffer, &_str_buffer_len, NULL)
         # cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_file_handle(rap_world, stdout)
         if rap_iostr == NULL: return ''
 
         cdef int rv = rasqal_query_write(rap_iostr, self._rquery, self._format_uri, NULL)
         raptor_free_iostream(rap_iostr)
-        cdef bytes query_representation = <bytes>''
+        cdef bytes _repr = <bytes>''
         if rv == 0:
-            query_representation = (<char*>string_buffer)[:string_buffer_len]
+            _repr = (<char*>_str_buffer)[:_str_buffer_len]
 
-        if string_buffer != NULL:
-            free(string_buffer)
-        return query_representation
+        if _str_buffer != NULL:
+            free(_str_buffer)
+        return _repr
 
     def __str__(self):
         # return '\n'.join(['TRIPLE: %s, %s, %s' % (t[0].n3(), t[1].n3(), t[2].n3()) for t in self])

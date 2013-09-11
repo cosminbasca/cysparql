@@ -102,8 +102,7 @@ cdef class QueryLiteral:
         cdef rasqal_variable* var = rasqal_literal_as_variable(self._rliteral)
         return new_QueryVar(var) if var != NULL else None
 
-    cpdef as_str(self):
-        """Return the string format of a literal."""
+    cpdef to_str(self):
         cdef bytes _str = <char*> rasqal_literal_as_string(self._rliteral)
         return _str
 
@@ -113,7 +112,7 @@ cdef class QueryLiteral:
         return new_QueryLiteral(node) if node != NULL else None
 
     def __str__(self):
-        return self.as_str()
+        return self.to_str()
 
     cpdef debug(self):
         rasqal_literal_print(<rasqal_literal*> self._rliteral, stdout)

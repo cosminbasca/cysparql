@@ -25,7 +25,7 @@ cdef class QueryLiteral:
 
     cpdef is_rdf_literal(self)
     cpdef as_var(self)
-    cpdef as_str(self)
+    cpdef to_str(self)
     cpdef as_node(self)
     cpdef to_python(self)
     cpdef debug(self)
