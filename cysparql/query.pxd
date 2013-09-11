@@ -59,10 +59,13 @@ cdef class Query:
 
     cdef public dict            __vars__
 
+    cdef void* get_user_data(self)
+    cdef void set_user_data(self, void* data)
     cpdef debug(self)
     cpdef get_bindings_var(self, i)
-    cpdef get_var(self, i)
-    cpdef has_var(self, bytes name)
+    cpdef get_variable(self, i)
+    cpdef set_variable(self, bytes name, QueryLiteral value)
+    cpdef has_variable(self, bytes name)
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
     cpdef QueryVarsTable create_vars_table(self)

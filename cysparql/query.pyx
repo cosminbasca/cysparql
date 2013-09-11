@@ -116,16 +116,26 @@ cdef class Query:
         if self._format_uri != NULL:
             raptor_free_uri(self._format_uri)
 
+    cdef void* get_user_data(self):
+        return rasqal_query_get_user_data(self._rquery)
+
+    cdef void set_user_data(self, void* data):
+        rasqal_query_set_user_data(self._rquery, data)
+
     cpdef debug(self):
         rasqal_query_print(self._rquery, stdout)
 
     cpdef get_bindings_var(self, i):
         return new_QueryVar(rasqal_query_get_bindings_variable(self._rquery, i))
 
-    cpdef get_var(self, i):
+    cpdef get_variable(self, i):
         return new_QueryVar(rasqal_query_get_variable(self._rquery, i))
 
-    cpdef has_var(self, bytes name):
+    cpdef set_variable(self, bytes name, QueryLiteral value):
+        cdef char* _name = name
+        return True if rasqal_query_set_variable(self._rquery, _name, value._rliteral) == 0 else False
+
+    cpdef has_variable(self, bytes name):
         cdef unsigned char* _name = name
         cdef int rv = rasqal_query_has_variable2(self._rquery, RASQAL_VARIABLE_TYPE_NORMAL, _name)
         return True if rv > 0 else False

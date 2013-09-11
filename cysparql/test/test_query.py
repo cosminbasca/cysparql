@@ -99,7 +99,7 @@ class TestQuery(BaseTestCase):
         vt = query.create_vars_table()
         self.assertIsInstance(vt, QueryVarsTable)
 
-    def test_14_has_var(self):
+    def test_14_has_variable(self):
         query = self.get_query()
-        self.assertTrue(query.has_var('label'))
-        self.assertFalse(query.has_var('latX'))
+        self.assertTrue(query.has_variable('label'))
+        self.assertFalse(query.has_variable('latX'))
