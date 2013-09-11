@@ -331,7 +331,7 @@ PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX example: <http://www.example.org/rdf#>
 SELECT ?b WHERE {
     ?s foaf:knows ?another .
-    ?s foaf:firstName "Bob" .
+    ?s foaf:firstName ?x .
 }
     """
 

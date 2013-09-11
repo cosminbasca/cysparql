@@ -214,23 +214,21 @@ cdef class Query:
 
     cpdef to_str(self):
         cdef raptor_world* rap_world = self.world.get_raptor_world()
-        cdef char* _str = NULL
-        cdef size_t _len = -1
-        # cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_string(rap_world, <void**>&_str, &_len, NULL)
-        cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_file_handle(rap_world, stdout)
-        if rap_iostr == NULL:
-            return ''
-        # write query to iostream
-        cdef int rv = rasqal_query_write(rap_iostr, self._rquery, self._format_uri, NULL)
-        # print 'RV = ',rv,' LEN STR = ',_len
-        cdef bytes _str_rep = <bytes>''
-        if rv == 0:
-            _str_rep = _str[:_len]
+        cdef void* string_buffer = NULL
+        cdef size_t string_buffer_len
+        cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_string(rap_world, &string_buffer, &string_buffer_len, NULL)
+        # cdef raptor_iostream* rap_iostr =  raptor_new_iostream_to_file_handle(rap_world, stdout)
+        if rap_iostr == NULL: return ''
 
-        if _str != NULL:
-            free(_str)
+        cdef int rv = rasqal_query_write(rap_iostr, self._rquery, self._format_uri, NULL)
         raptor_free_iostream(rap_iostr)
-        return _str_rep
+        cdef bytes query_representation = <bytes>''
+        if rv == 0:
+            query_representation = (<char*>string_buffer)[:string_buffer_len]
+
+        if string_buffer != NULL:
+            free(string_buffer)
+        return query_representation
 
     def __str__(self):
         # return '\n'.join(['TRIPLE: %s, %s, %s' % (t[0].n3(), t[1].n3(), t[2].n3()) for t in self])
