@@ -81,8 +81,7 @@ cdef class Query:
         self._rquery = rasqal_new_query(self.world._rworld, language, NULL)
         self._format_uri = raptor_new_uri(self.world.get_raptor_world(), 'http://www.w3.org/TR/2006/CR-rdf-sparql-query-20060406/')
 
-        self.query_string = qstring
-        cdef char* _qstring = self.query_string
+        cdef char* _qstring = qstring
 
         # parse
         rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)

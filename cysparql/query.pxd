@@ -48,7 +48,6 @@ cdef class Query:
     cdef rasqal_query*          _rquery
     # public
     cdef public RasqalWorld     world
-    cdef public bytes           query_string
     cdef public GraphPattern    query_graph_pattern
 
     cdef public Sequence        vars

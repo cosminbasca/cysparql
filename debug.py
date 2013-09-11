@@ -26,7 +26,7 @@ SELECT ?var_0 ?var_2 WHERE {
     """
 
 q = Query(Q)
-print q.query_string
+print q
 print q.distinct
 q.distinct = True
 print 'after setting'

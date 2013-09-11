@@ -241,7 +241,7 @@ def generalize_queries(q1, q2, delta_max = 1.0):
     if isinstance(q2, basestring):
         q2 = Query(q2)
 
-    q_template = q1.query_string
+    q_template = str(q1)
     tp_mapping = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, delta_max, {})
     if len(tp_mapping) == 0:
         return None
@@ -331,7 +331,7 @@ PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX example: <http://www.example.org/rdf#>
 SELECT ?b WHERE {
     ?s foaf:knows ?another .
-    ?s foaf:firstName ?x .
+    ?s foaf:firstName "Bob" .
 }
     """
 
@@ -348,10 +348,10 @@ SELECT ?var_0 ?var_2 WHERE {
     q2 = Query(Q2)
     print '--------------------------------------------------------------------------------------------------------'
     print 'Query 1 -> '
-    print q1.query_string
+    print q1
     print '--------------------------------------------------------------------------------------------------------'
     print 'Query 2 -> '
-    print q1.query_string
+    print q1
     print '--------------------------------------------------------------------------------------------------------'
 
     # M  = graph_pattern_matching(q1.query_graph_pattern, q2.query_graph_pattern, 1.0, {})
