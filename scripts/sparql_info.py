@@ -22,6 +22,7 @@ optional arguments:
                         help="the SPARQL query file (file containing the sparql query). Lines starging with '--' are ignored")
 
     args = parser.parse_args()
+    disable_rasqal_warnings()
 
     with open(args.queryfile, 'r+') as QFILE:
         q_string = ''.join([ l for l in QFILE if not l.strip().startswith('--') ])
