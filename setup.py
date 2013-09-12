@@ -50,7 +50,7 @@ setup(
     install_requires = manual_deps + pip_deps + private_deps,
     include_package_data = True,
     zip_safe = False,
-    # scripts = [
-    #     # 'scripts/cytt_importer.py',
-    # ],
+    scripts = [
+        'scripts/sparql_info.py',
+    ],
 )
