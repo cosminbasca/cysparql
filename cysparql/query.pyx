@@ -9,7 +9,7 @@ from rasqal cimport *
 from raptor2 cimport *
 
 from rdflib.term import URIRef
-from cStringIO import StringIO
+# from networkx import Graph
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -240,6 +240,8 @@ cdef class Query:
         return _repr
 
     def __str__(self):
-        # return '\n'.join(['TRIPLE: %s, %s, %s' % (t[0].n3(), t[1].n3(), t[2].n3()) for t in self])
         return self.to_str()
+
+    # def as_graph(self):
+
 
