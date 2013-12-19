@@ -9,7 +9,7 @@ from rasqal cimport *
 from raptor2 cimport *
 
 from rdflib.term import URIRef
-# from networkx import Graph
+from exceptions import QueryParseException
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -84,7 +84,10 @@ cdef class Query:
         cdef char* _qstring = qstring
 
         # parse
-        rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)
+        cdef int success = rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)
+        if success == 0:
+            raise QueryParseException('code = %s'%success)
+
         # setup query
         self.query_graph_pattern = new_GraphPattern(self._rquery,
             rasqal_query_get_query_graph_pattern(self._rquery))

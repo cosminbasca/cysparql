@@ -79,41 +79,57 @@ WHERE {
 # FROM NAMED STREAM <http://www.cwi.nl/SRBench/observations>
 #           [NOW - 1 HOURS SLIDE 10 MINUTES]
 
-q_string = '''
-PREFIX om-owl: <http://knoesis.wright.edu/ssw/ont/sensor-observation.owl#>
-PREFIX weather: <http://knoesis.wright.edu/ssw/ont/weather.owl#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+#q_string = '''
+#SELECT ?drug  WHERE {
+#    ?drug1 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/possibleDiseaseTarget> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/302> .
+#    ?drug2 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/possibleDiseaseTarget> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/53> .
+#    ?drug3 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/possibleDiseaseTarget> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/59> .
+#    ?drug4 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/possibleDiseaseTarget> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/105> .
+#    ?I1 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2> ?drug1 .
+#    ?I1 <http://www4.wiwiss.fu-berlin.de/drugba nk/resource/drugbank/interactionDrug1> ?drug .
+#    ?I2 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2> ?drug2 .
+#    ?I2 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug1> ?drug .
+#    ?I3 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2> ?drug3 .
+#    ?I3 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug1> ?drug .
+#    ?I4 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug2> ?drug4 .
+#    ?I4 <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/interactionDrug1> ?drug .
+#    ?drug <http://www4.wiwiss.fu-berlin.de/drugbank/resource/drugbank/casRegistryNumber> ?id .
+#    ?keggDrug <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bio2rdf.org/ns/kegg#Drug> .
+#    ?keggDrug <http://bio2rdf.org/ns/bio2rdf#xRef> ?id .
+#    ?keggDrug <http://purl.org/dc/elements/1.1/title> ?title .
+#}
+#'''
+#
+#q = Query(q_string)
+##q.debug()
+#
+#for triple in q:
+#    print 'TRIPLE PATTERN -> ',triple
+#
+#
+##print ''
+##q.debug()
+#
+#for v in q.variables:
+#    print 'VARIABLE ---> ',v
+#
+#for gp in q.query_graph_pattern:
+#    print 'GP -> ',gp
+#    #gp.debug()
+#    print
+#    for t in gp.triple_patterns:
+#        print '\t',t
 
-SELECT ?sensor (AVG(?windSpeed) AS ?averageWindSpeed)
-               (AVG(?temperature) AS ?averageTemperature)
-WHERE {
-  ?temperatureObservation om-owl:procedure ?sensor ;
-                          a weather:TemperatureObservation ;
-                          om-owl:result ?temperatureResult .
-  ?temperatureResult om-owl:floatValue ?temperature ;
-                     om-owl:uom ?uom .
-?windSpeedObservation om-owl:procedure ?sensor ;
-                        a weather:WindSpeedObservation ;
-                        om-owl:result [ om-owl:floatValue ?windSpeed ]  .
-  FILTER(?temperature > "32"^^xsd:float) .
-
+print 'Q1'
+Query('''
+select * where {
+    ?person <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Person>
 }
-GROUP BY ?sensor
-'''
+''').debug()
 
-q = Query(q_string)
-#q.debug()
-
-for triple in q:
-    print 'TRIPLE -> ',triple
-
-
-print ''
-q.debug()
-
-for gp in q.query_graph_pattern:
-    print 'GP -> ',gp
-    gp.debug()
-    print
-    for t in gp.triple_patterns:
-        print '\t',t
+print 'Q2'
+Query('''
+select * where {
+    ?www.w3.org/1999/02/22-rdf-syntax-ns#type <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Person>
+}
+''').debug()

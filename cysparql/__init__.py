@@ -8,4 +8,5 @@ from pattern import *
 from varstable import *
 from query import *
 from util import *
+from exceptions import QueryParseException
 
