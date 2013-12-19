@@ -85,8 +85,8 @@ cdef class Query:
 
         # parse
         cdef int success = rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)
-        if success == 0:
-            raise QueryParseException('code = %s'%success)
+        if success != 0:
+            raise QueryParseException('rasqal failure code = %s'%success)
 
         # setup query
         self.query_graph_pattern = new_GraphPattern(self._rquery,
