@@ -15,11 +15,15 @@ from cysparql import *
 #     print tlit.as_str(), ' -----> ',tlit.to_python().n3()
 #
 
+# disable_rasqal_warnings()
+rasqal_world = RasqalWorld(default_wlevel=0)
+
 
 Q = """
 PREFIX foaf: <http://xmlns.com/foaf/>
 PREFIX XXX: <http://xmlns.com/foafadsads/>
 PREFIX YYY: <http://xmlns.com/foaf4525234/>
+PREFIX example: <http://www.example.org/rdf#>
 PREFIX example: <http://www.example.org/rdf#>
 SELECT ?var_0 ?var_2 WHERE {
     ?var_0 foaf:knows ?var_2 .
@@ -27,7 +31,7 @@ SELECT ?var_0 ?var_2 WHERE {
 }
     """
 
-q = Query(Q)
+q = Query(Q, world=rasqal_world)
 print q
 print q.distinct
 q.distinct = True

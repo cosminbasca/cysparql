@@ -76,7 +76,7 @@ cdef class Prefix:
 cdef class Query:
     def __cinit__(self, qstring, world = None):
         cdef char* language = 'sparql'
-        self.world = world if world else RasqalWorld()
+        self.world = world if world is not None else RasqalWorld()
 
         self._rquery = rasqal_new_query(self.world._rworld, language, NULL)
         self._format_uri = raptor_new_uri(self.world.get_raptor_world(), 'http://www.w3.org/TR/2006/CR-rdf-sparql-query-20060406/')
