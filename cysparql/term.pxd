@@ -28,6 +28,7 @@ cdef class QueryLiteral:
     cpdef to_str(self)
     cpdef as_node(self)
     cpdef to_python(self)
+    cpdef to_rdflib(self)
     cpdef debug(self)
 
 
@@ -54,3 +55,5 @@ cdef class QueryVar:
     cdef bind(self, rasqal_literal* literal)
     cpdef is_unbound(self)
     cpdef debug(self)
+    cpdef set_value(self, val, world)
+    cpdef get_value(self, to_python=*)

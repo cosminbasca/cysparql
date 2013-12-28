@@ -118,6 +118,12 @@ cdef class QueryLiteral:
         rasqal_literal_print(<rasqal_literal*> self._rliteral, stdout)
 
     cpdef to_python(self):
+        val = self.to_rdflib()
+        if isinstance(val, Literal):
+            return val.toPython()
+        return val
+
+    cpdef to_rdflib(self):
         cdef bytes lbl = None
         cdef rasqal_literal_type _type = (<_rasqal_literal*>self._rliteral).type
         if _type == RASQAL_LITERAL_URI:
@@ -202,6 +208,33 @@ cdef class QueryLiteral:
 
 
 
+cdef rasqal_literal* create_rasqal_literal(rasqal_world *world, object val):
+    cdef rasqal_literal* r_lit = NULL
+    cdef raptor_uri* uri = NULL
+    if isinstance(val, basestring):
+        r_lit = rasqal_new_string_literal(world, val, NULL, NULL, NULL)
+    elif isinstance(val, (long, int)):
+        r_lit = rasqal_new_numeric_literal_from_long(world, RASQAL_LITERAL_INTEGER, val)
+    elif isinstance(val, bool):
+        r_lit = rasqal_new_boolean_literal(world, val)
+    elif isinstance(val, float):
+        r_lit = rasqal_new_double_literal(world, val)
+    elif isinstance(val, URIRef):
+        uri = raptor_new_uri(rasqal_world_get_raptor(world), <bytes>val)
+        r_lit = rasqal_new_uri_literal(world, uri)
+        raptor_free_uri(uri)
+    elif isinstance(val, Literal):
+        if val.language:
+            r_lit = rasqal_new_string_literal(world, val.value, val.language, NULL, NULL)
+        elif val.datatype:
+            uri = raptor_new_uri(rasqal_world_get_raptor(world), <bytes>val.datatype)
+            r_lit = rasqal_new_string_literal(world, val.value, NULL, uri, NULL)
+            raptor_free_uri(uri)
+        else:
+            r_lit = rasqal_new_string_literal(world, val.value, NULL, NULL, NULL)
+    elif isinstance(val, BNode):
+        r_lit = rasqal_new_simple_literal(world, RASQAL_LITERAL_BLANK, val)
+    return r_lit
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -246,12 +279,16 @@ cdef class QueryVar:
         def __get__(self):
             return self._rvariable.offset
 
-    property value:
-        def __get__(self):
-            return new_QueryLiteral(self._rvariable.value) if self._rvariable.value != NULL else None
-        def __set__(self, val):
-            cdef rasqal_literal* _literal = NULL # TODO: here convert val to _literal!
-            self.bind(_literal)
+    cpdef set_value(self, val, world):
+        if not isinstance(world, RasqalWorld):
+            raise ValueError('world must be a RasqalWorld')
+        cdef rasqal_world* _world = (<RasqalWorld>world)._rworld
+        cdef rasqal_literal* _literal = create_rasqal_literal(_world, val) if val else NULL
+        self.bind(_literal)
+
+    cpdef get_value(self, to_python=True):
+        cdef QueryLiteral _lit = new_QueryLiteral(self._rvariable.value) if self._rvariable.value != NULL else None
+        return _lit.to_python() if to_python and _lit else _lit
 
     cdef bind(self, rasqal_literal* literal):
         rasqal_variable_set_value(self._rvariable, literal)

@@ -99,3 +99,13 @@ class TermTestCase(BaseTestCase):
         self.assertEqual(tlit.literal_type, LiteralType.URI)
         self.assertEqual(tlit.literal_type_label.upper(), LiteralType.reverse_mapping[tlit.literal_type])
 
+    def test_11_variable_bind(self):
+        query = self.get_query()
+        qlit = self.get_qliteral_var(query)
+        self.assertIsInstance(qlit, QueryLiteral)
+        qlit_val = qlit.to_python()
+        self.assertIsNone(qlit_val.get_value())
+        qlit_val.set_value(20L, query.world)
+        self.assertIsInstance(qlit_val.get_value(),long)
+        qlit_val.set_value(None, query.world)
+        self.assertIsNone(qlit_val.get_value())

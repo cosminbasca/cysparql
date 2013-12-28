@@ -350,6 +350,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     void rasqal_query_set_offset(rasqal_query *query, int offset)
     void rasqal_query_set_user_data(rasqal_query *query, void *user_data)
     int rasqal_query_set_variable(rasqal_query *query, char *name, rasqal_literal *value)
+    int rasqal_query_set_variable2(rasqal_query *query, rasqal_variable_type type, const char *name, rasqal_literal *value)
     char* rasqal_query_verb_as_string(rasqal_query_verb verb)
     unsigned char* rasqal_query_escape_counted_string(rasqal_query *query, char *string, size_t len, size_t *output_len_p)
     int rasqal_query_set_feature(rasqal_query *query, rasqal_feature feature, int value)
