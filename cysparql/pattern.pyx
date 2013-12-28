@@ -70,19 +70,19 @@ cdef class TriplePattern:
     property subject:
         def __get__(self):
             if not self.__subject__:
-                self.__subject__ = self.subject_qliteral.to_python()
+                self.__subject__ = self.subject_qliteral.to_rdflib()
             return self.__subject__
 
     property predicate:
         def __get__(self):
             if not self.__predicate__:
-                self.__predicate__ = self.predicate_qliteral.to_python()
+                self.__predicate__ = self.predicate_qliteral.to_rdflib()
             return self.__predicate__
 
     property object:
         def __get__(self):
             if not self.__object__:
-                self.__object__ = self.object_qliteral.to_python()
+                self.__object__ = self.object_qliteral.to_rdflib()
             return self.__object__
 
     property context:
@@ -90,7 +90,7 @@ cdef class TriplePattern:
             if self.context_qliteral == None: return None
 
             if not self.__context__:
-                self.__context__ = self.context_qliteral.to_python()
+                self.__context__ = self.context_qliteral.to_rdflib()
             return self.__context__
 
 
