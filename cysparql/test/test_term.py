@@ -1,3 +1,4 @@
+from decimal import Decimal
 from cysparql import *
 from base import BaseTestCase
 from rdflib.term import *
@@ -106,7 +107,7 @@ class TermTestCase(BaseTestCase):
         qlit_val = qlit.to_python()
         self.assertIsNone(qlit_val.get_value())
         qlit_val.set_value(20L, query.world)
-        self.assertIsInstance(qlit_val.get_value(),long)
-        self.assertEqual(qlit_val.get_value(), 20L)
+        self.assertIsInstance(qlit_val.get_value(), Decimal)
+        self.assertEqual(long(qlit_val.get_value()), 20L)
         qlit_val.set_value(None, query.world)
         self.assertIsNone(qlit_val.get_value())

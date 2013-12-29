@@ -211,10 +211,14 @@ cdef class QueryLiteral:
 cdef rasqal_literal* create_rasqal_literal(rasqal_world *world, object val):
     cdef rasqal_literal* r_lit = NULL
     cdef raptor_uri* uri = NULL
+    cdef bytes _str = None
     if isinstance(val, basestring):
         r_lit = rasqal_new_string_literal(world, val, NULL, NULL, NULL)
-    elif isinstance(val, (long, int)):
+    elif isinstance(val, int):
         r_lit = rasqal_new_numeric_literal_from_long(world, RASQAL_LITERAL_INTEGER, val)
+    elif isinstance(val, long):
+        _str = str(val)
+        r_lit = rasqal_new_decimal_literal(world, _str)
     elif isinstance(val, bool):
         r_lit = rasqal_new_boolean_literal(world, val)
     elif isinstance(val, float):
