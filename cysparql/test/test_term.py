@@ -107,5 +107,6 @@ class TermTestCase(BaseTestCase):
         self.assertIsNone(qlit_val.get_value())
         qlit_val.set_value(20L, query.world)
         self.assertIsInstance(qlit_val.get_value(),long)
+        self.assertEqual(qlit_val.get_value(), 20L)
         qlit_val.set_value(None, query.world)
         self.assertIsNone(qlit_val.get_value())
