@@ -1,0 +1,7 @@
+recursive-exclude build *
+recursive-exclude deps *
+recursive-exclude dist *
+recursive-exclude utils *
+exclude *.sh
+exclude dependencies.txt
+exclude *.pdf
