@@ -67,6 +67,7 @@ cdef class Query:
     cpdef has_variable(self, bytes name)
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
+    cpdef bint is_star(self)
     cpdef QueryVarsTable create_vars_table(self)
     cpdef to_str(self)
     cpdef list get_graph_vertexes(self)

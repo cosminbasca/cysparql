@@ -153,6 +153,30 @@ cdef class Query:
     cpdef get_prefix(self, i):
         return new_Prefix(rasqal_query_get_prefix(self._rquery, i))
 
+    cpdef bint is_star(self):
+        cdef int num_edges = len(self.triple_patterns)
+        cdef TriplePattern tp = None
+        cdef QueryVar S = None
+        cdef QueryVar O = None
+        cdef bint star_s = True
+        cdef bint star_o = True
+        for tp in self.triple_patterns:
+            s = tp.subject
+            if S is None and isinstance(s, QueryVar):
+                S = s
+
+            o = tp.object
+            if O is None and isinstance(o, QueryVar):
+                O = o
+
+            if star_s and s != S:
+                star_s = False
+
+            if star_o and o != O:
+                star_o = False
+
+        return star_s or star_o
+
     cpdef QueryVarsTable create_vars_table(self):
         return new_QueryVarsTable(self.world._rworld)
 

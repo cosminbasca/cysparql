@@ -31,6 +31,36 @@ WHERE {
         FILTER (lang(?label) = 'en')
 }
         """
+
+        cls.star_query_s = """
+        PREFIX example: <http://example.org#>
+        SELECT * WHERE {
+        ?s example:link ?o1 .
+        ?s example:link ?o2 .
+        ?s example:link ?o3 .
+        ?s example:link "TEST"
+        }
+        """
+
+        cls.star_query_o = """
+        PREFIX example: <http://example.org#>
+        SELECT * WHERE {
+        ?s1 example:link ?o .
+        ?s2 example:link ?o .
+        ?s3 example:link ?o .
+        example:X example:link ?o
+        }
+        """
+
+        cls.not_star_query= """
+        PREFIX example: <http://example.org#>
+        SELECT * WHERE {
+        ?s1 example:link ?o .
+        ?s2 example:link ?o1 .
+        ?s3 example:link ?o .
+        example:X example:link ?o
+        }
+        """
         disable_rasqal_warnings()
 
     @classmethod

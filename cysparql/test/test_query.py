@@ -103,3 +103,12 @@ class TestQuery(BaseTestCase):
         query = self.get_query()
         self.assertTrue(query.has_variable('label'))
         self.assertFalse(query.has_variable('latX'))
+
+    def test_15_star(self):
+        star_s = Query(self.star_query_s)
+        star_o = Query(self.star_query_o)
+        no_star = Query(self.not_star_query)
+
+        self.assertTrue(star_s.is_star())
+        self.assertTrue(star_o.is_star())
+        self.assertFalse(no_star.is_star())
