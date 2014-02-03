@@ -79,7 +79,7 @@ def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
 # noinspection PyCallingNonCallable,PyBroadException
 def plot_query(query, qname, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
-               aspect_ratio=(2.7 / 4.0), scale=1.9):
+               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False):
     if highlight is None:
         highlight = []
     elif isinstance(highlight, tuple):
@@ -178,9 +178,10 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
         #                         ax=ax, **_literals_font_cfg)
         nx.draw_networkx_labels(G, pos, labels=literal_labels,
                                 ax=ax, **_literals_font_cfg)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=dict(
-            [((s, o), pretty_n3(p, prefixes=prefixes, simplistic=True)) for s, p, o, c in query.triple_patterns]),
-                                     ax=ax, label_pos=0.5, **_predicates_font_cfg)
+        if show_predicates:
+            nx.draw_networkx_edge_labels(G, pos, edge_labels=dict(
+                [((s, o), pretty_n3(p, prefixes=prefixes, simplistic=True)) for s, p, o, c in query.triple_patterns]),
+                                         ax=ax, label_pos=0.5, **_predicates_font_cfg)
 
         ax.axis('off')
         if legend_labels:

@@ -292,9 +292,9 @@ cdef class Query:
 
     def plot(self, qname = None, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
-               aspect_ratio=(2.7 / 4.0), scale=1.9):
+               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False):
         if qname is None:
             qname = 'Query#%s'%self.query_id()
         plot_query(self, qname, location=location, highlight=highlight, highlight_color= highlight_color,
                    highlight_alpha=highlight_alpha, alpha=alpha, suffix=suffix, show=show, ext=ext, prefixes=prefixes,
-                   aspect_ratio=aspect_ratio, scale=scale)
+                   aspect_ratio=aspect_ratio, scale=scale, show_predicates=show_predicates)
