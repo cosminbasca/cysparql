@@ -255,7 +255,7 @@ cdef class Query:
         vertexes.sort()
         return vertexes
 
-    cpdef to_adjacency_matrix(self):
+    cpdef get_adjacency_matrix(self):
         cdef TriplePattern tp = None
         cdef object term = None
         cdef int i, j
@@ -271,8 +271,9 @@ cdef class Query:
 
     property adacency_matrix:
         def __get__(self):
-            return self.to_adjacency_matrix()
+            return self.get_adjacency_matrix()
 
+    # noinspection PyUnresolvedReferences
     cpdef to_graph(self):
         cdef object G = nx.DiGraph()
         cdef TriplePattern tp = None

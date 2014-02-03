@@ -70,5 +70,5 @@ cdef class Query:
     cpdef QueryVarsTable create_vars_table(self)
     cpdef to_str(self)
     cpdef list get_graph_vertexes(self)
-    cpdef to_adjacency_matrix(self)
+    cpdef get_adjacency_matrix(self)
     cpdef to_graph(self)
