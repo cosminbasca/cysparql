@@ -79,14 +79,15 @@ def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
 # noinspection PyCallingNonCallable,PyBroadException
 def plot_query(query, qname, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
-               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False):
+               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg'):
     if highlight is None:
         highlight = []
     elif isinstance(highlight, tuple):
         highlight = [highlight]
 
     try:
-        from matplotlib import use; use('TkAgg')
+        if matplotlib_backend:
+            from matplotlib import use; use(matplotlib_backend)
         from matplotlib import pyplot as plt
         from matplotlib.path import Path
         from matplotlib import patches as mpatches
