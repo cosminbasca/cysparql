@@ -197,7 +197,7 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
                 frameon=False,
             )
 
-        figname = "query_%s%s.%s" % (qname, '_%s' % suffix if suffix else '', ext)
+        figname = "%s%s.%s" % (qname, '_%s' % suffix if suffix else '', ext)
         figpath = os.path.join(location, figname) if location and os.path.isdir(location) else figname
         if not show:
             plt.savefig(figpath,
