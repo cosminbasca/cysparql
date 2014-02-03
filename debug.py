@@ -39,3 +39,14 @@ print 'after setting'
 print q.distinct
 print q
 
+print q.get_graph_vertexes()
+print q.adacency_matrix
+
+print 'graph'
+g = q.graph
+print type(g), g
+print g.nodes()
+print g.edges()
+print 'done'
+print q.name
+q.plot(show=True)

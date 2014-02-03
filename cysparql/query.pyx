@@ -10,6 +10,10 @@ from raptor2 cimport *
 
 from rdflib.term import URIRef
 from exceptions import QueryParseException
+import hashlib
+import numpy as np
+import networkx as nx
+from draw import ScarletRed, plot_query
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -245,6 +249,52 @@ cdef class Query:
     def __str__(self):
         return self.to_str()
 
-    # def as_graph(self):
 
+    cpdef list get_graph_vertexes(self):
+        cdef list vertexes = list(set([(hash(term),term) for tp in self.triple_patterns for i, term in enumerate(tp) if i == 0 or i == 2]))
+        vertexes.sort()
+        return vertexes
 
+    cpdef to_adjacency_matrix(self):
+        cdef TriplePattern tp = None
+        cdef object term = None
+        cdef int i, j
+        cdef list encoded_vars = [v[0] for v in self.get_graph_vertexes()]
+        cdef int size = len(encoded_vars)
+        cdef object adj_matrix = np.zeros((size, size))
+        for tp in self.triple_patterns:
+            i = encoded_vars.index(hash(tp.subject))
+            j = encoded_vars.index(hash(tp.object))
+            adj_matrix[i,j] = 1
+            adj_matrix[j,i] = 1
+        return adj_matrix
+
+    property adacency_matrix:
+        def __get__(self):
+            return self.to_adjacency_matrix()
+
+    cpdef to_graph(self):
+        cdef object G = nx.DiGraph()
+        cdef TriplePattern tp = None
+        cdef int i, j
+        for tp in self.triple_patterns:
+            G.add_edge(tp.subject, tp.object, predicate=tp.predicate)
+        return G
+
+    property graph:
+        def __get__(self):
+            return self.to_graph()
+
+    def query_id(self):
+        m = hashlib.md5()
+        m.update(self.to_str())
+        return m.hexdigest()
+
+    def plot(self, qname = None, location=None, highlight=None, highlight_color=ScarletRed.light,
+               highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
+               aspect_ratio=(2.7 / 4.0), scale=1.9):
+        if qname is None:
+            qname = 'Query#%s'%self.query_id()
+        plot_query(self, qname, location=location, highlight=highlight, highlight_color= highlight_color,
+                   highlight_alpha=highlight_alpha, alpha=alpha, suffix=suffix, show=show, ext=ext, prefixes=prefixes,
+                   aspect_ratio=aspect_ratio, scale=scale)

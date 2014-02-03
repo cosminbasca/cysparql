@@ -12,7 +12,6 @@ from pattern cimport *
 from varstable cimport *
 from world cimport *
 
-
 cdef class Prefix
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -70,3 +69,6 @@ cdef class Query:
     cpdef get_prefix(self, i)
     cpdef QueryVarsTable create_vars_table(self)
     cpdef to_str(self)
+    cpdef list get_graph_vertexes(self)
+    cpdef to_adjacency_matrix(self)
+    cpdef to_graph(self)
