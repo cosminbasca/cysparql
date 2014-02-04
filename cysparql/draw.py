@@ -89,7 +89,7 @@ LAYOUTS = {
 def plot_query(query, qname, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
                aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg',
-               layout = 'shell'):
+               layout = 'shell', arrows=False):
     if highlight is None:
         highlight = []
     elif isinstance(highlight, tuple):
@@ -172,10 +172,10 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
                     legend_labels[label] = _l
             literal_labels[n] = label
 
-        nx.draw_networkx_edges(G, pos, edgelist=ebound, ax=ax, **_ebound_cfg)
-        nx.draw_networkx_edges(G, pos, edgelist=hl_ebound, ax=ax, **_hl_ebound_cfg)
-        nx.draw_networkx_edges(G, pos, edgelist=eunbound, ax=ax, **_eunbound_cfg)
-        nx.draw_networkx_edges(G, pos, edgelist=hl_eunbound, ax=ax, **_hl_eunbound_cfg)
+        nx.draw_networkx_edges(G, pos, edgelist=ebound, arrows=arrows, ax=ax, **_ebound_cfg)
+        nx.draw_networkx_edges(G, pos, edgelist=hl_ebound, arrows=arrows, ax=ax, **_hl_ebound_cfg)
+        nx.draw_networkx_edges(G, pos, edgelist=eunbound, arrows=arrows, ax=ax, **_eunbound_cfg)
+        nx.draw_networkx_edges(G, pos, edgelist=hl_eunbound, arrows=arrows, ax=ax, **_hl_eunbound_cfg)
 
         nx.draw_networkx_nodes(G, pos, nodelist=list(variables), ax=ax, **_variables_cfg)
         nx.draw_networkx_nodes(G, pos, nodelist=list(hl_variables), ax=ax, **_hl_variables_cfg)
