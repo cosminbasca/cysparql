@@ -45,9 +45,9 @@ def word_wrap(line, sep=':', length=20):
 
 def pretty_uri_n3(value, simplistic=False):
     if simplistic:
-        return None, ':'.join(all_terms(value))
+        return None,':'.join(all_terms(value))
     else:
-        return '<%s>' % value if isinstance(value, basestring) else value.n3()
+        return '<%s>' % value if isinstance(value, (str, unicode)) else value.n3()
 
 
 def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
@@ -174,7 +174,7 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
         nx.draw_networkx_nodes(G, pos, nodelist=list(hl_literals), ax=ax, **_hl_literals_cfg)
 
         nx.draw_networkx_labels(G, pos, labels=dict(
-            [(n, pretty_n3(n, prefixes=prefixes, simplistic=True)) for n in variables | hl_variables]),
+            [(n, pretty_n3(n, prefixes=prefixes, simplistic=False)) for n in variables | hl_variables]),
                                 ax=ax, **_variables_font_cfg)
         # nx.draw_networkx_labels(G, pos, labels=dict([ (n, n3(n, prefixes=prefixes, simplistic=True)) for n in literals | hl_literals]),
         #                         ax=ax, **_literals_font_cfg)
@@ -182,7 +182,7 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
                                 ax=ax, **_literals_font_cfg)
         if show_predicates:
             nx.draw_networkx_edge_labels(G, pos, edge_labels=dict(
-                [((s, o), pretty_n3(p, prefixes=prefixes, simplistic=True)) for s, p, o, c in query.triple_patterns]),
+                [((s, o), pretty_n3(p, prefixes=prefixes, simplistic=False)) for s, p, o, c in query.triple_patterns]),
                                          ax=ax, label_pos=0.5, **_predicates_font_cfg)
 
         ax.axis('off')
@@ -209,6 +209,6 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
         else:
             plt.show()
     except Exception:
-        # import traceback
-        # print traceback.format_exc()
+        import traceback
+        print traceback.format_exc()
         return False
