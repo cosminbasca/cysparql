@@ -252,36 +252,17 @@ cdef class Query:
 
 
     cpdef list get_graph_vertexes(self):
-        cdef list vertexes = sorted(set([
-            (hash(term),term)
-            for tp in self.triple_patterns
-            for i, term in enumerate(tp)
-            if i == 0 or i == 2
-        ]))
-        return vertexes
+        return get_graph_vertexes(self.triple_patterns)
 
     cpdef get_adjacency_matrix(self):
-        cdef TriplePattern tp = None
-        cdef object term = None
-        cdef int i, j
-        cdef dict encoded_vars = { v[0]:i for i, v in enumerate(self.get_graph_vertexes()) }
-        cdef int size = len(encoded_vars)
-        cdef object adj_matrix = np.zeros((size, size))
-        for tp in self.triple_patterns:
-            i = encoded_vars[hash(tp.subject)]
-            j = encoded_vars[hash(tp.object)]
-            adj_matrix[i,j] = 1
-            adj_matrix[j,i] = 1
-        return adj_matrix
+        return get_adjacency_matrix(self.triple_patterns)
 
     property adacency_matrix:
         def __get__(self):
             return self.get_adjacency_matrix()
 
     cpdef bint is_star(self):
-        cdef object adj_matrix = self.get_adjacency_matrix()
-        cdef int size = self.triple_patterns.size()
-        return np.max(np.sum(adj_matrix, axis=1)) == size
+        return is_star(self.triple_patterns)
 
     property star:
         def __get__(self):

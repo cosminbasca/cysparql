@@ -45,6 +45,7 @@ setup(
             extension('filter',     ['raptor2', 'rasqal'], options=['-w']),
             extension('pattern',    ['raptor2', 'rasqal'], options=['-w']),
             extension('varstable',  ['raptor2', 'rasqal'], options=['-w']),
+            extension('graph',      ['raptor2', 'rasqal'], options=['-w']),
             extension('query',      ['raptor2', 'rasqal'], options=['-w']),
     ],
     install_requires = manual_deps + pip_deps + private_deps,

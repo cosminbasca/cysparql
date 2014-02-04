@@ -11,6 +11,7 @@ from filter cimport *
 from pattern cimport *
 from varstable cimport *
 from world cimport *
+from graph cimport *
 
 cdef class Prefix
 
