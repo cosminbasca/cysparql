@@ -9,5 +9,6 @@ from varstable import *
 from query import *
 from util import *
 from graph import *
+# from prefix import * # prefixes not automatically imported ...
 from exceptions import QueryParseException
 
