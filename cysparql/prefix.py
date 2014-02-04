@@ -14,7 +14,6 @@ PREFIX_CC_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'prefi
 with open(PREFIX_CC_JSON,'r') as prefix_cc_file:
     PREFIXES = load(prefix_cc_file)
     REVERSE_PREFIXES = {v:k for k, v in PREFIXES.items()}
-    SPARQL_PREFIXES = to_sparql_prefix_definition(PREFIXES)
     print('loaded %s prefixes'%len(PREFIXES))
 
 #-----------------------------------------------------------------------------------------------------------------------
