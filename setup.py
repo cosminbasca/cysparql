@@ -23,8 +23,10 @@ def extension(name, libs, language='c', options=[], c_sources=[]):
 private_deps = []
 
 pip_deps = [
-    'cython>=0.19.1',
+    'cython>=0.20.0',
     'rdflib>=4.0.1',
+    'numpy>=1.8.0',
+    'networkx>=1.8.1',
 ]
 
 manual_deps = []

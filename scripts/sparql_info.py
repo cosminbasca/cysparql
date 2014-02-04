@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 import argparse
-import os
-import sys
 from cysparql import Query, disable_rasqal_warnings
 
+# noinspection PyCallingNonCallable
 def main():
     """
 usage: sparql_info.py [-h] QUERY
@@ -33,6 +32,12 @@ optional arguments:
         print '----------------------------------------------------------------------------------------------------'
         print '=> [query information] \n'
         query.debug()
+        print 'IS STAR              : ',query.star
+        print 'ADJACENCY MATRIX     : ',query.adacency_matrix
+        print 'NAME                 : ',query.query_id
+        print '----------------------------------------------------------------------------------------------------'
+        print '=> [query save to pdf] \n'
+        query.plot(show=False)
         print '----------------------------------------------------------------------------------------------------'
 
 if __name__ == '__main__':

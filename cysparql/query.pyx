@@ -281,6 +281,7 @@ cdef class Query:
         def __get__(self):
             return self.to_graph()
 
+    @property
     def query_id(self):
         m = hashlib.md5()
         m.update(self.to_str())
@@ -290,7 +291,7 @@ cdef class Query:
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
                aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg'):
         if qname is None:
-            qname = 'Query#%s'%self.query_id()
+            qname = 'Query#%s'%self.query_id
         plot_query(self, qname, location=location, highlight=highlight, highlight_color= highlight_color,
                    highlight_alpha=highlight_alpha, alpha=alpha, suffix=suffix, show=show, ext=ext, prefixes=prefixes,
                    aspect_ratio=aspect_ratio, scale=scale, show_predicates=show_predicates,
