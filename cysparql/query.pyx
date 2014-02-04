@@ -291,10 +291,12 @@ cdef class Query:
         return m.hexdigest()
 
     def plot(self, qname = None, location=None, highlight=None, highlight_color=ScarletRed.light,
-               highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
-               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg'):
+               highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', aspect_ratio=(2.7 / 4.0),
+               scale=1.9, show_predicates=False, matplotlib_backend='TkAgg'):
         if qname is None:
             qname = 'Query#%s'%self.query_id
+
+        prefixes = { p.prefix:str(p.uri) for p in self.prefixes}
         plot_query(self, qname, location=location, highlight=highlight, highlight_color= highlight_color,
                    highlight_alpha=highlight_alpha, alpha=alpha, suffix=suffix, show=show, ext=ext, prefixes=prefixes,
                    aspect_ratio=aspect_ratio, scale=scale, show_predicates=show_predicates,

@@ -45,12 +45,13 @@ def word_wrap(line, sep=':', length=20):
 
 def pretty_uri_n3(value, simplistic=False):
     if simplistic:
-        return None, ':'.join(all_terms(value.label))
+        return None, ':'.join(all_terms(value))
     else:
         return '<%s>' % value if isinstance(value, basestring) else value.n3()
 
 
 def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
+    # print 'VAL = ',value
     if isinstance(value, QueryVar):
         return value.n3()
     elif isinstance(value, URIRef):

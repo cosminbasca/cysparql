@@ -55,11 +55,7 @@ SELECT ?drug ?enzyme ?reaction  Where {
 ?reaction <http://bio2rdf.org/ns/kegg#equation> ?equation .
 }"""
 
-print 'prettify !'
-print prettify(Q)
-print '......'
-
-q = Query(Q, world=rasqal_world)
+q = Query(Q, pretty=True, world=rasqal_world)
 print q
 print q.distinct
 q.distinct = True
@@ -80,7 +76,8 @@ print g.edges()
 print 'done'
 print q.name
 # q.plot(show=True)
-q.plot(scale=4.0)
+print 'plot'
+q.plot(scale=4.0, show_predicates=True)
 
 # url = 'http://www.w3.org/2002/07/owl#sameAs'
 # print url is not None and REGEX_URL.search(url)
