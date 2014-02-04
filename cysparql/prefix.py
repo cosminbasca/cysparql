@@ -5,7 +5,7 @@ __author__ = 'basca'
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
-# simple prefix.cc dump parsing
+# simple prefix.,c
 #
 #-----------------------------------------------------------------------------------------------------------------------
 to_sparql_prefix_definition = lambda prefs: '\n'.join([ 'PREFIX %s: <%s>'%(p,u) for p,u in prefs.items() ])
@@ -23,7 +23,7 @@ with open(PREFIX_CC_JSON,'r') as prefix_cc_file:
 #
 #-----------------------------------------------------------------------------------------------------------------------
 def get_prefix(url):
-    return PREFIXES.get(url, None)
+    return REVERSE_PREFIXES.get(url, None)
 
 def get_url_for_prefix(prefix):
-    return REVERSE_PREFIXES.get(prefix, None)
+    return PREFIXES.get(prefix, None)

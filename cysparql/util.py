@@ -1,13 +1,15 @@
 from urlparse import urlparse
 import re
 
-REGEX_URL = re.compile(
-    r'^https?://'  # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
-    r'localhost|'  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-    r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+URL_PATTERN = r'https?://'\
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'\
+    r'localhost|'\
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'\
+    r'(?::\d+)?'\
+    r'(?:/?|[/?]\S+)'
+
+REGEX_URL = re.compile(URL_PATTERN, re.IGNORECASE)
+REGEX_SPARQL_URL = re.compile(r'<'+URL_PATTERN+r'>', re.IGNORECASE)
 
 __rasqal_warning_level__ = 50
 
@@ -31,12 +33,31 @@ def enum(*sequential, **named):
     enums['reverse_mapping'] = reverse
     return type('Enum', (), enums)
 
-def term(uri):
+
+def uri_ns_split(uri):
     sp = '#' if uri.rfind('#') != -1 else '/'
-    return uri.rsplit(sp, 1)[1]
+    return uri.rsplit(sp, 1), sp
+
 
 def all_terms(uri):
     return [t for t in urlparse(uri).path.split('/')[1:] if t]
 
+
 def is_valid_url(url):
     return url is not None and REGEX_URL.search(url)
+
+
+def prettify(sparql):
+    from prefix import get_prefix
+    if not isinstance(sparql, (str, unicode)):
+        raise ValueError('sparql must be string or unicode')
+
+    def url_to_prefix(match):
+        uri = match.group()[1:-1]
+        (ns, term), sep = uri_ns_split(uri)
+        prefix = get_prefix('%s%s'%(ns, sep))
+        if prefix:
+            return '%s:%s'%(prefix, term)
+        return uri
+
+    return re.sub(REGEX_SPARQL_URL, url_to_prefix, sparql)
