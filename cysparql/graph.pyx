@@ -7,6 +7,9 @@ from libc.string cimport *
 
 import numpy as np
 
+_zeros = np.zeros
+_sum = np.sum
+_max = np.max
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
@@ -26,7 +29,7 @@ cpdef object get_adjacency_matrix(triple_patterns):
     cdef int i, j
     cdef dict encoded_vars = { v[0]:i for i, v in enumerate(get_graph_vertexes(triple_patterns)) }
     cdef int size = len(encoded_vars)
-    cdef object adj_matrix = np.zeros((size, size))
+    cdef object adj_matrix = _zeros((size, size))
     for tp in triple_patterns:
         i = encoded_vars[hash(tp.subject)]
         j = encoded_vars[hash(tp.object)]
@@ -38,14 +41,14 @@ cpdef object get_adjacency_matrix(triple_patterns):
 cpdef bint is_star(triple_patterns):
     cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
     cdef int size = len(triple_patterns)
-    return np.max(np.sum(adj_matrix, axis=1)) == size
+    return _max(_sum(adj_matrix, axis=1)) == size
 
 
 cpdef list get_stars(triple_patterns):
     cdef list stars = []
     cdef dict encoded_vertexes = { i:v[1] for i, v in enumerate(get_graph_vertexes(triple_patterns)) }
     cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
-    cdef object vertex_degrees = { d:encoded_vertexes[i] for i,d in enumerate(np.sum(adj_matrix, axis=1)) }
+    cdef object vertex_degrees = { d:encoded_vertexes[i] for i,d in enumerate(_sum(adj_matrix, axis=1)) }
     cdef object vertex = 0
 
     cdef list _triple_patterns = list(triple_patterns)
