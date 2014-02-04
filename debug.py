@@ -77,7 +77,7 @@ print 'done'
 print q.name
 # q.plot(show=True)
 print 'plot'
-q.plot(scale=4.0, show_predicates=True)
+q.plot(scale=4.0, show_predicates=True, layout='spring')
 
 # url = 'http://www.w3.org/2002/07/owl#sameAs'
 # print url is not None and REGEX_URL.search(url)
