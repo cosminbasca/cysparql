@@ -13,14 +13,14 @@ import numpy as np
 # graph related utilities
 #
 # ----------------------------------------------------------------------------------------------------------------------
-cpdef list get_graph_vertexes(TriplePatternSequence triple_patterns):
+cpdef list get_graph_vertexes(triple_patterns):
     cdef list vertexes = sorted(set([(hash(term),term)
                                      for tp in triple_patterns
                                      for i, term in enumerate((tp.subject, tp.object))]))
     return vertexes
 
 
-cpdef object get_adjacency_matrix(TriplePatternSequence triple_patterns):
+cpdef object get_adjacency_matrix(triple_patterns):
     cdef TriplePattern tp = None
     cdef object term = None
     cdef int i, j
@@ -35,13 +35,13 @@ cpdef object get_adjacency_matrix(TriplePatternSequence triple_patterns):
     return adj_matrix
 
 
-cpdef bint is_star(TriplePatternSequence triple_patterns):
+cpdef bint is_star(triple_patterns):
     cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
-    cdef int size = triple_patterns.size()
+    cdef int size = len(triple_patterns)
     return np.max(np.sum(adj_matrix, axis=1)) == size
 
 
-cpdef list get_stars(TriplePatternSequence triple_patterns):
+cpdef list get_stars(triple_patterns):
     cdef list stars = []
     cdef dict encoded_vertexes = { i:v[1] for i, v in enumerate(get_graph_vertexes(triple_patterns)) }
     cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
