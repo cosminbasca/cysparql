@@ -61,6 +61,7 @@ cdef class Sequence:
             return self.__item__(item) if item != NULL else None
 
 
+
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # a mutable sequence implementation

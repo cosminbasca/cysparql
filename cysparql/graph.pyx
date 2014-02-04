@@ -14,12 +14,9 @@ import numpy as np
 #
 # ----------------------------------------------------------------------------------------------------------------------
 cpdef list get_graph_vertexes(TriplePatternSequence triple_patterns):
-    cdef list vertexes = sorted(set([
-        (hash(term),term)
-        for tp in triple_patterns
-        for i, term in enumerate(tp)
-        if i == 0 or i == 2
-    ]))
+    cdef list vertexes = sorted(set([(hash(term),term)
+                                     for tp in triple_patterns
+                                     for i, term in enumerate((tp.subject, tp.object))]))
     return vertexes
 
 
@@ -42,3 +39,22 @@ cpdef bint is_star(TriplePatternSequence triple_patterns):
     cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
     cdef int size = triple_patterns.size()
     return np.max(np.sum(adj_matrix, axis=1)) == size
+
+
+cpdef list get_stars(TriplePatternSequence triple_patterns):
+    cdef list stars = []
+    cdef dict encoded_vertexes = { i:v[1] for i, v in enumerate(get_graph_vertexes(triple_patterns)) }
+    cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
+    cdef object vertex_degrees = { d:encoded_vertexes[i] for i,d in enumerate(np.sum(adj_matrix, axis=1)) }
+    cdef object vertex = 0
+
+    cdef list _triple_patterns = list(triple_patterns)
+    cdef list vertex_star = None
+    for d in sorted(vertex_degrees.keys(), reverse=True):
+        # this is the vertex with the highest degree (representing the biggest star
+        vertex = vertex_degrees[d]
+        vertex_star = [tp for tp in _triple_patterns if vertex in tp]
+        if len(vertex_star):
+            _triple_patterns[:] = [tp for tp in _triple_patterns if vertex not in tp]
+            stars.append(vertex_star)
+    return stars
