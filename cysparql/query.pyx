@@ -8,6 +8,7 @@ from libc.string cimport *
 from rasqal cimport *
 from raptor2 cimport *
 
+from util import prettify
 from rdflib.term import URIRef
 from exceptions import QueryParseException
 import hashlib
@@ -79,14 +80,14 @@ cdef class Prefix:
 #
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Query:
-    def __cinit__(self, qstring, world = None):
+    def __cinit__(self, qstring, pretty=False, world = None):
         cdef char* language = 'sparql'
         self.world = world if world is not None else RasqalWorld()
 
         self._rquery = rasqal_new_query(self.world._rworld, language, NULL)
         self._format_uri = raptor_new_uri(self.world.get_raptor_world(), 'http://www.w3.org/TR/2006/CR-rdf-sparql-query-20060406/')
 
-        cdef char* _qstring = qstring
+        cdef char* _qstring = prettify(qstring) if pretty else qstring
 
         # parse
         cdef int success = rasqal_query_prepare(self._rquery, <unsigned char*> _qstring, NULL)
