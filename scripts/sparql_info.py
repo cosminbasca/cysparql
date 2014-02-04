@@ -35,7 +35,7 @@ optional arguments:
         print '=> [query information] \n'
         query.debug()
         print 'IS STAR              : ',query.star
-        print 'ADJACENCY MATRIX     : ',query.adacency_matrix
+        print 'ADJACENCY MATRIX     : \n',query.adacency_matrix
         print 'NAME                 : ',query.query_id
         if args.plot:
             print '----------------------------------------------------------------------------------------------------'
