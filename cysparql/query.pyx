@@ -14,6 +14,7 @@ import hashlib
 import numpy as np
 import networkx as nx
 from draw import ScarletRed, plot_query
+from collections import OrderedDict
 
 __author__ = 'Cosmin Basca'
 __email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
@@ -153,30 +154,6 @@ cdef class Query:
     cpdef get_prefix(self, i):
         return new_Prefix(rasqal_query_get_prefix(self._rquery, i))
 
-    cpdef bint is_star(self):
-        cdef int num_edges = len(self.triple_patterns)
-        cdef TriplePattern tp = None
-        cdef QueryVar S = None
-        cdef QueryVar O = None
-        cdef bint star_s = True
-        cdef bint star_o = True
-        for tp in self.triple_patterns:
-            s = tp.subject
-            if S is None and isinstance(s, QueryVar):
-                S = s
-
-            o = tp.object
-            if O is None and isinstance(o, QueryVar):
-                O = o
-
-            if star_s and s != S:
-                star_s = False
-
-            if star_o and o != O:
-                star_o = False
-
-        return star_s or star_o
-
     cpdef QueryVarsTable create_vars_table(self):
         return new_QueryVarsTable(self.world._rworld)
 
@@ -275,20 +252,24 @@ cdef class Query:
 
 
     cpdef list get_graph_vertexes(self):
-        cdef list vertexes = list(set([(hash(term),term) for tp in self.triple_patterns for i, term in enumerate(tp) if i == 0 or i == 2]))
-        vertexes.sort()
+        cdef list vertexes = sorted(set([
+            (hash(term),term)
+            for tp in self.triple_patterns
+            for i, term in enumerate(tp)
+            if i == 0 or i == 2
+        ]))
         return vertexes
 
     cpdef get_adjacency_matrix(self):
         cdef TriplePattern tp = None
         cdef object term = None
         cdef int i, j
-        cdef list encoded_vars = [v[0] for v in self.get_graph_vertexes()]
+        cdef dict encoded_vars = { v[0]:i for i, v in enumerate(self.get_graph_vertexes()) }
         cdef int size = len(encoded_vars)
         cdef object adj_matrix = np.zeros((size, size))
         for tp in self.triple_patterns:
-            i = encoded_vars.index(hash(tp.subject))
-            j = encoded_vars.index(hash(tp.object))
+            i = encoded_vars[hash(tp.subject)]
+            j = encoded_vars[hash(tp.object)]
             adj_matrix[i,j] = 1
             adj_matrix[j,i] = 1
         return adj_matrix
@@ -296,6 +277,15 @@ cdef class Query:
     property adacency_matrix:
         def __get__(self):
             return self.get_adjacency_matrix()
+
+    cpdef bint is_star(self):
+        cdef object adj_matrix = self.get_adjacency_matrix()
+        cdef int size = self.triple_patterns.size()
+        return np.max(np.sum(adj_matrix, axis=1)) == size
+
+    property star:
+        def __get__(self):
+            return self.is_star()
 
     # noinspection PyUnresolvedReferences
     cpdef to_graph(self):

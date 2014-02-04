@@ -24,11 +24,6 @@ cdef class Sequence:
         self._start = -1
         self._end = -1
 
-    def __len__(self):
-        if self._rsequence != NULL:
-            return raptor_sequence_size(<raptor_sequence*> self._rsequence)
-        return 0
-
     def __getitem__(self, i):
         cdef void* item = raptor_sequence_get_at(<raptor_sequence*> self._rsequence, i)
         return self.__item__(item) if item != NULL else None
@@ -38,6 +33,14 @@ cdef class Sequence:
 
     cdef __item__(self, void* seq_item):
         return <object> seq_item
+
+    cpdef size(self):
+        if self._rsequence != NULL:
+            return raptor_sequence_size(<raptor_sequence*> self._rsequence)
+        return 0
+
+    def __len__(self):
+        return self.size()
 
     def __iter__(self):
         self._idx = 0 if self._start < 0 else self._start

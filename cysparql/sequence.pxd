@@ -22,6 +22,7 @@ cdef class Sequence:
 
     cpdef debug(self)
     cdef __item__(self, void* seq_item)
+    cpdef size(self)
 
 
 #-----------------------------------------------------------------------------------------------------------------------

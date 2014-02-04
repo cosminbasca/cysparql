@@ -1,3 +1,5 @@
+from time import time
+
 __author__ = 'basca'
 
 from cysparql import *
@@ -60,7 +62,9 @@ print q.distinct
 print q
 
 print q.get_graph_vertexes()
+t0 = time()
 print q.adacency_matrix
+print 'took ',(time()-t0)*1000,' miliseconds '
 
 print 'graph'
 g = q.graph
