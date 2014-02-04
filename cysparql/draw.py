@@ -77,10 +77,19 @@ def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
         return '"%s"'%value
 
 
+LAYOUTS = {
+    'circular': nx.circular_layout,
+    'random': nx.random_layout,
+    'shell': nx.shell_layout,
+    'spring': nx.spring_layout,
+    'spectral': nx.spectral_layout
+}
+
 # noinspection PyCallingNonCallable,PyBroadException
 def plot_query(query, qname, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
-               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg'):
+               aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg',
+               layout = 'shell'):
     if highlight is None:
         highlight = []
     elif isinstance(highlight, tuple):
@@ -145,7 +154,7 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
                                     font_weight='bold', alpha=1.0)
 
         G = query.graph
-        pos = nx.spring_layout(G, iterations=200)
+        pos = LAYOUTS.get(layout, 'shell')(G)
 
         current_label = 1
         legend_labels = {}
