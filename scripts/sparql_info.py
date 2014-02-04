@@ -19,6 +19,8 @@ optional arguments:
     parser = argparse.ArgumentParser(description='Display information about the supplied sparql query')
     parser.add_argument(metavar="QUERY", dest='queryfile',
                         help="the SPARQL query file (file containing the sparql query). Lines starging with '--' are ignored")
+    parser.add_argument('--plot', dest='plot', action='store_true',
+                       help='plot to file (if matplotlib is installed, nothing will happen otherwise)')
 
     args = parser.parse_args()
     disable_rasqal_warnings()
@@ -35,9 +37,10 @@ optional arguments:
         print 'IS STAR              : ',query.star
         print 'ADJACENCY MATRIX     : ',query.adacency_matrix
         print 'NAME                 : ',query.query_id
-        print '----------------------------------------------------------------------------------------------------'
-        print '=> [query save to pdf] \n'
-        query.plot(show=False)
+        if args.plot:
+            print '----------------------------------------------------------------------------------------------------'
+            print '=> [query save to %s.pdf] \n'%query.query_id
+            query.plot(show=False)
         print '----------------------------------------------------------------------------------------------------'
 
 if __name__ == '__main__':
