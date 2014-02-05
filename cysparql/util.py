@@ -51,7 +51,7 @@ def is_valid_url(url):
 
 
 def prettify(sparql):
-    from prefix import get_prefix, to_sparql_prefix_definition
+    from namespace import get_namespace_prefix, to_sparql_prefix_definition
     if not isinstance(sparql, (str, unicode)):
         raise ValueError('sparql must be string or unicode')
 
@@ -64,7 +64,7 @@ def prettify(sparql):
     def url_to_prefix(match):
         uri = match.group()[1:-1]
         ns, term = uri_ns_split(uri)
-        prefix = get_prefix(ns)
+        prefix = get_namespace_prefix(ns)
         if prefix:
             pattern = r'('+prefix.lower()+r'|'+prefix.upper()+r')\s*:\s+<'+ns+r'>'
             if not bool(re.compile(pattern).search(pref_declarations)):
