@@ -57,7 +57,8 @@ cdef class Query:
     cdef public Sequence        triple_patterns
     cdef public Sequence        graph_patterns
 
-    cdef public dict            __vars__
+    cdef public dict            _vars
+    cdef public dict            _namespaces
 
     cdef void* get_user_data(self)
     cdef void set_user_data(self, void* data)

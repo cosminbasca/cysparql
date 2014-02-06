@@ -119,7 +119,8 @@ cdef class Query:
         self.binding_vars = new_QueryVarSequence(self._rquery,
             rasqal_query_get_bindings_variables_sequence(self._rquery))
 
-        self.__vars__ = None
+        self._vars = None
+        self._namespaces = None
 
     def __dealloc__(self):
         if self._rquery != NULL:
@@ -160,11 +161,17 @@ cdef class Query:
     cpdef QueryVarsTable create_vars_table(self):
         return new_QueryVarsTable(self.world._rworld)
 
+    property namespaces:
+        def __get__(self):
+            if not self._namespaces:
+                self._namespaces = {p.prefix:p.uri for p in self.prefixes}
+            return self._namespaces
+
     property variables:
         def __get__(self):
-            if not self.__vars__:
-                self.__vars__ = dict([(v.name, v) for v in self.vars])
-            return self.__vars__
+            if not self._vars:
+                self._vars = {v.name:v for v in self.vars}
+            return self._vars
 
     property label:
         def __get__(self):
