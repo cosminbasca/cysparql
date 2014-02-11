@@ -314,8 +314,8 @@ cdef class QueryVar:
     def __richcmp__(self, other, op):
         if not other:
             return False
-        hashvalue_other = hash(other)
-        hash_self = self.__hash__()
+        cdef long hashvalue_other = hash(other)
+        cdef long hash_self = self.__hash__()
 
         if op == 0: # <
             return hash_self < hashvalue_other

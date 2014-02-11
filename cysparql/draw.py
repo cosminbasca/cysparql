@@ -5,6 +5,7 @@ from copy import copy
 import networkx as nx
 from rdflib.term import URIRef, Literal, BNode
 import os
+# from graph import get_stars
 
 __author__ = 'basca'
 
