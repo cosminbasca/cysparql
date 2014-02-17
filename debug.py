@@ -55,6 +55,14 @@ SELECT ?drug ?enzyme ?reaction  Where {
 ?reaction <http://bio2rdf.org/ns/kegg#equation> ?equation .
 }"""
 
+
+Q = '''
+SELECT ?predicate ?object WHERE {
+ 	drugbank-drugs:DB00201 owl:sameAs ?caff .
+	?caff ?predicate ?object .
+}
+'''
+
 q = Query(Q, pretty=True, world=rasqal_world)
 print q
 print q.distinct

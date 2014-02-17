@@ -12,6 +12,13 @@ REGEX_URL = re.compile(URL_PATTERN, re.IGNORECASE)
 REGEX_ONLY_URL = re.compile(r'^'+URL_PATTERN+r'$', re.IGNORECASE)
 REGEX_SPARQL_URL = re.compile(r'<'+URL_PATTERN+r'>', re.IGNORECASE)
 SPARQL_VERB = re.compile(r'(select|SELECT|construct|CONSTRUCT|ask|ASK|describe|DESCRIBE)')
+REGEX_PREFIX_IN_USE = re.compile(r'[aZ]')
+
+PN_CHARS_BASE = r'[A-Z]|[a-z]'
+PN_CHARS_U = PN_CHARS_BASE + r'|_'
+PN_CHARS = 	PN_CHARS_U + r'|\-|[0-9]'
+PN_PREFIX = r'('+PN_CHARS_BASE + r')((' + PN_CHARS + r'|\.)*' + PN_CHARS + r')+' + r':'
+REGEX_PREFIX = re.compile(PN_PREFIX)
 
 __rasqal_warning_level__ = 50
 
@@ -51,7 +58,7 @@ def is_valid_url(url):
 
 
 def prettify(sparql):
-    from namespace import get_namespace_prefix, to_sparql_prefix_definition
+    from namespace import get_namespace_prefix, get_namespace_url, to_sparql_prefix_definition
     if not isinstance(sparql, (str, unicode)):
         raise ValueError('sparql must be string or unicode')
 
@@ -72,7 +79,19 @@ def prettify(sparql):
             return '%s:%s'%(prefix, term)
         return '<%s>'%uri
 
+    def namespace_handler(match):
+        prefix = match.group()[:-1]
+        if prefix not in prefixes:
+            uri = get_namespace_url(prefix)
+            if prefix:
+                prefixes[prefix] = uri
+        return match.group()
+
+    # sanitize
+    sparql = re.sub(REGEX_PREFIX, namespace_handler, sparql)
+    # beautify
     sparql = re.sub(REGEX_SPARQL_URL, url_to_prefix, sparql)
+
     sparql = '%(new_prefixes)s\n%(old_prefixes)s\n\n%(query)s'%{
         'new_prefixes'  :to_sparql_prefix_definition(prefixes).strip(),
         'old_prefixes'  :pref_declarations.strip(),

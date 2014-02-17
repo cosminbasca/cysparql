@@ -103,6 +103,7 @@
   "math": "http:\/\/www.w3.org\/2000\/10\/swap\/math#",
   "sr": "http:\/\/www.openrdf.org\/config\/repository\/sail#",
   "drugbank": "http:\/\/www4.wiwiss.fu-berlin.de\/drugbank\/resource\/drugbank\/",
+  "drugbank-drugs": "http:\/\/www4.wiwiss.fu-berlin.de\/drugbank\/resource\/drugs\/",
   "drugbank-cat": "http:\/\/www4.wiwiss.fu-berlin.de\/drugbank\/resource\/drugcategory\/",
   "pto": "http:\/\/www.productontology.org\/id\/",
   "rif": "http:\/\/www.w3.org\/2007\/rif#",
