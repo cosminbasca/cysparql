@@ -19,20 +19,24 @@ _max = np.max
 cpdef list get_graph_vertexes(triple_patterns):
     cdef list vertexes = sorted(set([(hash(term),term)
                                      for tp in triple_patterns
-                                     for i, term in enumerate((tp.subject, tp.object))]))
+                                     # for i, term in enumerate((tp.subject, tp.object))]))
+                                     for i, term in enumerate((tp[0], tp[2]))]))
     return vertexes
 
 
 cpdef object get_adjacency_matrix(triple_patterns):
-    cdef TriplePattern tp = None
+    # cdef TriplePattern tp = None
+    cdef object tp = None
     cdef object term = None
     cdef int i, j
     cdef dict encoded_vars = { v[0]:i for i, v in enumerate(get_graph_vertexes(triple_patterns)) }
     cdef int size = len(encoded_vars)
     cdef object adj_matrix = _zeros((size, size))
     for tp in triple_patterns:
-        i = encoded_vars[hash(tp.subject)]
-        j = encoded_vars[hash(tp.object)]
+        # i = encoded_vars[hash(tp.subject)]
+        # j = encoded_vars[hash(tp.object)]
+        i = encoded_vars[hash(tp[0])]
+        j = encoded_vars[hash(tp[2])]
         adj_matrix[i,j] = 1
         adj_matrix[j,i] = 1
     return adj_matrix
@@ -51,7 +55,7 @@ cpdef list get_stars(triple_patterns):
     cdef object vertex_degrees = { d:encoded_vertexes[i] for i,d in enumerate(_sum(adj_matrix, axis=1)) }
     cdef object vertex = 0
 
-    cdef list _triple_patterns = list(triple_patterns)
+    cdef list _triple_patterns = triple_patterns if isinstance(triple_patterns, (tuple, list)) else list(triple_patterns)
     cdef list vertex_star = None
     for d in sorted(vertex_degrees.keys(), reverse=True):
         # this is the vertex with the highest degree (representing the biggest star
