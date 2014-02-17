@@ -55,7 +55,7 @@ cpdef list get_stars(triple_patterns):
     cdef object vertex_degrees = { d:encoded_vertexes[i] for i,d in enumerate(_sum(adj_matrix, axis=1)) }
     cdef object vertex = 0
 
-    cdef list _triple_patterns = triple_patterns if isinstance(triple_patterns, (tuple, list)) else list(triple_patterns)
+    cdef list _triple_patterns = triple_patterns if isinstance(triple_patterns, list) else list(triple_patterns)
     cdef list vertex_star = None
     for d in sorted(vertex_degrees.keys(), reverse=True):
         # this is the vertex with the highest degree (representing the biggest star
