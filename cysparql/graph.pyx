@@ -19,13 +19,11 @@ _max = np.max
 cpdef list get_graph_vertexes(triple_patterns):
     cdef list vertexes = sorted(set([(hash(term),term)
                                      for tp in triple_patterns
-                                     # for i, term in enumerate((tp.subject, tp.object))]))
                                      for i, term in enumerate((tp[0], tp[2]))]))
     return vertexes
 
 
 cpdef object get_adjacency_matrix(triple_patterns):
-    # cdef TriplePattern tp = None
     cdef object tp = None
     cdef object term = None
     cdef int i, j
@@ -33,8 +31,6 @@ cpdef object get_adjacency_matrix(triple_patterns):
     cdef int size = len(encoded_vars)
     cdef object adj_matrix = _zeros((size, size))
     for tp in triple_patterns:
-        # i = encoded_vars[hash(tp.subject)]
-        # j = encoded_vars[hash(tp.object)]
         i = encoded_vars[hash(tp[0])]
         j = encoded_vars[hash(tp[2])]
         adj_matrix[i,j] = 1
