@@ -187,8 +187,11 @@ cdef class QueryLiteral:
         assert isinstance(value, basestring)
         cdef char* _value = value
         cdef char* _lang = NULL
+        cdef char* _tmp = NULL
         if lang:
-            _lang = lang
+            _tmp = lang
+            _lang = <char*>calloc(len(lang)+1, 1)
+            memcpy(_lang, _tmp, len(lang)) 
         cdef raptor_uri* _dtype = NULL
         if dtype:
             _dtype = raptor_new_uri((<RasqalWorld>world).get_raptor_world(), dtype)
