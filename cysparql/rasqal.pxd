@@ -442,6 +442,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     char* rasqal_literal_type_label(rasqal_literal_type type)
     int rasqal_literal_same_term(rasqal_literal *l1, rasqal_literal *l2)
     rasqal_literal* rasqal_literal_value(rasqal_literal *l)
+    rasqal_literal_type rasqal_literal_get_rdf_term_type(rasqal_literal *l)
 
     #//--------------------------------------------------------------------------------------------------------
     #// graph pattern

@@ -122,6 +122,7 @@ cdef class QueryLiteral:
     cpdef to_rdflib(self):
         cdef bytes lbl = None
         cdef rasqal_literal_type _type = (<_rasqal_literal*>self._rliteral).type
+        cdef rasqal_variable* _var = NULL
         if _type == RASQAL_LITERAL_URI:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return URIRef(lbl)
@@ -129,9 +130,10 @@ cdef class QueryLiteral:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return BNode(lbl)
         elif _type == RASQAL_LITERAL_VARIABLE:
-            return new_QueryVar((<_rasqal_literal*>self._rliteral).value.variable)
+            _var = rasqal_literal_as_variable(<rasqal_literal*>self._rliteral)
+            return new_QueryVar(_var)
         elif _type in py_literal_types:
-            lbl = <char*> (<_rasqal_literal*>self._rliteral).string
+            lbl = <char*> rasqal_literal_as_string(self._rliteral)
             return Literal(lbl, lang=self.language, datatype=self.datatype)
         return None
 
