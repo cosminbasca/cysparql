@@ -52,7 +52,7 @@ cdef class Sequence:
             raise StopIteration
         if self._idx >= raptor_sequence_size(<raptor_sequence*> self._rsequence):
             raise StopIteration
-        if self._end > 0 and self._idx > self._end:
+        if 0 < self._end < self._idx:
             raise StopIteration
 
         else:
