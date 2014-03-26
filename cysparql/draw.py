@@ -216,6 +216,7 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
                         transparent=False,
                         bbox_inches='tight',
                         pad_inches=.01)
+            plt.close(figure)
         else:
             plt.show()
     except Exception:
