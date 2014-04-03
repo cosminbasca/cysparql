@@ -26,6 +26,8 @@ ScarletRed = TangoColor(light='#ef2929', normal='#cc0000', dark='#a40000')
 Aluminium1 = TangoColor(light='#eeeeec', normal='#d3d7cf', dark='#babdb6')
 Aluminium2 = TangoColor(light='#888a85', normal='#555753', dark='#2e3436')
 
+
+tango_colors = ( Butter, Orange, Chocolate, Chameleon, SkyBlue, Plum, ScarletRed, Aluminium1, Aluminium2 )
 #-----------------------------------------------------------------------------------------------------------------------
 #
 # pretty printing draw primitives
