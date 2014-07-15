@@ -56,36 +56,36 @@ SELECT ?drug ?enzyme ?reaction  Where {
 }"""
 
 
-Q = '''
-SELECT ?predicate ?object WHERE {
- 	drugbank-drugs:DB00201 owl:sameAs ?caff .
-	?caff ?predicate ?object .
-}
-'''
-
-q = Query(Q, pretty=True, world=rasqal_world)
-print q
-print q.distinct
-q.distinct = True
-print 'after setting'
-print q.distinct
-print q
-
-print q.get_graph_vertexes()
-t0 = time()
-print q.adacency_matrix
-print 'took ',(time()-t0)*1000,' miliseconds '
-
-print 'graph'
-g = q.graph
-print type(g), g
-print g.nodes()
-print g.edges()
-print 'done'
-print q.name
-# q.plot(show=True)
-print 'plot'
-q.plot(scale=4.0, show_predicates=True, layout='spring')
+# Q = '''
+# SELECT ?predicate ?object WHERE {
+#  	drugbank-drugs:DB00201 owl:sameAs ?caff .
+# 	?caff ?predicate ?object .
+# }
+# '''
+#
+# q = Query(Q, pretty=True, world=rasqal_world)
+# print q
+# print q.distinct
+# q.distinct = True
+# print 'after setting'
+# print q.distinct
+# print q
+#
+# print q.get_graph_vertexes()
+# t0 = time()
+# print q.adacency_matrix
+# print 'took ',(time()-t0)*1000,' miliseconds '
+#
+# print 'graph'
+# g = q.graph
+# print type(g), g
+# print g.nodes()
+# print g.edges()
+# print 'done'
+# print q.name
+# # q.plot(show=True)
+# print 'plot'
+# q.plot(scale=4.0, show_predicates=True, layout='spring')
 
 # url = 'http://www.w3.org/2002/07/owl#sameAs'
 # print url is not None and REGEX_URL.search(url)
@@ -93,3 +93,26 @@ q.plot(scale=4.0, show_predicates=True, layout='spring')
 # url = '<http://www.w3.org/2002/07/owl#sameAs>'
 # print url is not None and REGEX_URL.search(url)
 # print url is not None and REGEX_SPARQL_URL.search(url)
+
+Q = """
+PREFIX example: <http://www.example.org/rdf#>
+SELECT * WHERE {
+    ?a example:p ?b1.
+    ?a example:p ?b2.
+    ?a example:p ?b3.
+    ?a example:p ?b4.
+    ?a example:p ?b5.
+    ?a example:p ?b6.
+    ?b5 example:p ?x .
+    ?b5 example:r ?x .
+    ?b6 example:p ?y .
+}
+"""
+
+q = Query(Q, pretty=True)
+# print q.adacency_matrix
+stars = get_stars(q.triple_patterns)
+print
+for i,s in enumerate(stars):
+    print '\nSTAR (%s): \n %s'%(i,s)
+
