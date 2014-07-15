@@ -103,8 +103,8 @@ SELECT * WHERE {
     ?a example:p ?b4.
     ?a example:p ?b5.
     ?a example:p ?b6.
+    ?a example:q ?b6.
     ?b5 example:p ?x .
-    ?b5 example:r ?x .
     ?b6 example:p ?y .
 }
 """
