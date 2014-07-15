@@ -106,6 +106,24 @@ SELECT * WHERE {
     ?a example:q ?b6.
     ?b5 example:p ?x .
     ?b6 example:p ?y .
+    ?a example:p ?b11.
+    ?a example:p ?b21.
+    ?a example:p ?b31.
+    ?a example:p ?b41.
+    ?a example:p ?b51.
+    ?a example:p ?b61.
+    ?a example:q ?b61.
+    ?b51 example:p ?x1 .
+    ?b61 example:p ?y1 .
+    ?b11 example:p ?b1.
+    ?b11 example:p ?b2.
+    ?b11 example:p ?b3.
+    ?b21 example:p ?b4.
+    ?b21 example:p ?b5.
+    ?b51 example:p ?b6.
+    ?b51 example:q ?b6.
+    ?b52 example:p ?x .
+    ?b62 example:p ?y .
 }
 """
 
@@ -115,4 +133,5 @@ stars = get_stars(q.triple_patterns)
 print
 for i,s in enumerate(stars):
     print '\nSTAR (%s): \n %s'%(i,s)
+# q.plot(show=True)
 
