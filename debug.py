@@ -124,12 +124,26 @@ SELECT * WHERE {
     ?b51 example:q ?b6.
     ?b52 example:p ?x .
     ?b62 example:p ?y .
+    ?b51 example:p ?x14 .
+    ?b61 example:p ?y14 .
+    ?b11 example:p ?b14.
+    ?b11 example:p ?b24.
+    ?b12 example:p ?b34.
+    ?b22 example:p ?b44.
+    ?b23 example:p ?b54.
+    ?b53 example:p ?b64.
+    ?b53 example:q ?b64.
+    ?b53 example:p ?x4 .
+    ?b63 example:p ?y4 .
 }
 """
 
 q = Query(Q, pretty=True)
 # print q.adacency_matrix
+from time import time
+t0 = time()
 stars = get_stars(q.triple_patterns)
+print 'got {1} stars in {0} miliseconds'.format((time()-t0)*1000, len(stars))
 print
 for i,s in enumerate(stars):
     print '\nSTAR (%s): \n %s'%(i,s)
