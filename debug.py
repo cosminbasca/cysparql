@@ -149,3 +149,5 @@ for i,s in enumerate(stars):
     print '\nSTAR (%s): \n %s'%(i,s)
 # q.plot(show=True)
 
+print 'GRAPH = ',q.graph.edges()
+
