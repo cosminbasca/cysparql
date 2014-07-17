@@ -1,4 +1,6 @@
 # CYTHON
+from warnings import warn
+
 from cython cimport *
 from cpython cimport *
 from libc.stdio cimport *
@@ -287,15 +289,23 @@ cdef class Query:
             G.add_edge(tp.subject, tp.object, predicate=tp.predicate)
         return G
 
-    property graph:
-        def __get__(self):
-            return self.to_graph()
+    @property
+    def graph(self):
+        return self.to_graph()
 
     @property
     def query_id(self):
         m = hashlib.md5()
         m.update(self.to_str())
         return m.hexdigest()
+
+    @property
+    def ascii(self):
+        try:
+            import asciinet
+            return asciinet.graph_to_ascii(self.to_graph())
+        except ImportError, e:
+            warn('could not import asciinet')
 
     def plot(self, qname = None, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', aspect_ratio=(2.7 / 4.0),
