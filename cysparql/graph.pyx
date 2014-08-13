@@ -12,16 +12,21 @@ _zeros = np.zeros
 _sum = np.sum
 _max = np.max
 _arange = np.arange
+_numeric_types = (int, long)
 
+cdef inline int _hash(object val):
+    return val if isinstance(val, _numeric_types) else hash(val)
 # ----------------------------------------------------------------------------------------------------------------------
 #
 # graph related utilities
 #
 # ----------------------------------------------------------------------------------------------------------------------
 cpdef list get_graph_vertexes(triple_patterns):
-    cdef list vertexes = sorted(set([(hash(term), term)
-                                     for tp in triple_patterns
-                                     for i, term in enumerate((tp[0], tp[2]))]))
+    cdef list vertexes = sorted(set([
+        (_hash(term), term)
+        for tp in triple_patterns
+        for term in (tp[0], tp[2])
+    ]))
     return vertexes
 
 cpdef object get_adjacency_matrix(triple_patterns):
@@ -32,8 +37,8 @@ cpdef object get_adjacency_matrix(triple_patterns):
     cdef int size = len(encoded_vars)
     cdef object adj_matrix = _zeros((size, size))
     for tp in triple_patterns:
-        i = encoded_vars[hash(tp[0])]
-        j = encoded_vars[hash(tp[2])]
+        i = encoded_vars[_hash(tp[0])]
+        j = encoded_vars[_hash(tp[2])]
         adj_matrix[i, j] = 1
         adj_matrix[j, i] = 1
     return adj_matrix
@@ -46,9 +51,8 @@ cpdef bint is_star(triple_patterns):
 cpdef list get_stars(triple_patterns):
     cdef list _triple_patterns = triple_patterns if isinstance(triple_patterns, list) else list(triple_patterns)
     cdef list stars = []
-    cdef dict encoded_vertexes = {i: v[1] for i, v in enumerate(get_graph_vertexes(triple_patterns))}
-    # cdef dict inv_encoded_vertexes = {v:k for k, v in encoded_vertexes.iteritems()}
-    cdef object adj_matrix = get_adjacency_matrix(triple_patterns)
+    cdef dict encoded_vertexes = {i: v[1] for i, v in enumerate(get_graph_vertexes(_triple_patterns))}
+    cdef object adj_matrix = get_adjacency_matrix(_triple_patterns)
     cdef dict vertex_degrees = {encoded_vertexes[i]: d for i, d in enumerate(_sum(adj_matrix, axis=1))}
     cdef object vertex_edges = defaultdict(list)
     # build the vertex - edges dict

@@ -120,6 +120,7 @@ q = Query(Q, pretty=True)
 # print q.adacency_matrix
 from time import time
 t0 = time()
+print 'triple_patterns = ',q.triple_patterns
 stars = get_stars(q.triple_patterns)
 print 'got {1} stars in {0} miliseconds'.format((time()-t0)*1000, len(stars))
 print
@@ -127,5 +128,5 @@ for i,s in enumerate(stars):
     print '\nSTAR (%s): \n %s'%(i,s)
 # q.plot(show=True)
 
-print 'ASCII: \n',q.ascii
+# print 'ASCII: \n',q.ascii
 
