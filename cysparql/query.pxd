@@ -46,6 +46,7 @@ cdef class Query:
     # private
     cdef raptor_uri*            _format_uri
     cdef rasqal_query*          _rquery
+    cdef str                    _unique_id
     # public
     cdef public RasqalWorld     world
     cdef public GraphPattern    query_graph_pattern

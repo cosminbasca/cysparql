@@ -123,6 +123,7 @@ cdef class Query:
 
         self._vars = None
         self._namespaces = None
+        self._unique_id = None
 
     def __dealloc__(self):
         if self._rquery != NULL:
@@ -294,10 +295,10 @@ cdef class Query:
         return self.to_graph()
 
     @property
-    def query_id(self):
-        m = hashlib.md5()
-        m.update(self.to_str())
-        return m.hexdigest()
+    def unique_id(self):
+        if not self._unique_id:
+            self._unique_id = hashlib.sha1(self.to_str().upper()).hexdigest()
+        return self._unique_id
 
     @property
     def ascii(self):
@@ -311,7 +312,7 @@ cdef class Query:
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', aspect_ratio=(2.7 / 4.0),
                scale=1.9, show_predicates=False, matplotlib_backend='TkAgg', layout='shell', arrows=False):
         if qname is None:
-            qname = 'Query#%s'%self.query_id
+            qname = 'Query#%s'%self.unique_id
 
         prefixes = { p.prefix:str(p.uri) for p in self.prefixes}
         plot_query(self, qname, location=location, highlight=highlight, highlight_color= highlight_color,
