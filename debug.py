@@ -94,27 +94,27 @@ SELECT ?drug ?enzyme ?reaction  Where {
 # print url is not None and REGEX_URL.search(url)
 # print url is not None and REGEX_SPARQL_URL.search(url)
 
-# Q = """
-# PREFIX example: <http://www.example.org/rdf#>
-# SELECT * WHERE {
-#     ?a example:p ?b1.
-#     ?a example:p ?b2.
-#     ?a example:p ?b3.
-#     ?a example:p ?b4.
-#     ?a example:p ?b5.
-#     ?a example:p ?b6.
-#     ?a example:q ?b6.
-#     ?b5 example:p ?x .
-#     ?b6 example:p ?y .
-# }
-# """
-
 Q = """
 PREFIX example: <http://www.example.org/rdf#>
 SELECT * WHERE {
     ?a example:p ?b1.
+    ?a example:p ?b2.
+    ?a example:p ?b3.
+    ?a example:p ?b4.
+    ?a example:p ?b5.
+    ?a example:p ?b6.
+    ?a example:q ?b6.
+    ?b5 example:p ?x .
+    ?b6 example:p ?y .
 }
 """
+
+# Q = """
+# PREFIX example: <http://www.example.org/rdf#>
+# SELECT * WHERE {
+#     ?a example:p ?b1.
+# }
+# """
 
 q = Query(Q, pretty=True)
 # print q.adacency_matrix
@@ -128,5 +128,5 @@ for i,s in enumerate(stars):
     print '\nSTAR (%s): \n %s'%(i,s)
 # q.plot(show=True)
 
-# print 'ASCII: \n',q.ascii
+print 'ASCII: \n',q.ascii
 
