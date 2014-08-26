@@ -10,6 +10,7 @@ from query import *
 from util import *
 from graph import *
 from draw import *
+from encoded import *
 # from prefix import * # prefixes not automatically imported ...
 from exceptions import QueryParseException
 

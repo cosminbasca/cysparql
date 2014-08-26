@@ -1,6 +1,7 @@
 from cysparql import *
 from base import BaseTestCase
 from rdflib.term import *
+from cysparql.sequence import Sequence
 
 __author__ = 'basca'
 

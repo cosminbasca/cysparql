@@ -1,3 +1,4 @@
+from cysparql.world import RasqalWorld
 from cysparql import *
 from base import BaseTestCase
 from rdflib.term import *

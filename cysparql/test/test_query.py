@@ -1,4 +1,6 @@
-from cysparql import *
+from cysparql.pattern import GraphPattern, Operator, TriplePattern
+from cysparql.query import Query, Prefix
+from cysparql.varstable import QueryVarsTable
 from base import *
 from rdflib.term import *
 
@@ -11,12 +13,12 @@ class TestQuery(BaseTestCase):
 
     def test_02_variables(self):
         query = self.get_query()
-        all_vars = set(['label', 'lat', 'long'])
-        q_vars = set([v.name for v in query.vars])
+        all_vars = {'label', 'lat', 'long'}
+        q_vars = {v.name for v in query.vars}
         self.assertEqual(all_vars, q_vars)
-        p_vars = set([v.name for v in query.projections])
+        p_vars = {v.name for v in query.projections}
         self.assertEqual(all_vars, p_vars)
-        b_vars = set([v.name for v in query.binding_vars])
+        b_vars = {v.name for v in query.binding_vars}
         self.assertTrue(len(b_vars) == 0)
 
     def test_03_triple_patterns(self):
@@ -55,13 +57,13 @@ class TestQuery(BaseTestCase):
         query = self.get_query()
         prefixes = list(query.prefixes)
         self.assertEqual(len(prefixes), 2)
-        pref_keys = set(['wgs84_pos', 'rdfs'])
-        pref_uris = set(['http://www.w3.org/2000/01/rdf-schema#', 'http://www.w3.org/2003/01/geo/wgs84_pos#'])
+        pref_keys = {'wgs84_pos', 'rdfs'}
+        pref_uris = {'http://www.w3.org/2000/01/rdf-schema#', 'http://www.w3.org/2003/01/geo/wgs84_pos#'}
         for p in prefixes:
             self.assertIsInstance(p, Prefix)
             self.assertIsInstance(p.uri, URIRef)
-        qp_keys = set([p.prefix for p in prefixes])
-        qp_uris = set([str(p.uri) for p in prefixes])
+        qp_keys = {p.prefix for p in prefixes}
+        qp_uris = {str(p.uri) for p in prefixes}
         self.assertEqual(qp_keys, pref_keys)
         self.assertEqual(qp_uris, pref_uris)
 

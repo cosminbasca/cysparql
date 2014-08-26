@@ -1,3 +1,4 @@
+from cysparql.varstable import QueryVarsTable
 from cysparql import *
 from base import BaseTestCase
 
