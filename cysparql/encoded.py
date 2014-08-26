@@ -54,8 +54,16 @@ class EncodedQuery(object):
             raise ValueError("{0} could not be encoded".format(obj))
         return encoded_obj
 
-    def decode_variables(self, enc_vars):
+    def decode_variables(self, *enc_vars):
         return [self.decode(enc_var) for enc_var in enc_vars]
+
+    def encode_variables(self, *variables):
+        def encode_var(evar):
+            if isinstance(evar, QueryVar):
+                return self.encoded_variables[evar]
+            elif isinstance(evar, basestring):
+                return self.encoded_variables[self.query.variables[evar]]
+        return [encode_var(var) for var in variables]
 
     def decode(self, obj):
         decoded_obj = None
