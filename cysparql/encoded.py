@@ -8,11 +8,12 @@ __author__ = 'basca'
 
 
 class EncodedQuery(object):
-    def __init__(self, query, **kwargs):
+    def __init__(self, query, pretty=False, variables_only=False):
         if isinstance(query, basestring):
-            query = Query(query, pretty=kwargs.get("pretty", False))
+            query = Query(query, pretty=pretty)
         if not isinstance(query, Query):
             raise ValueError('query must be an instance of cysparql.Query!')
+        self._variables_only = variables_only
         self._query = query
         self._variables = self._query.variables
         self._triple_patterns = self._query.triple_patterns
@@ -29,17 +30,17 @@ class EncodedQuery(object):
     def unique_id(self):
         return self._query.unique_id
 
-    def sha1(self, str_obj):
-        enc_str = sha1(str_obj).hexdigest()
+    def encode_string(self, str_obj):
+        enc_str = str(str_obj) if self._variables_only else sha1(str_obj).hexdigest()
         self._terms[enc_str] = str_obj
         return enc_str
 
     def encode(self, obj):
         encoded_obj = None
         if isinstance(obj, (list, tuple, TriplePatternSequence)):
-            encoded_obj = tuple([(self._encoded_variables.get(s, str(s) if isinstance(s, QueryVar) else self.sha1(s)),
-                                  self._encoded_variables.get(p, str(p) if isinstance(p, QueryVar) else self.sha1(p)),
-                                  self._encoded_variables.get(o, str(o) if isinstance(o, QueryVar) else self.sha1(o)), )
+            encoded_obj = tuple([(self._encoded_variables.get(s, str(s) if isinstance(s, QueryVar) else self.encode_string(s)),
+                                  self._encoded_variables.get(p, str(p) if isinstance(p, QueryVar) else self.encode_string(p)),
+                                  self._encoded_variables.get(o, str(o) if isinstance(o, QueryVar) else self.encode_string(o)), )
                                  for s, p, o, c in obj])
         elif isinstance(obj, QueryVar):
             encoded_obj = self._encoded_variables.get(obj, None)
@@ -63,6 +64,7 @@ class EncodedQuery(object):
                 return self.encoded_variables[evar]
             elif isinstance(evar, basestring):
                 return self.encoded_variables[self.query.variables[evar]]
+
         return [encode_var(var) for var in variables]
 
     def decode(self, obj):
@@ -129,8 +131,8 @@ class EncodedQuery(object):
  sparql: \n{2}
 ----------------------------------------------------------------------------------------------------------------
         """.strip().format('\n\t'.join([
-                               '{0} : {1}'.format(var, var_id)
-                               for var, var_id in self._encoded_variables.iteritems()]),
+            '{0} : {1}'.format(var, var_id)
+            for var, var_id in self._encoded_variables.iteritems()]),
                            '\n\t'.join([
                                'pattern {0}: {1}'.format(i, tp)
                                for i, tp in enumerate(self.encoded_triple_patterns)]),
