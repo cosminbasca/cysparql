@@ -87,7 +87,7 @@ setup(
               '{0}/test'.format(NAME),
     ],
     package_data={
-        NAME: ['*.json'],
+        NAME: ['*.json', '*.pxd'],
     },
     install_requires=manual_deps + pip_deps,
     entry_points={
