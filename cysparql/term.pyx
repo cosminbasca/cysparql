@@ -308,7 +308,7 @@ cdef class QueryVar:
         return self.n3()
 
     def __repr__(self):
-        return 'QueryVar(%s, hashcode=%s)' % (self.name, str(self._hashvalue))
+        return 'QueryVar(%s, hashcode=%s)' % (self.name, str(hash(self)))
 
     def n3(self):
         """this is not really n3 notation, since variables are not defined in this scope, the method is present

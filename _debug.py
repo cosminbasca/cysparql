@@ -130,3 +130,4 @@ for i,s in enumerate(stars):
 
 print 'ASCII: \n',q.ascii
 
+q.debug()

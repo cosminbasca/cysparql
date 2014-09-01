@@ -164,77 +164,89 @@ cdef class Query:
     cpdef QueryVarsTable create_vars_table(self):
         return new_QueryVarsTable(self.world._rworld)
 
-    property namespaces:
-        def __get__(self):
-            if not self._namespaces:
-                self._namespaces = {p.prefix:p.uri for p in self.prefixes}
-            return self._namespaces
+    @property
+    def namespaces(self):
+        if not self._namespaces:
+            self._namespaces = {p.prefix:p.uri for p in self.prefixes}
+        return self._namespaces
 
-    property variables:
-        def __get__(self):
-            if not self._vars:
-                self._vars = {v.name:v for v in self.vars}
-            return self._vars
+    @property
+    def variables(self):
+        if not self._vars:
+            self._vars = {v.name:v for v in self.vars}
+        return self._vars
 
-    property label:
-        def __get__(self):
-            return rasqal_query_get_label(self._rquery)
+    @property
+    def label(self):
+        return rasqal_query_get_label(self._rquery)
 
-    property limit:
-        def __get__(self):
-            return rasqal_query_get_limit(self._rquery)
-        def __set__(self, val):
-            assert isinstance(val, (long, int))
-            rasqal_query_set_limit(self._rquery, val)
+    @property
+    def limit(self):
+        return rasqal_query_get_limit(self._rquery)
 
-    property name:
-        def __get__(self):
-            return rasqal_query_get_name(self._rquery)
+    @limit.setter
+    def limit(self, val):
+        if not isinstance(val, (long, int)):
+            raise ValueError('val must be a long or an int')
+        rasqal_query_set_limit(self._rquery, val)
 
-    property offset:
-        def __get__(self):
-            return rasqal_query_get_offset(self._rquery)
-        def __set__(self, val):
-            assert isinstance(val, (long, int))
-            rasqal_query_set_offset(self._rquery, val)
+    @property
+    def name(self):
+        return rasqal_query_get_name(self._rquery)
 
-    property distinct:
-        def __get__(self):
-            return True if rasqal_query_get_distinct(self._rquery) != 0 else False
-        def __set__(self, val):
-            rasqal_query_set_distinct(self._rquery, 1 if val else 0)
+    @property
+    def offset(self):
+        return rasqal_query_get_offset(self._rquery)
 
-    property explain:
-        def __get__(self):
-            return True if rasqal_query_get_explain(self._rquery) != 0 else False
-        def __set__(self, val):
-            rasqal_query_set_explain(self._rquery, 0 if val else 1)
+    @offset.setter
+    def offset(self, val):
+        if not isinstance(val, (long, int)):
+            raise ValueError('val must be a long or an int')
+        rasqal_query_set_offset(self._rquery, val)
 
-    property wildcard:
-        def __get__(self):
-            return True if rasqal_query_get_wildcard(self._rquery) != 0 else False
-        def __set__(self, val):
-            rasqal_query_set_wildcard(self._rquery, 0 if val else 1)
+    @property
+    def distinct(self):
+        return True if rasqal_query_get_distinct(self._rquery) != 0 else False
 
-    property verb:
-        def __get__(self):
-            cdef int v = rasqal_query_get_verb(self._rquery)
-            if v == RASQAL_QUERY_VERB_UNKNOWN:
-                return VERB_UNKNOWN
-            elif v == RASQAL_QUERY_VERB_SELECT:
-                return VERB_SELECT
-            elif v == RASQAL_QUERY_VERB_CONSTRUCT:
-                return VERB_CONSTRUCT
-            elif v == RASQAL_QUERY_VERB_DESCRIBE:
-                return VERB_DESCRIBE
-            elif v == RASQAL_QUERY_VERB_ASK:
-                return VERB_ASK
-            elif v == RASQAL_QUERY_VERB_DELETE:
-                return VERB_DELETE
-            elif v == RASQAL_QUERY_VERB_INSERT:
-                return VERB_INSERT
-            elif v == RASQAL_QUERY_VERB_UPDATE:
-                return VERB_UPDATE
+    @distinct.setter
+    def distinct(self, val):
+        rasqal_query_set_distinct(self._rquery, 1 if val else 0)
+
+    @property
+    def explain(self):
+        return True if rasqal_query_get_explain(self._rquery) != 0 else False
+
+    @explain.setter
+    def explain(self, val):
+        rasqal_query_set_explain(self._rquery, 0 if val else 1)
+
+    @property
+    def wildcard(self):
+        return True if rasqal_query_get_wildcard(self._rquery) != 0 else False
+
+    @wildcard.setter
+    def wildcard(self, val):
+        rasqal_query_set_wildcard(self._rquery, 0 if val else 1)
+
+    @property
+    def verb(self):
+        cdef int v = rasqal_query_get_verb(self._rquery)
+        if v == RASQAL_QUERY_VERB_UNKNOWN:
+            return VERB_UNKNOWN
+        elif v == RASQAL_QUERY_VERB_SELECT:
+            return VERB_SELECT
+        elif v == RASQAL_QUERY_VERB_CONSTRUCT:
+            return VERB_CONSTRUCT
+        elif v == RASQAL_QUERY_VERB_DESCRIBE:
+            return VERB_DESCRIBE
+        elif v == RASQAL_QUERY_VERB_ASK:
+            return VERB_ASK
+        elif v == RASQAL_QUERY_VERB_DELETE:
+            return VERB_DELETE
+        elif v == RASQAL_QUERY_VERB_INSERT:
+            return VERB_INSERT
+        elif v == RASQAL_QUERY_VERB_UPDATE:
+            return VERB_UPDATE
 
     def __getitem__(self, i):
         return self.triple_patterns[i]
@@ -242,7 +254,7 @@ cdef class Query:
     def __iter__(self):
         return iter(self.triple_patterns)
 
-    cpdef to_str(self):
+    cpdef to_string(self):
         cdef raptor_world* rap_world = self.world.get_raptor_world()
         cdef void* _str_buffer = NULL
         cdef size_t _str_buffer_len
@@ -261,8 +273,7 @@ cdef class Query:
         return _repr
 
     def __str__(self):
-        return self.to_str()
-
+        return self.to_string()
 
     cpdef list get_graph_vertexes(self):
         return get_graph_vertexes(self.triple_patterns)
@@ -270,16 +281,16 @@ cdef class Query:
     cpdef get_adjacency_matrix(self):
         return get_adjacency_matrix(self.triple_patterns)
 
-    property adacency_matrix:
-        def __get__(self):
-            return self.get_adjacency_matrix()
+    @property
+    def adacency_matrix(self):
+        return self.get_adjacency_matrix()
 
     cpdef bint is_star(self):
         return is_star(self.triple_patterns)
 
-    property star:
-        def __get__(self):
-            return self.is_star()
+    @property
+    def stars(self):
+        return get_stars(self.triple_patterns)
 
     # noinspection PyUnresolvedReferences
     cpdef to_graph(self):
@@ -297,7 +308,7 @@ cdef class Query:
     @property
     def unique_id(self):
         if not self._unique_id:
-            self._unique_id = hashlib.sha1(self.to_str().upper()).hexdigest()
+            self._unique_id = hashlib.sha1(self.to_string().upper()).hexdigest()
         return self._unique_id
 
     @property
@@ -307,6 +318,7 @@ cdef class Query:
             return asciinet.graph_to_ascii(self.to_graph())
         except ImportError, e:
             warn('could not import asciinet')
+        return None
 
     def plot(self, qname = None, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', aspect_ratio=(2.7 / 4.0),

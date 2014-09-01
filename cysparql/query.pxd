@@ -71,7 +71,7 @@ cdef class Query:
     cpdef get_triple(self, i)
     cpdef get_prefix(self, i)
     cpdef QueryVarsTable create_vars_table(self)
-    cpdef to_str(self)
+    cpdef to_string(self)
     cpdef list get_graph_vertexes(self)
     cpdef get_adjacency_matrix(self)
     cpdef bint is_star(self)
