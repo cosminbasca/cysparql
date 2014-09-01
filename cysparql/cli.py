@@ -20,6 +20,9 @@ def sparql_info():
         stars_info = ''.join(['\nStar ({0}): \n\t{1}'.format(i, '\n\t'.join([str(tp) for tp in star]))
                               for i, star in enumerate(query.stars)])
 
+        ascii_info = query.ascii
+        if not ascii_info:
+            ascii_info = 'could not find asciinet (required for drawing the query diagram)'
         query_info = """
 ------------------------------------------------------------------------------------------------------------------------
 cysparql version {0[version]}
@@ -30,6 +33,7 @@ INPUT STRING:
 PRETTY STRING:
 {0[pretty_query_string]}
 
+------------------------------------------------------------------------------------------------------------------------
 VERB            : {0[verb]}
 NAME            : {0[name]}
 LIMIT           : {0[limit]}
@@ -42,6 +46,7 @@ IS STAR         : {0[is_star]}
 VARIABLES       : {0[variables]}
 PROJECTIONS     : {0[projections]}
 
+------------------------------------------------------------------------------------------------------------------------
 TRIPLE PATTERNS:
 {0[triple_patterns]}
 
@@ -51,6 +56,8 @@ STARS:
 ADJACENCY MATRIX:
 {0[adj_matrix]}
 
+------------------------------------------------------------------------------------------------------------------------
+DIAGRAM:
 {0[ascii]}
 ------------------------------------------------------------------------------------------------------------------------
         """.format({
@@ -71,7 +78,7 @@ ADJACENCY MATRIX:
             'triple_patterns': '\n'.join([str(tp) for tp in query.triple_patterns]),
             'stars': stars_info,
             'adj_matrix': query.adacency_matrix,
-            'ascii': query.ascii,
+            'ascii': ascii_info ,
         })
 
         print query_info
