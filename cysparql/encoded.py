@@ -38,10 +38,11 @@ class EncodedQuery(object):
     def encode(self, obj):
         encoded_obj = None
         if isinstance(obj, (list, tuple, TriplePatternSequence)):
-            encoded_obj = tuple([(self._encoded_variables.get(s, str(s) if isinstance(s, QueryVar) else self.encode_string(s)),
-                                  self._encoded_variables.get(p, str(p) if isinstance(p, QueryVar) else self.encode_string(p)),
-                                  self._encoded_variables.get(o, str(o) if isinstance(o, QueryVar) else self.encode_string(o)), )
-                                 for s, p, o, c in obj])
+            encoded_obj = tuple(
+                [(self._encoded_variables.get(s, str(s) if isinstance(s, QueryVar) else self.encode_string(s)),
+                  self._encoded_variables.get(p, str(p) if isinstance(p, QueryVar) else self.encode_string(p)),
+                  self._encoded_variables.get(o, str(o) if isinstance(o, QueryVar) else self.encode_string(o)), )
+                 for s, p, o, c in obj])
         elif isinstance(obj, QueryVar):
             encoded_obj = self._encoded_variables.get(obj, None)
         elif isinstance(obj, basestring):
@@ -136,10 +137,10 @@ class EncodedQuery(object):
                            '\n\t'.join([
                                'pattern {0}: {1}'.format(i, tp)
                                for i, tp in enumerate(self.encoded_triple_patterns)]),
-                           self._query.to_str())
+                           str(self._query))
 
     def sparql(self):
-        return self._query.to_str()
+        return str(self._query)
 
 
     @staticmethod
