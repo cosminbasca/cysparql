@@ -3,7 +3,7 @@ import argparse
 from cysparql import Query, disable_rasqal_warnings
 
 # noinspection PyCallingNonCallable
-def main():
+def sparql_info():
     """
 usage: sparql_info.py [-h] QUERY
 
@@ -42,6 +42,3 @@ optional arguments:
             print '=> [query save to %s.pdf] \n'%query.query_id
             query.plot(show=False)
         print '----------------------------------------------------------------------------------------------------'
-
-if __name__ == '__main__':
-    main()

@@ -1,59 +1,96 @@
-__author__ = 'Cosmin Basca'
-__email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
+#!/usr/bin/env python
 
-import os
-from setuptools import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from ez_setup import use_setuptools
+
+    use_setuptools()
+    from setuptools import setup
+
 from setuptools.extension import Extension
 from Cython.Distutils import build_ext
-from setup_util import get_lib_dir, get_include_dir
+import os
+
+
+def get_lib_dir(default='/usr/lib:/usr/local/lib'):
+    libpath = os.environ.get('DYLD_LIBRARY_PATH', None)
+    libpath = libpath if libpath else os.environ.get('LD_LIBRARY_PATH', None)
+    libpath = libpath if libpath else default
+    return [p for p in libpath.split(':') if p]
+
+
+def get_include_dir(default='/usr/local/include:/usr/include'):
+    incpath = os.environ.get('C_INCLUDE_PATH', None)
+    incpath = incpath if incpath else default
+    return [p for p in incpath.split(':') if p]
+
+
+NAME = 'cysparql'
+
+
+def extension(name, libs, language='c', options=None, c_sources=None):
+    if not c_sources: c_sources = []
+    if not options: options = []
+    extension_name = '{0}.{1}'.format(NAME, name)
+    extension_path = '{0}/{1}.pyx'.format(NAME, '/'.join(name.split('.')))
+    return Extension(extension_name, [extension_path, ] + c_sources, language=language, libraries=list(libs),
+                     library_dirs=get_lib_dir(), include_dirs=get_include_dir(), extra_compile_args=['-fPIC'] + options)
+
 
 str_version = None
-execfile('cysparql/__version__.py')
+execfile('{0}/__version__.py'.format(NAME))
 
-def extension(name, libs, language='c', options=[], c_sources=[]):
-    extension_name = 'cysparql.%s'%name
-    extension_path = 'cysparql/%s.pyx'%('/'.join(name.split('.')))
-    return Extension(extension_name,
-                     [extension_path,] + c_sources,
-                     language           = language,
-                     libraries          = list(libs),
-                     library_dirs 	    = get_lib_dir(),
-                     include_dirs       = get_include_dir(),
-                     extra_compile_args = ['-fPIC']+options)
-private_deps = []
+# Load up the description from README
+with open('README') as f:
+    DESCRIPTION = f.read()
 
 pip_deps = [
-    'cython>=0.19.1',
-    'rdflib>=4.0.1',
-    'numpy>=1.7.0',
-    'networkx>=1.8.1',
+    'cython>=0.20.2',
+    'rdflib>=4.1.2',
+    'numpy>=1.8.1',
+    'networkx>=1.9',
 ]
 
 manual_deps = []
 
 setup(
-    name ='cysparql',
-    version = str_version,
-    description = 'cython wrapper of rasqal - an efficient and fast native C SPARQL parser',
-    author = 'Cosmin Basca',
-    author_email = 'basca@ifi.uzh.ch',
-    cmdclass = {'build_ext': build_ext},
-    packages = ["cysparql"],
-    package_dir = {"cysparql":"cysparql"},
-    ext_modules = [
-            extension('world',      ['raptor2', 'rasqal'], options=['-w']),
-            extension('sequence',   ['raptor2', 'rasqal'], options=['-w']),
-            extension('term',       ['raptor2', 'rasqal'], options=['-w']),
-            extension('filter',     ['raptor2', 'rasqal'], options=['-w']),
-            extension('pattern',    ['raptor2', 'rasqal'], options=['-w']),
-            extension('varstable',  ['raptor2', 'rasqal'], options=['-w']),
-            extension('graph',      ['raptor2', 'rasqal'], options=['-w']),
-            extension('query',      ['raptor2', 'rasqal'], options=['-w']),
+    name=NAME,
+    version=str_version,
+    author='Cosmin Basca',
+    author_email='cosmin.basca@gmail.com; basca@ifi.uzh.ch',
+    # url=None,
+    description='A Cython wrapper of rasqal - an efficient and fast native C SPARQL parser',
+    long_description=DESCRIPTION,
+    cmdclass={'build_ext': build_ext},
+    ext_modules=[
+        extension('world', ['raptor2', 'rasqal'], options=['-w']),
+        extension('sequence', ['raptor2', 'rasqal'], options=['-w']),
+        extension('term', ['raptor2', 'rasqal'], options=['-w']),
+        extension('filter', ['raptor2', 'rasqal'], options=['-w']),
+        extension('pattern', ['raptor2', 'rasqal'], options=['-w']),
+        extension('varstable', ['raptor2', 'rasqal'], options=['-w']),
+        extension('graph', ['raptor2', 'rasqal'], options=['-w']),
+        extension('query', ['raptor2', 'rasqal'], options=['-w']),
     ],
-    install_requires = manual_deps + pip_deps + private_deps,
-    include_package_data = True,
-    zip_safe = False,
-    scripts = [
-        'scripts/sparql_info.py',
+    classifiers=[
+        'Intended Audience :: Developers',
+        # 'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Cython',
+        'Programming Language :: C',
+        'Topic :: Software Development'
     ],
+    packages=[NAME,
+              '{0}/test'.format(NAME),
+    ],
+    package_data={
+        NAME: ['*.json'],
+    },
+    install_requires=manual_deps + pip_deps,
+    entry_points={
+        'console_scripts': ['sparql_info = {0}.cli:sparql_info'.format(NAME)]
+    }
 )
