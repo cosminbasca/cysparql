@@ -1,5 +1,6 @@
 from urlparse import urlparse
 import re
+import sys
 
 URL_PATTERN = r'https?://'\
     r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'\
@@ -99,3 +100,15 @@ def prettify(sparql):
     }
 
     return sparql
+
+
+def get_query_from_console(prompt='Please enter SPARQL query (to stop press ENTER twice):'):
+    print prompt
+    query_lines = []
+    while True:
+        line = sys.stdin.readline()
+        query_lines.append(line)
+        if line.strip() == '':
+            break
+    print
+    return ''.join(query_lines)
