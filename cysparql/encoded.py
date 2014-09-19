@@ -19,6 +19,7 @@ class EncodedQuery(object):
         self._triple_patterns = self._query.triple_patterns
         self._terms = {}
         self._limit = query.limit
+        self._distinct = query.distinct
 
         self._encoded_variables = {var: (-1 * (i + 1)) for i, (name, var) in enumerate(self._variables.iteritems())}
         self._projections = [var for var in self._query.projections]
@@ -122,6 +123,14 @@ class EncodedQuery(object):
     @limit.setter
     def limit(self, value):
         self._limit = value
+
+    @property
+    def distinct(self):
+        return self._distinct
+
+    @distinct.setter
+    def distinct(self, value):
+        self._distinct = value
 
     def __str__(self):
         return """
