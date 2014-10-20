@@ -86,10 +86,11 @@ cdef class Query:
         cdef char* language = 'sparql'
         self.world = world if world is not None else RasqalWorld()
 
+        self.pretty = pretty
         self._rquery = rasqal_new_query(self.world._rworld, language, NULL)
         self._format_uri = raptor_new_uri(self.world.get_raptor_world(), 'http://www.w3.org/TR/2006/CR-rdf-sparql-query-20060406/')
 
-        if pretty:
+        if self.pretty:
             qstring = prettify(qstring)
         cdef char* _qstring = qstring
 
@@ -130,6 +131,9 @@ cdef class Query:
             rasqal_free_query(self._rquery)
         if self._format_uri != NULL:
             raptor_free_uri(self._format_uri)
+
+    def __reduce__(self):
+        return Query, (self.to_string(), self.pretty)
 
     cdef void* get_user_data(self):
         return rasqal_query_get_user_data(self._rquery)

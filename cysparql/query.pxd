@@ -48,6 +48,7 @@ cdef class Query:
     cdef rasqal_query*          _rquery
     cdef str                    _unique_id
     # public
+    cdef readonly bint          pretty
     cdef public RasqalWorld     world
     cdef public GraphPattern    query_graph_pattern
 
