@@ -1,0 +1,8 @@
+build/*
+dist/*
+cysparql.egg-info/*
+cysparql/test/*.pyc
+cysparql/*.pyc
+cysparql/*.c
+cysparql/*.so
+.idea
