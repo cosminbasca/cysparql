@@ -7,9 +7,14 @@ CySparql is a python wrapper over the excellent heavy-duty C [Rasqal RDF](http:/
 * simple descriptive command line utility to describe a given SPARQL query (from a file or read from stdin)
 * auto pretty formatter for SPARQL queries (slower, than just parsing)
 
-important Notes
+Important Notes
 ---------------
 This software is the product of research carried out at the [University of Zurich](http://www.ifi.uzh.ch/ddis.html) and comes with no warrenty whatsoever. Have fun!
+
+TODO's
+------
+* The *librasqal* is not fully supported (e.g. filters, etc)
+* The project is not documented (yet)
 
 How to Compile the Project
 --------------------------
@@ -24,9 +29,10 @@ $ python setup.py install
 
 Install the project with pip:
 ```bash
-$ pip install https://...
+$ pip install https://github.com/cosminbasca/cysparql
 ```
 
+Also have a look at the build.sh, clean.sh, test.sh scripts included in the codebase 
 
 Thanks a lot to
 ---------------
