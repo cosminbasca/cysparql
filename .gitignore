@@ -6,3 +6,4 @@ cysparql/*.pyc
 cysparql/*.c
 cysparql/*.so
 .idea
+.DS_Store
