@@ -23,12 +23,12 @@ Ensure that *librasqal* v0.9.32+ and *libraptor2* v2.0.13+ are installed on your
 To install **CySparql** you have two options: 1) manual installation (install requirements first) or 2) automatic with **pip**
 
 Install the project manually from source (after downloading it locally):
-```bash
+```sh
 $ python setup.py install
 ```
 
 Install the project with pip:
-```bash
+```sh
 $ pip install https://github.com/cosminbasca/cysparql
 ```
 
