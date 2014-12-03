@@ -1,11 +1,29 @@
+#
+# author: Cosmin Basca
+#
+# Copyright 2010 University of Zurich
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+from cysparql.util import all_terms, is_valid_url
+from cysparql.term import QueryVar
+from rdflib.term import URIRef, Literal, BNode
 from collections import namedtuple
-from util import all_terms, is_valid_url
-from term import QueryVar
 from copy import copy
 import networkx as nx
-from rdflib.term import URIRef, Literal, BNode
 import os
-# from graph import get_stars
+
 
 __author__ = 'basca'
 
@@ -25,7 +43,6 @@ Plum = TangoColor(light='#ad7fa8', normal='#75507b', dark='#5c3566')
 ScarletRed = TangoColor(light='#ef2929', normal='#cc0000', dark='#a40000')
 Aluminium1 = TangoColor(light='#eeeeec', normal='#d3d7cf', dark='#babdb6')
 Aluminium2 = TangoColor(light='#888a85', normal='#555753', dark='#2e3436')
-
 
 tango_colors = ( Butter, Orange, Chocolate, Chameleon, SkyBlue, Plum, ScarletRed, Aluminium1, Aluminium2 )
 #-----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +65,7 @@ def word_wrap(line, sep=':', length=20):
 
 def pretty_uri_n3(value, simplistic=False):
     if simplistic:
-        return None,':'.join(all_terms(value))
+        return None, ':'.join(all_terms(value))
     else:
         return '<%s>' % value if isinstance(value, (str, unicode)) else value.n3()
 
@@ -65,10 +82,10 @@ def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
                     _prefixes.append((len(prefix), pkey, prefix))
             if _prefixes:
                 _prefixes.sort(key=lambda item: item[0], reverse=True)
-                l,pkey,prefix = _prefixes[0]
+                l, pkey, prefix = _prefixes[0]
                 if prefixed_as_tuple:
-                    return value, value.replace(prefix, '%s:'%pkey)
-                return value.replace(prefix, '' if simplistic else '%s:'%pkey)
+                    return value, value.replace(prefix, '%s:' % pkey)
+                return value.replace(prefix, '' if simplistic else '%s:' % pkey)
             return pretty_uri_n3(value, simplistic=simplistic)
         else:
             return value.n3()
@@ -77,7 +94,7 @@ def pretty_n3(value, prefixes=None, simplistic=False, prefixed_as_tuple=False):
     elif isinstance(value, basestring):
         if is_valid_url(value):
             return pretty_uri_n3(value, simplistic=simplistic)
-        return '"%s"'%value
+        return '"%s"' % value
 
 
 LAYOUTS = {
@@ -92,7 +109,7 @@ LAYOUTS = {
 def plot_query(query, qname, location=None, highlight=None, highlight_color=ScarletRed.light,
                highlight_alpha=0.7, alpha=0.7, suffix=None, show=False, ext='pdf', prefixes=None,
                aspect_ratio=(2.7 / 4.0), scale=1.9, show_predicates=False, matplotlib_backend='TkAgg',
-               layout = 'shell', arrows=False):
+               layout='shell', arrows=False):
     if highlight is None:
         highlight = []
     elif isinstance(highlight, tuple):
@@ -100,7 +117,9 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
 
     try:
         if matplotlib_backend:
-            from matplotlib import use; use(matplotlib_backend)
+            from matplotlib import use;
+
+            use(matplotlib_backend)
         from matplotlib import pyplot as plt
         from matplotlib.path import Path
         from matplotlib import patches as mpatches
@@ -223,5 +242,6 @@ def plot_query(query, qname, location=None, highlight=None, highlight_color=Scar
             plt.show()
     except Exception:
         import traceback
+
         print traceback.format_exc()
         return False

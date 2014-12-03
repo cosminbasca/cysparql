@@ -3,7 +3,5 @@ recursive-exclude deps *
 recursive-exclude dist *
 recursive-exclude utils *
 exclude *.sh
-exclude dependencies.txt
 exclude *.pdf
-exclude bench_query.py
-exclude debug.py
+exclude dependencies.txt

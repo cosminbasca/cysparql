@@ -1,9 +1,27 @@
+#
+# author: Cosmin Basca
+#
+# Copyright 2010 University of Zurich
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from libc.stdio cimport *
 from libc.stdlib cimport *
-from raptor2 cimport *
+from cysparql.raptor2 cimport *
 
-__author__ = 'Cosmin Basca'
-__email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
+
+__author__ = 'basca'
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
@@ -280,24 +298,18 @@ cdef extern from "rasqal/rasqal.h" nogil:
 
     ctypedef int (*rasqal_graph_pattern_visit_fn) (rasqal_query *query, rasqal_graph_pattern *gp, void *user_data)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// prefix
-    #//--------------------------------------------------------------------------------------------------------
+    # prefix
     rasqal_prefix* rasqal_new_prefix(rasqal_world *world, unsigned char *prefix, raptor_uri *uri)
     void rasqal_free_prefix(rasqal_prefix *p)
     int rasqal_prefix_print(rasqal_prefix *p, FILE *fh)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// data graph
-    #//--------------------------------------------------------------------------------------------------------
+    # data graph
     rasqal_data_graph* rasqal_new_data_graph_from_data_graph(rasqal_data_graph *dg)
     rasqal_data_graph* rasqal_new_data_graph_from_uri(rasqal_world *world, raptor_uri *uri, raptor_uri *name_uri, int flags, char *format_type, char *format_name, raptor_uri *format_uri)
     void rasqal_free_data_graph(rasqal_data_graph *dg)
     int rasqal_data_graph_print(rasqal_data_graph *dg, FILE *fh)
      
-    #//--------------------------------------------------------------------------------------------------------
-    #// query
-    #//--------------------------------------------------------------------------------------------------------
+    # query
     rasqal_query* rasqal_new_query(rasqal_world *world, char *name, char *uri)
     void rasqal_free_query(rasqal_query *query)
     int rasqal_query_add_data_graph(rasqal_query *query, rasqal_data_graph *data_graph)
@@ -361,9 +373,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     raptor_sequence* rasqal_query_get_update_operations_sequence(rasqal_query *query)
     int rasqal_query_write(raptor_iostream *iostr, rasqal_query *query, raptor_uri *format_uri, raptor_uri *base_uri)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// XSD api
-    #//--------------------------------------------------------------------------------------------------------
+    # XSD api
     rasqal_xsd_datetime* rasqal_new_xsd_datetime(rasqal_world *world, char *datetime_string)
     void rasqal_free_xsd_datetime(rasqal_xsd_datetime *dt)
     int rasqal_xsd_datetime_compare(rasqal_xsd_datetime *dt1, rasqal_xsd_datetime *dt2)
@@ -390,17 +400,13 @@ cdef extern from "rasqal/rasqal.h" nogil:
     int rasqal_xsd_decimal_subtract(rasqal_xsd_decimal *result, rasqal_xsd_decimal *a, rasqal_xsd_decimal *b)
     int rasqal_xsd_decimal_negate(rasqal_xsd_decimal *result, rasqal_xsd_decimal *a)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// variable
-    #//--------------------------------------------------------------------------------------------------------
+    # variable
     rasqal_variable* rasqal_new_variable_from_variable(rasqal_variable *v)
     void rasqal_free_variable(rasqal_variable *v)
     int rasqal_variable_print(rasqal_variable *v, FILE *fh)
     void rasqal_variable_set_value(rasqal_variable *v, rasqal_literal *l)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// triple
-    #//--------------------------------------------------------------------------------------------------------
+    # triple
     rasqal_triple* rasqal_new_triple(rasqal_literal *subject, rasqal_literal *predicate, rasqal_literal *object)
     rasqal_triple* rasqal_new_triple_from_triple(rasqal_triple *t)
     void rasqal_free_triple(rasqal_triple *t)
@@ -408,9 +414,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     int rasqal_triple_print(rasqal_triple *t, FILE *fh)
     void rasqal_triple_set_origin(rasqal_triple *t, rasqal_literal *l)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// literal
-    #//--------------------------------------------------------------------------------------------------------
+    # literal
     rasqal_literal* rasqal_new_typed_literal(rasqal_world *world, rasqal_literal_type type, char *string)
     rasqal_literal* rasqal_new_boolean_literal(rasqal_world *world, int value)
     rasqal_literal* rasqal_new_datetime_literal_from_datetime(rasqal_world *world, rasqal_xsd_datetime *dt)
@@ -444,9 +448,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
     rasqal_literal* rasqal_literal_value(rasqal_literal *l)
     rasqal_literal_type rasqal_literal_get_rdf_term_type(rasqal_literal *l)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// graph pattern
-    #//--------------------------------------------------------------------------------------------------------
+    # graph pattern
     int rasqal_graph_pattern_add_sub_graph_pattern(rasqal_graph_pattern *graph_pattern, rasqal_graph_pattern *sub_graph_pattern)
     rasqal_expression* rasqal_graph_pattern_get_filter_expression(rasqal_graph_pattern *gp)
     int rasqal_graph_pattern_set_filter_expression(rasqal_graph_pattern *gp, rasqal_expression *expr)
@@ -464,16 +466,12 @@ cdef extern from "rasqal/rasqal.h" nogil:
     int rasqal_graph_pattern_variable_bound_in(rasqal_graph_pattern *gp, rasqal_variable *v)
     int rasqal_graph_pattern_visit(rasqal_query *query, rasqal_graph_pattern *gp, rasqal_graph_pattern_visit_fn fn, void *user_data)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// expressions
-    #//--------------------------------------------------------------------------------------------------------
+    # expressions
     int rasqal_expression_print(rasqal_expression *e,  FILE *fh)
     rasqal_literal *  rasqal_expression_evaluate(rasqal_world *world, raptor_locator *locator, rasqal_expression *e, int flags)
     char * rasqal_expression_op_label(rasqal_op op)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// library
-    #//--------------------------------------------------------------------------------------------------------
+    # library
     rasqal_world* rasqal_new_world()
     int rasqal_world_open(rasqal_world *world)
     void rasqal_free_world(rasqal_world *world)
@@ -482,17 +480,12 @@ cdef extern from "rasqal/rasqal.h" nogil:
     int rasqal_world_set_warning_level(rasqal_world *world, unsigned int warning_level)
     int rasqal_language_name_check(rasqal_world *world, char *name)
 
-
-    #//--------------------------------------------------------------------------------------------------------
-    #// memory
-    #//--------------------------------------------------------------------------------------------------------
+    # memory
     void* rasqal_alloc_memory(size_t size)
     void* rasqal_calloc_memory(size_t nmemb, size_t size)
     void rasqal_free_memory(void *ptr)
 
-    #//--------------------------------------------------------------------------------------------------------
-    #// variables table
-    #//--------------------------------------------------------------------------------------------------------
+    # variables table
     rasqal_variables_table* rasqal_new_variables_table(rasqal_world* world)
     void rasqal_free_variables_table(rasqal_variables_table* vt)
     rasqal_variable*  rasqal_variables_table_add(rasqal_variables_table* vt, rasqal_variable_type tp, const char *name, rasqal_literal *value)
@@ -502,7 +495,7 @@ cdef extern from "rasqal/rasqal.h" nogil:
 
 #-----------------------------------------------------------------------------------------------------------------------
 #
-# access to internal structs
+# access to internal structs (TODO: will go away with rasqal 0.9.33 !)
 #
 #-----------------------------------------------------------------------------------------------------------------------
 ctypedef struct _rasqal_projection:

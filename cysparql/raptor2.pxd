@@ -1,12 +1,32 @@
+#
+# author: Cosmin Basca
+#
+# Copyright 2010 University of Zurich
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from libc.stdio cimport *
 from libc.stdlib cimport *
 
-__author__ = 'Cosmin Basca'
-__email__ = 'basca@ifi.uzh.ch; cosmin.basca@gmail.com'
 
-#-----------------------------------------------------------------------------------------------------------------------
+__author__ = 'basca'
+
+# ----------------------------------------------------------------------------------------------------------------------
+#
 # the rdf raptor parser ----> must be 2.X
-#-----------------------------------------------------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------------------------------------------------
 cdef extern from "raptor2/raptor2.h" nogil:
     ctypedef struct raptor_world:
         pass
@@ -93,16 +113,12 @@ cdef extern from "raptor2/raptor2.h" nogil:
     ctypedef int (*raptor_data_compare_handler)(void *data1, void *data2)
     ctypedef void (*raptor_statement_handler)(void *user_data, raptor_statement *statement)
 
-    #--------------------------------------------------------------------------------------------------------
     # library
-    #--------------------------------------------------------------------------------------------------------
     raptor_world* raptor_new_world()
     int raptor_world_open(raptor_world *world)
     void raptor_free_world(raptor_world *world)
 
-    #--------------------------------------------------------------------------------------------------------
     # parser
-    #--------------------------------------------------------------------------------------------------------
     raptor_parser* raptor_new_parser(raptor_world *world, char *name)
     raptor_parser* raptor_new_parser_for_content(raptor_world *world, raptor_uri *uri, char *mime_type, unsigned char *buffer, size_t len, unsigned char *identifier)
     void raptor_free_parser(raptor_parser *parser)
@@ -111,9 +127,7 @@ cdef extern from "raptor2/raptor2.h" nogil:
     int raptor_parser_parse_file(raptor_parser *rdf_parser, raptor_uri *uri, raptor_uri *base_uri)
     int raptor_parser_parse_start(raptor_parser *rdf_parser, raptor_uri *uri)
 
-    #--------------------------------------------------------------------------------------------------------
     # serializer
-    #--------------------------------------------------------------------------------------------------------
     raptor_serializer* raptor_new_serializer(raptor_world *world, char *name)
     void raptor_free_serializer(raptor_serializer *rdf_serializer)
     int raptor_serializer_start_to_filename(raptor_serializer *rdf_serializer, char *filename)
@@ -122,9 +136,7 @@ cdef extern from "raptor2/raptor2.h" nogil:
     int raptor_serializer_serialize_statement(raptor_serializer *rdf_serializer, raptor_statement *statement)
     int raptor_serializer_serialize_end(raptor_serializer *rdf_serializer)
 
-    #--------------------------------------------------------------------------------------------------------
     # uri
-    #--------------------------------------------------------------------------------------------------------
     raptor_uri* raptor_new_uri(raptor_world *world, unsigned char *uri_string)
     raptor_uri* raptor_new_uri_from_counted_string(raptor_world *world, unsigned char *uri_string, size_t length)
     void raptor_free_uri(raptor_uri *uri)
@@ -134,14 +146,10 @@ cdef extern from "raptor2/raptor2.h" nogil:
     unsigned char* raptor_uri_to_string(raptor_uri *uri)
     unsigned char* raptor_uri_as_counted_string(raptor_uri *uri, size_t *len_p)
 
-    #--------------------------------------------------------------------------------------------------------
     # memory
-    #--------------------------------------------------------------------------------------------------------
     void raptor_free_memory(void *ptr)
 
-    #--------------------------------------------------------------------------------------------------------
     # sequence
-    #--------------------------------------------------------------------------------------------------------
     void raptor_free_sequence(raptor_sequence *seq)
     void* raptor_sequence_delete_at(raptor_sequence *seq, int idx)
     int raptor_sequence_size(raptor_sequence *seq)
@@ -154,9 +162,8 @@ cdef extern from "raptor2/raptor2.h" nogil:
     void  raptor_sequence_sort(raptor_sequence *seq, raptor_data_compare_handler compare)
     int raptor_sequence_print(raptor_sequence *seq, FILE *fh)
     int raptor_sequence_join(raptor_sequence *dest, raptor_sequence *src)
-    #--------------------------------------------------------------------------------------------------------
+
     # iostream
-    #--------------------------------------------------------------------------------------------------------
     raptor_iostream* raptor_new_iostream_from_handler(raptor_world* world, void *user_data, const raptor_iostream_handler* handler)
     raptor_iostream* raptor_new_iostream_to_sink(raptor_world* world)
     raptor_iostream* raptor_new_iostream_to_filename(raptor_world* world, char *filename)
