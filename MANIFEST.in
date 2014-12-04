@@ -5,3 +5,6 @@ recursive-exclude utils *
 exclude *.sh
 exclude *.pdf
 exclude dependencies.txt
+include LICENSE
+include NOTICE
+include README.md
