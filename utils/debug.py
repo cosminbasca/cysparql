@@ -117,7 +117,7 @@ SELECT * WHERE {
 # """
 
 q = Query(Q, pretty=True)
-# print q.adacency_matrix
+print q.adacency_matrix
 from time import time
 t0 = time()
 print 'triple_patterns = ',q.triple_patterns
