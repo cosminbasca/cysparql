@@ -299,7 +299,7 @@ cdef class Query:
         return get_adjacency_matrix(self.triple_patterns)
 
     @property
-    def adacency_matrix(self):
+    def adjacency_matrix(self):
         return self.get_adjacency_matrix()
 
     cpdef bint is_star(self):

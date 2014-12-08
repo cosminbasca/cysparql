@@ -66,7 +66,7 @@ query = Query(q_string, pretty=True)
 # [ 0.  0.  1.  0.  0.  0.  0.  0.  0.]
 # [ 0.  0.  1.  0.  0.  0.  0.  0.  0.]
 # [ 0.  0.  1.  0.  0.  0.  0.  0.  0.]]
-print query.adacency_matrix
+print query.adjacency_matrix
 
 # sould print: triple_patterns =  <cysparql.pattern.TriplePatternSequence object at 0x1049a4730>
 print 'triple_patterns = ',query.triple_patterns
