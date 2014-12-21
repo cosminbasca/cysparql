@@ -1,7 +1,7 @@
 CySparql
 ========
 
-CySparql is a python wrapper over the excellent heavy-duty C [Rasqal RDF](http://librdf.org/rasqal/) v0.9.32+ [SPARQL](http://www.w3.org/TR/rdf-sparql-query/) parser. The library is intended to give a pythonic feel to parsing SPARQL queries. There are several goodies included as well like:
+CySparql is a python wrapper over the excellent heavy-duty C [Rasqal RDF](http://librdf.org/rasqal/) v0.9.33+ [SPARQL](http://www.w3.org/TR/rdf-sparql-query/) parser. The library is intended to give a pythonic feel to parsing SPARQL queries. There are several goodies included as well like:
 * simple and fast star-pattern extraction from SPARQL queries
 * node-edge (graph) visualizations of SPARQL queries
 * simple descriptive command line utility to describe a given SPARQL query (from a file or read from stdin)
