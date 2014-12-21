@@ -91,7 +91,9 @@ cdef class QueryLiteral:
 
     property language:
         def __get__(self):
-            return (<_rasqal_literal*>self._rliteral).language if (<_rasqal_literal*>self._rliteral).language != NULL else None
+            cdef char* _lang = rasqal_literal_get_language(self._rliteral)
+            return _lang if _lang != NULL else None
+
 
     property datatype:
         def __get__(self):
@@ -101,7 +103,7 @@ cdef class QueryLiteral:
 
     property literal_type:
         def __get__(self):
-            return (<_rasqal_literal*>self._rliteral).type
+            return rasqal_literal_get_type(self._rliteral)
 
     property literal_rdf_type:
         def __get__(self):
@@ -109,7 +111,7 @@ cdef class QueryLiteral:
 
     property literal_type_label:
         def __get__(self):
-            cdef char* _label = rasqal_literal_type_label((<_rasqal_literal*>self._rliteral).type)
+            cdef char* _label = rasqal_literal_type_label(rasqal_literal_get_type(self._rliteral))
             cdef bytes _l = _label if _label != NULL else None
             return _l
 
@@ -139,7 +141,8 @@ cdef class QueryLiteral:
 
     cpdef to_rdflib(self):
         cdef bytes lbl = None
-        cdef rasqal_literal_type _type = (<_rasqal_literal*>self._rliteral).type
+        cdef rasqal_literal_type _type = rasqal_literal_get_type(self._rliteral)
+
         cdef rasqal_variable* _var = NULL
         if _type == RASQAL_LITERAL_URI:
             lbl = <char*> rasqal_literal_as_string(self._rliteral)

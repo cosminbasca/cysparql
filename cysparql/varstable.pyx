@@ -48,7 +48,10 @@ cdef class QueryVarsTable:
             rasqal_free_variables_table(self._rvtable)
 
     cpdef QueryVar add_new_variable(self, bytes name):
-        cdef rasqal_variable* v = rasqal_variables_table_add(self._rvtable, RASQAL_VARIABLE_TYPE_NORMAL, name, NULL)
+        cdef char* _name = name
+        cdef char* _cp_name = <char*>malloc(1 + len(name))
+        strcpy(_cp_name, _name)
+        cdef rasqal_variable* v = rasqal_variables_table_add(self._rvtable, RASQAL_VARIABLE_TYPE_NORMAL, _cp_name, NULL)
         return new_QueryVar(v)
 
     cpdef bint add_variable(self, QueryVar var):

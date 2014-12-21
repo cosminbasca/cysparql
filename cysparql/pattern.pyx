@@ -250,10 +250,11 @@ cdef GraphPattern new_GraphPattern(rasqal_query* query, rasqal_graph_pattern* gr
     _expression = rasqal_graph_pattern_get_filter_expression(graphpattern)
     grp.filter = new_Filter(_expression) if _expression != NULL else None
 
-    grp.triple_patterns = new_TriplePatternSequence(query,
-        (<_rasqal_graph_pattern*>graphpattern).triples,
-        (<_rasqal_graph_pattern*>graphpattern).start_column, # start
-        (<_rasqal_graph_pattern*>graphpattern).end_column) # end
+    cdef raptor_sequence* triples = rasqal_graph_pattern_get_triples(query, graphpattern)
+    if triples != NULL:
+        grp.triple_patterns = new_TriplePatternSequence(query, triples)
+    else:
+        grp.triple_patterns = None
 
     grp.flattened_triple_patterns = new_TriplePatternSequence(query,
         rasqal_graph_pattern_get_flattened_triples(query, graphpattern))

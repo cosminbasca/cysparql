@@ -51,7 +51,8 @@ cdef extern from "rasqal/rasqal.h" nogil:
     #enums
     ctypedef enum rasqal_feature:
         RASQAL_FEATURE_NO_NET
-        RASQAL_FEATURE_LAST
+        RASQAL_FEATURE_RAND_SEED
+        RASQAL_FEATURE_LAST = RASQAL_FEATURE_RAND_SEED
 
     ctypedef enum rasqal_update_type:
         RASQAL_UPDATE_TYPE_UNKNOWN
@@ -86,6 +87,21 @@ cdef extern from "rasqal/rasqal.h" nogil:
         RASQAL_QUERY_VERB_UPDATE
         RASQAL_QUERY_VERB_LAST
 
+    ctypedef enum rasqal_query_results_type:
+        RASQAL_QUERY_RESULTS_BINDINGS
+        RASQAL_QUERY_RESULTS_BOOLEAN
+        RASQAL_QUERY_RESULTS_GRAPH
+        RASQAL_QUERY_RESULTS_SYNTAX
+        RASQAL_QUERY_RESULTS_UNKNOWN
+        RASQAL_QUERY_RESULTS_LAST = RASQAL_QUERY_RESULTS_UNKNOWN
+
+    ctypedef enum rasqal_compare_flags:
+        RASQAL_COMPARE_NOCASE
+        RASQAL_COMPARE_XQUERY
+        RASQAL_COMPARE_RDF
+        RASQAL_COMPARE_URI
+        RASQAL_COMPARE_SAMETERM
+
     ctypedef enum rasqal_graph_pattern_operator:
         RASQAL_GRAPH_PATTERN_OPERATOR_UNKNOWN
         RASQAL_GRAPH_PATTERN_OPERATOR_BASIC
@@ -99,6 +115,10 @@ cdef extern from "rasqal/rasqal.h" nogil:
         RASQAL_GRAPH_PATTERN_OPERATOR_SERVICE
         RASQAL_GRAPH_PATTERN_OPERATOR_MINUS
         RASQAL_GRAPH_PATTERN_OPERATOR_LAST
+
+    ctypedef enum rasqal_query_results_format_flags:
+        RASQAL_QUERY_RESULTS_FORMAT_FLAG_READER
+        RASQAL_QUERY_RESULTS_FORMAT_FLAG_WRITER
 
     ctypedef enum rasqal_literal_type:
         RASQAL_LITERAL_UNKNOWN
@@ -137,12 +157,98 @@ cdef extern from "rasqal/rasqal.h" nogil:
         RASQAL_TRIPLE_SPO
         RASQAL_TRIPLE_SPOG
 
+    ctypedef enum rasqal_triples_source_feature:
+        RASQAL_TRIPLES_SOURCE_FEATURE_NONE
+        RASQAL_TRIPLES_SOURCE_FEATURE_IOSTREAM_DATA_GRAPH
+
     ctypedef enum rasqal_data_graph_flags:
         RASQAL_DATA_GRAPH_NONE
         RASQAL_DATA_GRAPH_NAMED
         RASQAL_DATA_GRAPH_BACKGROUND
 
     ctypedef enum rasqal_op:
+        # RASQAL_EXPR_UNKNOWN
+        # RASQAL_EXPR_AND
+        # RASQAL_EXPR_OR
+        # RASQAL_EXPR_EQ
+        # RASQAL_EXPR_NEQ
+        # RASQAL_EXPR_LT
+        # RASQAL_EXPR_GT
+        # RASQAL_EXPR_LE
+        # RASQAL_EXPR_GE
+        # RASQAL_EXPR_UMINUS
+        # RASQAL_EXPR_PLUS
+        # RASQAL_EXPR_MINUS
+        # RASQAL_EXPR_STAR
+        # RASQAL_EXPR_SLASH
+        # RASQAL_EXPR_REM
+        # RASQAL_EXPR_STR_EQ
+        # RASQAL_EXPR_STR_NEQ
+        # RASQAL_EXPR_STR_MATCH
+        # RASQAL_EXPR_STR_NMATCH
+        # RASQAL_EXPR_TILDE
+        # RASQAL_EXPR_BANG
+        # RASQAL_EXPR_LITERAL
+        # RASQAL_EXPR_FUNCTION
+        # RASQAL_EXPR_BOUND
+        # RASQAL_EXPR_STR
+        # RASQAL_EXPR_LANG
+        # RASQAL_EXPR_DATATYPE
+        # RASQAL_EXPR_ISURI
+        # RASQAL_EXPR_ISBLANK
+        # RASQAL_EXPR_ISLITERAL
+        # RASQAL_EXPR_CAST
+        # RASQAL_EXPR_ORDER_COND_ASC
+        # RASQAL_EXPR_ORDER_COND_DESC
+        # RASQAL_EXPR_LANGMATCHES
+        # RASQAL_EXPR_REGEX
+        # RASQAL_EXPR_GROUP_COND_ASC
+        # RASQAL_EXPR_GROUP_COND_DESC
+        # RASQAL_EXPR_COUNT
+        # RASQAL_EXPR_VARSTAR
+        # RASQAL_EXPR_SAMETERM
+        # RASQAL_EXPR_SUM
+        # RASQAL_EXPR_AVG
+        # RASQAL_EXPR_MIN
+        # RASQAL_EXPR_MAX
+        # RASQAL_EXPR_COALESCE
+        # RASQAL_EXPR_IF
+        # RASQAL_EXPR_URI
+        # RASQAL_EXPR_IRI
+        # RASQAL_EXPR_STRLANG
+        # RASQAL_EXPR_STRDT
+        # RASQAL_EXPR_BNODE
+        # RASQAL_EXPR_GROUP_CONCAT
+        # RASQAL_EXPR_SAMPLE
+        # RASQAL_EXPR_IN
+        # RASQAL_EXPR_NOT_IN
+        # RASQAL_EXPR_ISNUMERIC
+        # RASQAL_EXPR_YEAR
+        # RASQAL_EXPR_MONTH
+        # RASQAL_EXPR_DAY
+        # RASQAL_EXPR_HOURS
+        # RASQAL_EXPR_MINUTES
+        # RASQAL_EXPR_SECONDS
+        # RASQAL_EXPR_TIMEZONE
+        # RASQAL_EXPR_CURRENT_DATETIME
+        # RASQAL_EXPR_NOW
+        # RASQAL_EXPR_FROM_UNIXTIME
+        # RASQAL_EXPR_TO_UNIXTIME
+        # RASQAL_EXPR_CONCAT
+        # RASQAL_EXPR_STRLEN
+        # RASQAL_EXPR_SUBSTR
+        # RASQAL_EXPR_UCASE
+        # RASQAL_EXPR_LCASE
+        # RASQAL_EXPR_STRSTARTS
+        # RASQAL_EXPR_STRENDS
+        # RASQAL_EXPR_CONTAINS
+        # RASQAL_EXPR_ENCODE_FOR_URI
+        # RASQAL_EXPR_TZ
+        # RASQAL_EXPR_RAND
+        # RASQAL_EXPR_ABS
+        # RASQAL_EXPR_ROUND
+        # RASQAL_EXPR_CEIL
+        # RASQAL_EXPR_FLOOR
         RASQAL_EXPR_UNKNOWN
         RASQAL_EXPR_AND
         RASQAL_EXPR_OR
@@ -225,6 +331,27 @@ cdef extern from "rasqal/rasqal.h" nogil:
         RASQAL_EXPR_ROUND
         RASQAL_EXPR_CEIL
         RASQAL_EXPR_FLOOR
+        RASQAL_EXPR_MD5
+        RASQAL_EXPR_SHA1
+        RASQAL_EXPR_SHA224
+        RASQAL_EXPR_SHA256
+        RASQAL_EXPR_SHA384
+        RASQAL_EXPR_SHA512
+        RASQAL_EXPR_STRBEFORE
+        RASQAL_EXPR_STRAFTER
+        RASQAL_EXPR_REPLACE
+        RASQAL_EXPR_UUID
+        RASQAL_EXPR_STRUUID
+        # internal
+        RASQAL_EXPR_LAST = RASQAL_EXPR_STRUUID
+
+    ctypedef enum rasqal_expression_flags:
+        RASQAL_EXPR_FLAG_DISTINCT
+        RASQAL_EXPR_FLAG_AGGREGATE
+
+    ctypedef enum rasqal_pattern_flags:
+        RASQAL_PATTERN_FLAGS_OPTIONAL
+        RASQAL_PATTERN_FLAGS_LAST = RASQAL_PATTERN_FLAGS_OPTIONAL
 
     # structs
     ctypedef struct rasqal_world:
@@ -440,19 +567,21 @@ cdef extern from "rasqal/rasqal.h" nogil:
     raptor_uri* rasqal_literal_datatype(rasqal_literal *l)
     int rasqal_literal_equals(rasqal_literal *l1, rasqal_literal *l2)
     rasqal_literal_type rasqal_literal_get_rdf_term_type(rasqal_literal *l)
+    rasqal_literal_type rasqal_literal_get_type(rasqal_literal* l)
+    char* rasqal_literal_get_language(rasqal_literal* l)
     int rasqal_literal_is_rdf_literal(rasqal_literal *l)
     int rasqal_literal_print(rasqal_literal *l, FILE *fh)
     void rasqal_literal_print_type(rasqal_literal *l, FILE *fh)
     char* rasqal_literal_type_label(rasqal_literal_type type)
     int rasqal_literal_same_term(rasqal_literal *l1, rasqal_literal *l2)
     rasqal_literal* rasqal_literal_value(rasqal_literal *l)
-    rasqal_literal_type rasqal_literal_get_rdf_term_type(rasqal_literal *l)
 
     # graph pattern
     int rasqal_graph_pattern_add_sub_graph_pattern(rasqal_graph_pattern *graph_pattern, rasqal_graph_pattern *sub_graph_pattern)
     rasqal_expression* rasqal_graph_pattern_get_filter_expression(rasqal_graph_pattern *gp)
     int rasqal_graph_pattern_set_filter_expression(rasqal_graph_pattern *gp, rasqal_expression *expr)
     raptor_sequence* rasqal_graph_pattern_get_flattened_triples(rasqal_query *query, rasqal_graph_pattern *graph_pattern)
+    raptor_sequence* rasqal_graph_pattern_get_triples(rasqal_query* query, rasqal_graph_pattern* graph_pattern)
     int rasqal_graph_pattern_get_index (rasqal_graph_pattern *gp)
     rasqal_graph_pattern_operator rasqal_graph_pattern_get_operator(rasqal_graph_pattern *graph_pattern)
     rasqal_literal* rasqal_graph_pattern_get_origin(rasqal_graph_pattern *graph_pattern)
@@ -492,60 +621,3 @@ cdef extern from "rasqal/rasqal.h" nogil:
     int rasqal_variables_table_add_variable(rasqal_variables_table *vt, rasqal_variable *variable)
     rasqal_variable*  rasqal_variables_table_get_by_name(rasqal_variables_table *vt, rasqal_variable_type tp, const char *name)
     int rasqal_variables_table_contains(rasqal_variables_table *vt, rasqal_variable_type tp, const char *name)
-
-#-----------------------------------------------------------------------------------------------------------------------
-#
-# access to internal structs (TODO: will go away with rasqal 0.9.33 !)
-#
-#-----------------------------------------------------------------------------------------------------------------------
-ctypedef struct _rasqal_projection:
-    rasqal_query* query
-    raptor_sequence* variables
-    int wildcard
-    unsigned int distinct
-
-ctypedef struct _rasqal_solution_modifier:
-    rasqal_query* query
-    raptor_sequence* order_conditions
-    raptor_sequence* group_conditions
-    raptor_sequence* having_conditions
-    int limit
-    int offset
-
-ctypedef struct _rasqal_graph_pattern:
-    rasqal_query* query
-    rasqal_graph_pattern_operator op
-    raptor_sequence* triples
-    raptor_sequence* graph_patterns
-    int start_column
-    int end_column
-    rasqal_expression* filter_expression
-    int gp_index
-    rasqal_literal *origin
-    rasqal_variable *var
-    _rasqal_projection* projection
-    _rasqal_solution_modifier* modifier
-    unsigned int silent
-    raptor_sequence* data_graphs
-
-cdef union _l_value:
-    int integer                     # integer and boolean types
-    double floating                 # double and float
-    raptor_uri* uri                 # uri (can be temporarily NULL if a qname, see flags below)
-    rasqal_variable* variable       # variable
-    rasqal_xsd_decimal* decimal     # decimal
-    rasqal_xsd_datetime* datetime   # datetime
-    rasqal_xsd_date* date           # date
-
-ctypedef struct _rasqal_literal:
-    rasqal_world *world
-    int usage
-    rasqal_literal_type type
-    unsigned char *string           # UTF-8 string, pattern, qname, blank, double, float, decimal, datetime
-    unsigned int string_len
-    _l_value value
-    char *language
-    raptor_uri *datatype
-    unsigned char *flags
-    rasqal_literal_type parent_type
-    int valid
