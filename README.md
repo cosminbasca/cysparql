@@ -18,7 +18,7 @@ TODO's
 
 How to Compile the Project
 --------------------------
-Ensure that *librasqal* v0.9.32+ and *libraptor2* v2.0.13+ are installed on your system (either using the package manager of the OS or compiled from source).
+Ensure that *librasqal* v0.9.33+ and *libraptor2* v2.0.13+ are installed on your system (either using the package manager of the OS or compiled from source).
 
 To install **CySparql** you have two options: 1) manual installation (install requirements first) or 2) automatic with **pip**
 
