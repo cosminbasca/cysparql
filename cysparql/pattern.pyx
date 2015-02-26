@@ -198,12 +198,13 @@ cdef class TriplePattern:
 # related sequences
 #
 #-----------------------------------------------------------------------------------------------------------------------
-cdef inline Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence, int start=-1, int end=-1):
+cdef inline Sequence new_TriplePatternSequence(rasqal_query* query, raptor_sequence* sequence, int start=-1, int end=-1, bint owner=False):
     cdef Sequence seq = TriplePatternSequence()
     seq._rquery = query
     seq._rsequence = sequence
     seq._start = start
     seq._end = end
+    seq._owner = owner
     return seq
 
 cdef class TriplePatternSequence(Sequence):
@@ -252,7 +253,7 @@ cdef GraphPattern new_GraphPattern(rasqal_query* query, rasqal_graph_pattern* gr
 
     cdef raptor_sequence* triples = rasqal_graph_pattern_get_triples(query, graphpattern)
     if triples != NULL:
-        grp.triple_patterns = new_TriplePatternSequence(query, triples)
+        grp.triple_patterns = new_TriplePatternSequence(query, triples, -1, -1, True)
     else:
         grp.triple_patterns = None
 

@@ -38,9 +38,14 @@ cdef class Sequence:
         """this class must be subclassed to be of any use. Provide your own factory constructor methods"""
         self._rsequence = NULL
         self._rquery = NULL
+        self._owner = False
         self._idx = 0
         self._start = -1
         self._end = -1
+
+    def __dealloc__(self):
+        if self._owner:
+            raptor_free_sequence(self._rsequence)
 
     def __getitem__(self, i):
         cdef void* item = raptor_sequence_get_at(<raptor_sequence*> self._rsequence, i)

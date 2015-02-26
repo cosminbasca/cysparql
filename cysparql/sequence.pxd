@@ -33,6 +33,7 @@ __author__ = 'basca'
 #
 #-----------------------------------------------------------------------------------------------------------------------
 cdef class Sequence:
+    cdef bint                   _owner
     cdef raptor_sequence*       _rsequence
     cdef rasqal_query*          _rquery
     cdef int                    _idx
