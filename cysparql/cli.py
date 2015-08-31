@@ -107,7 +107,7 @@ DIAGRAM:
         'projections': [str(var) for var in query.projections],
         'triple_patterns': '\n'.join([str(tp) for tp in query.triple_patterns]),
         'stars': stars_info,
-        'adj_matrix': query.adacency_matrix,
+        'adj_matrix': query.adjacency_matrix,
         'ascii': ascii_info,
     })
 
